@@ -1,0 +1,2 @@
+# NeuroCLI
+Agentic CLI Tool
