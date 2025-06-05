@@ -21,3 +21,5 @@ A significant future enhancement we've discussed is an **"AI Peer Review"** feat
 The project will use Python's built-in `venv` for virtual environment management and `pip` for installing dependencies listed in a `pyproject.toml` file. Version control will be handled with Git, and the project will be set up with a GitHub repository.
 
 Essentially, NeuroCLI is designed to be your **intelligent assistant** for bridging AI code generation with your local development workflow, all within a polished terminal experience.
+
+While it is a command‑line tool, NeuroCLI should still **look great** and carry its own visual flair, setting it apart from other CLIs.
