@@ -11,6 +11,10 @@ class NeuroApp(App):
         yield Static(get_greeting())
         yield Footer()
 
-if __name__ == "__main__":
+def main():
+    """The entry point for the command-line tool."""
     app = NeuroApp()
     app.run()
+
+if __name__ == "__main__":
+    main()
