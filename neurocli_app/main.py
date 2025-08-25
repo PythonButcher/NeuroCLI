@@ -1,13 +1,14 @@
-from textual.app import App, Header, Footer
+from textual.app import App
+from textual.widgets import Header, Footer, Static
 from neurocli_core.engine import get_greeting
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
-    def compose(self):
+    def compose(self) -> None:
         """Create child widgets for the app."""
         yield Header()
-        yield get_greeting()
+        yield Static(get_greeting())
         yield Footer()
 
 if __name__ == "__main__":
