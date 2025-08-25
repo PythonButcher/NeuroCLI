@@ -5,7 +5,7 @@ from neurocli_core.engine import get_greeting
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
-    def compose(self) -> None:
+    def compose(self):
         """Create child widgets for the app."""
         yield Header()
         yield Static(get_greeting())
