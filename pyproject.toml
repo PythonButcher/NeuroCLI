@@ -4,5 +4,8 @@ version = "0.1.0"
 description = "An agentic, terminal-based AI assistant for developers."
 dependencies = ["textual"]
 
+[project.scripts]
+neurocli = "neurocli_app.main:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
