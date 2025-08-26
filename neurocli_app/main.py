@@ -13,7 +13,7 @@ class NeuroApp(App):
         yield Static("AI response will appear here...", id="response_display")
         yield Footer()
 
-    async def on_input_submit(self, event: Input.Submit):
+    async def on_input_submit(self, event: Input.Submitted):
         """Handle the submit event from the Input widget."""
         prompt_input = self.query_one("#prompt_input", Input)
         response_display = self.query_one("#response_display", Static)
