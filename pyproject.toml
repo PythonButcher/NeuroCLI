@@ -1,8 +1,13 @@
+# pyproject.toml
+
 [project]
 name = "neurocli"
 version = "0.1.0"
 description = "An agentic, terminal-based AI assistant for developers."
-dependencies = ["textual"]
+dependencies = [
+    "textual",
+    "python-dotenv", # Add this line
+]
 
 [project.scripts]
 neurocli = "neurocli_app.main:main"
