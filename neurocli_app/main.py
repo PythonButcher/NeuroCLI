@@ -1,6 +1,8 @@
 from textual.app import App
 from textual.widgets import Header, Footer, Static, Input
-from textual.message import Submit # Corrected: Was 'Submitted'
+
+# This import is no longer needed
+# from textual.message import Submit 
 
 from neurocli_core.engine import get_ai_response
 
@@ -16,16 +18,19 @@ class NeuroApp(App):
         yield Static("AI response will appear here...", id="response_display")
         yield Footer()
 
-    async def on_input_submit(self, message: Submit) -> None: # Corrected: Was 'Submitted'
+    # The decorator and the type hint must be changed to Input.Submitted
+    async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the submission of the input."""
-        prompt_input = self.query_one("#prompt_input", Input)
         response_display = self.query_one("#response_display", Static)
         
-        prompt = prompt_input.value
+        # The prompt text is now available directly on the message event
+        prompt = message.value 
         response = get_ai_response(prompt)
         
         response_display.update(response)
-        prompt_input.value = ""
+        
+        # Clear the input by targeting the widget that sent the message
+        message.input.value = ""
 
 def main():
     app = NeuroApp()
