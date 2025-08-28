@@ -14,6 +14,7 @@ class NeuroApp(App):
     def compose(self):
         """Create child widgets for the app."""
         yield Header()
+        yield Input(placeholder="Enter file path for context (optional)...", id="file_path_input")
         yield Input(placeholder="Enter your prompt...", id="prompt_input")
         yield Static("AI response will appear here...", id="response_display")
         yield Footer()
@@ -21,16 +22,18 @@ class NeuroApp(App):
     # The decorator and the type hint must be changed to Input.Submitted
     async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the submission of the input."""
-        response_display = self.query_one("#response_display", Static)
-        
-        # The prompt text is now available directly on the message event
-        prompt = message.value 
-        response = get_ai_response(prompt)
-        
-        response_display.update(response)
-        
-        # Clear the input by targeting the widget that sent the message
-        message.input.value = ""
+        if message.input.id == "prompt_input":
+            response_display = self.query_one("#response_display", Static)
+            file_path_input = self.query_one("#file_path_input", Input)
+            
+            prompt = message.value
+            file_path = file_path_input.value
+            
+            response = get_ai_response(prompt, file_path=file_path if file_path else None)
+            
+            response_display.update(response)
+            
+            message.input.value = ""
 
 def main():
     app = NeuroApp()
