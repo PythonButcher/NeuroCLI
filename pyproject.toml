@@ -8,6 +8,7 @@ dependencies = [
     "textual",
     "python-dotenv", # Add this line
     "google-generativeai",
+    "textual-fspicker",
 ]
 
 [project.scripts]
