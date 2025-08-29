@@ -45,16 +45,23 @@ class NeuroApp(App):
             file_path = file_path_input.value
 
             self.query_one("#loading_indicator").styles.display = "block"
-            self.run_worker(get_ai_response, prompt, file_path, thread=True)
+            self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
             message.input.value = ""
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
+        loading_indicator = self.query_one("#loading_indicator")
+        markdown_display = self.query_one("#response_display", Markdown)
+
         if event.state == WorkerState.SUCCESS:
             response = event.worker.result
-            markdown_display = self.query_one("#response_display", Markdown)
             markdown_display.update(response)
-            self.query_one("#loading_indicator").styles.display = "none"
+        elif event.state == WorkerState.ERROR:
+            # Display the error in the Markdown widget
+            error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
+            markdown_display.update(error_message)
+        
+        loading_indicator.styles.display = "none"
 
 def main():
     app = NeuroApp()
