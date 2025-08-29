@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator
-from textual.worker import Worker, WorkerState
+from textual.worker import Worker
 from textual_fspicker import FileOpen
 
 from neurocli_core.engine import get_ai_response
@@ -31,12 +31,9 @@ class NeuroApp(App):
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the press of the 'Browse...' button."""
         if event.button.id == "browse_button":
-            await self.push_screen(FileOpen(), self.on_file_open_selected)
-
-    def on_file_open_selected(self, event: FileOpen.Selected) -> None:
-        """Callback for when a file is selected from the dialog."""
-        if event.path:
-            self.query_one("#file_path_input", Input).value = str(event.path)
+            path = await self.push_screen_wait(FileOpen())
+            if path:
+                self.query_one("#file_path_input", Input).value = str(path)
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the submission of the prompt input."""
