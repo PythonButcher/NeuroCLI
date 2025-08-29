@@ -1,6 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator
+from textual.worker import Worker
 from textual_fspicker import FileOpen
 
 from neurocli_core.engine import get_ai_response
@@ -8,7 +9,6 @@ from neurocli_core.engine import get_ai_response
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
-    CSS_PATH = "main.css"
     BINDINGS = [("ctrl+q", "quit", "Quit")]
 
     def compose(self) -> ComposeResult:
@@ -30,9 +30,12 @@ class NeuroApp(App):
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the press of the 'Browse...' button."""
         if event.button.id == "browse_button":
-            path = await self.push_screen_wait(FileOpen())
-            if path:
-                self.query_one("#file_path_input", Input).value = str(path)
+            self.push_screen(FileOpen(), self.on_file_open_selected)
+
+    def on_file_open_selected(self, path: str) -> None:
+        """Callback for when a file is selected from the dialog."""
+        if path:
+            self.query_one("#file_path_input", Input).value = str(path)
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
         """Handle the submission of the prompt input."""
@@ -43,12 +46,13 @@ class NeuroApp(App):
 
             self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(
-                get_ai_response, prompt, file_path, on_success=self.on_ai_response, thread=True
+                get_ai_response, prompt, file_path, on_success=self.on_ai_response
             )
             message.input.value = ""
 
-    def on_ai_response(self, response: str) -> None:
+    def on_ai_response(self, event: Worker.Success) -> None:
         """Called when the AI response is received from the worker."""
+        response = event.result
         markdown_display = self.query_one("#response_display", Markdown)
         markdown_display.update(response)
         self.query_one("#loading_indicator").styles.display = "none"
