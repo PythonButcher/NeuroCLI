@@ -43,13 +43,9 @@ class NeuroApp(App):
 
             self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(
-                self.call_ai, prompt, file_path, on_success=self.on_ai_response
+                get_ai_response, prompt, file_path, on_success=self.on_ai_response, thread=True
             )
             message.input.value = ""
-
-    def call_ai(self, prompt: str, file_path: str) -> str:
-        """Worker function to call the AI engine."""
-        return get_ai_response(prompt, file_path=file_path if file_path else None)
 
     def on_ai_response(self, response: str) -> None:
         """Called when the AI response is received from the worker."""
