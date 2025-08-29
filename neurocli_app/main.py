@@ -1,6 +1,7 @@
-from textual.app import App
+from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator
+from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 
 from neurocli_core.engine import get_ai_response
@@ -8,52 +9,59 @@ from neurocli_core.engine import get_ai_response
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
+    CSS_PATH = "main.css"
     BINDINGS = [("ctrl+q", "quit", "Quit")]
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         yield Header()
-        with VerticalScroll():
-            with Horizontal():
+        with VerticalScroll(id="main-content"):
+            with Horizontal(id="file-container"):
                 yield Input(placeholder="Enter file path for context (optional)...", id="file_path_input")
                 yield Button("Browse...", id="browse_button")
             yield Input(placeholder="Enter your prompt...", id="prompt_input")
             yield Markdown("AI response will appear here...", id="response_display")
             yield LoadingIndicator(id="loading_indicator")
+        yield Footer()
+
+    def on_mount(self) -> None:
+        """Called when the app is mounted."""
+        self.query_one("#loading_indicator").styles.display = "none"
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle the Browse button press."""
+        """Handle the press of the 'Browse...' button."""
         if event.button.id == "browse_button":
-            # This is the new, simplified logic
-            path = await self.push_screen_wait(FileOpen())
-            if path:
-                self.query_one("#file_path_input", Input).value = str(path)
+            await self.push_screen(FileOpen(), self.on_file_open_selected)
 
-    # This entire method is no longer needed and should be deleted
-    # async def on_file_open_selected(self, event: FileOpen.Selected) -> None:
-    #     ...
-
-    def on_ai_response(self, response: str) -> None:
-        """Callback to handle the AI response from the worker."""
-        self.query_one("#response_display", Markdown).update(response)
-        self.query_one("#loading_indicator").display = False
+    def on_file_open_selected(self, event: FileOpen.Selected) -> None:
+        """Callback for when a file is selected from the dialog."""
+        if event.path:
+            self.query_one("#file_path_input", Input).value = str(event.path)
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
-        """Handle the submission of the main prompt input."""
+        """Handle the submission of the prompt input."""
         if message.input.id == "prompt_input":
-            file_path_input = self.query_one("#file_path_input", Input)
-            
             prompt = message.value
+            file_path_input = self.query_one("#file_path_input", Input)
             file_path = file_path_input.value
 
-            self.query_one("#loading_indicator").display = True
-            
-            # Run the API call in the background
+            # Show loading indicator and run the API call in a worker
+            self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(
-                get_ai_response, prompt, file_path, thread=True
+                self.call_ai, prompt, file_path, on_success=self.on_ai_response
             )
-            
             message.input.value = ""
+
+    def call_ai(self, prompt: str, file_path: str) -> str:
+        """Worker function to call the AI engine."""
+        return get_ai_response(prompt, file_path=file_path if file_path else None)
+
+    def on_ai_response(self, event: Worker.Success) -> None:
+        """Called when the AI response is received from the worker."""
+        response = event.result
+        markdown_display = self.query_one("#response_display", Markdown)
+        markdown_display.update(response)
+        self.query_one("#loading_indicator").styles.display = "none"
 
 def main():
     app = NeuroApp()
