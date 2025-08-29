@@ -50,9 +50,8 @@ class NeuroApp(App):
             )
             message.input.value = ""
 
-    def on_ai_response(self, event: Worker.Success) -> None:
+    def on_ai_response(self, response: str) -> None:
         """Called when the AI response is received from the worker."""
-        response = event.result
         markdown_display = self.query_one("#response_display", Markdown)
         markdown_display.update(response)
         self.query_one("#loading_indicator").styles.display = "none"
