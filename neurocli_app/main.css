@@ -1,0 +1,22 @@
+#main-content {
+    margin: 1 2;
+}
+
+#file-container {
+    align: center middle;
+    margin-bottom: 1;
+}
+
+#browse_button {
+    margin-left: 1;
+}
+
+#response_display {
+    min-height: 10;
+    margin: 1 0;
+}
+
+#loading_indicator {
+    width: 100%;
+    content-align: center;
+}
