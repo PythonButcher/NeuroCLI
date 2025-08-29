@@ -45,7 +45,7 @@ class NeuroApp(App):
             file_path = file_path_input.value
 
             self.query_one("#loading_indicator").styles.display = "block"
-            self.run_worker(get_ai_response, prompt, file_path)
+            self.run_worker(get_ai_response, prompt, file_path, thread=True)
             message.input.value = ""
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
