@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator
-from textual.worker import Worker
+from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 
 from neurocli_core.engine import get_ai_response
@@ -45,16 +45,16 @@ class NeuroApp(App):
             file_path = file_path_input.value
 
             self.query_one("#loading_indicator").styles.display = "block"
-            self.run_worker(
-                get_ai_response, prompt, file_path, on_success=self.on_ai_response
-            )
+            self.run_worker(get_ai_response, prompt, file_path)
             message.input.value = ""
 
-    def on_ai_response(self, response: str) -> None:
-        """Called when the AI response is received from the worker."""
-        markdown_display = self.query_one("#response_display", Markdown)
-        markdown_display.update(response)
-        self.query_one("#loading_indicator").styles.display = "none"
+    def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+        """Called when the worker state changes."""
+        if event.state == WorkerState.SUCCESS:
+            response = event.worker.result
+            markdown_display = self.query_one("#response_display", Markdown)
+            markdown_display.update(response)
+            self.query_one("#loading_indicator").styles.display = "none"
 
 def main():
     app = NeuroApp()
