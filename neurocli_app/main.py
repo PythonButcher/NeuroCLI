@@ -4,7 +4,7 @@ from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndi
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 
-from neurocli_core.engine import get_ai_response
+from neurocli_core.engine import get_ai_response, create_context_from_path
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
@@ -45,7 +45,12 @@ class NeuroApp(App):
             file_path = file_path_input.value
 
             self.query_one("#loading_indicator").styles.display = "block"
-            self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
+            
+            context = None
+            if file_path:
+                context = create_context_from_path(file_path)
+
+            self.run_worker(lambda: get_ai_response(prompt, context), thread=True)
             message.input.value = ""
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
