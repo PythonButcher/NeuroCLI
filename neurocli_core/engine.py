@@ -1,7 +1,7 @@
 import os
 from neurocli_core.llm_api import call_gemini_api
 from neurocli_core.config import get_gemini_api_key
-from typing import Optional
+from typing import Optional, Tuple
 
 def get_greeting() -> str:
     """A UI-agnostic function that represents a piece of core business logic.  
@@ -41,7 +41,7 @@ def create_context_from_path(path: str) -> str:
                 try:
                     with open(filepath, 'r', encoding='utf-8') as f:
                         content = f.read()
-                    all_contents.append(f"--- START OF {filepath} ---\n{content}\n--- END OF {filepath} ---\n\n")
+                    all_contents.append(f"--- START OF {filepath} ---\n{content}\n--- END OF {filepath}---\n\n")
                 except Exception:
                     # Silently ignore files that can't be read
                     pass
@@ -49,26 +49,39 @@ def create_context_from_path(path: str) -> str:
 
     return f"Error: Path is not a file or a directory: {path}"
 
-def get_ai_response(prompt: str, context: Optional[str] = None) -> str:
+def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, str]:
     """
     Processes a user's prompt and returns an AI-generated response,
     optionally with file content as context.
     
     Args:
         prompt: The user's input prompt.
-        context: Optional context to include with the prompt.
+        file_path: Optional path to a file to include as context.
         
     Returns:
-        An AI response or an error message.
+        A tuple containing the original file content and the AI response.
     """
+    original_content = ""
     context_prompt = prompt
-    if context:
-        if context.startswith("Error:"):
-            return context
-        context_prompt = f"CONTEXT:\n---\n{context}\n---\n\nPROMPT: {prompt}"
+
+    if file_path:
+        if os.path.isfile(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    original_content = f.read()
+                context_prompt = f"CONTEXT:\n---\n{original_content}\n---\n\nPROMPT: {prompt}"
+            except Exception as e:
+                return "", f"Error reading file {file_path}: {e}"
+        else:
+            # For directories, we don't have a single original content
+            context_content = create_context_from_path(file_path)
+            if context_content.startswith("Error:"):
+                return "", context_content
+            context_prompt = f"CONTEXT:\n---\n{context_content}\n---\n\nPROMPT: {prompt}"
 
     api_key = get_gemini_api_key()
     if not api_key:
-        return "Error: Gemini API key not found. Please set it in the .env file."
+        return "", "Error: Gemini API key not found. Please set it in the .env file."
     
-    return call_gemini_api(api_key, context_prompt)
+    response_text = call_gemini_api(api_key, context_prompt)
+    return original_content, response_text
