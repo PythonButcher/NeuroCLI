@@ -6,6 +6,7 @@ from textual_fspicker import FileOpen
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
+from neurocli_core.code_formatter import format_python_code
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
@@ -72,9 +73,10 @@ class NeuroApp(App):
         if event.state == WorkerState.SUCCESS:
             original_content, new_content = event.worker.result
             if original_content:
-                diff = generate_diff(original_content, new_content)
+                formatted_content = format_python_code(new_content)
+                diff = generate_diff(original_content, formatted_content)
                 markdown_display.update(diff)
-                self._proposed_content = new_content
+                self._proposed_content = formatted_content
                 self.query_one("#apply_button").styles.display = "block"
             else:
                 markdown_display.update(new_content)

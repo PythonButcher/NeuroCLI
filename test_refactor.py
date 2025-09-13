@@ -1,14 +1,1 @@
-```python
-def add(a: int, b: int) -> int:
-    """Adds two numbers together.
-
-    Args:
-        a: The first number.
-        b: The second number.
-
-    Returns:
-        The sum of a and b.
-    """
-    return a + b
-
-```
+The provided code already has a proper docstring and type hints.  The prompt is redundant.  The docstring clearly explains the function's purpose, arguments, and return value, and type hints specify that `a` and `b` are integers and the return value is also an integer.
