@@ -3,6 +3,7 @@ from textual.containers import VerticalScroll, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
+import shutil
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -40,10 +41,14 @@ class NeuroApp(App):
         elif event.button.id == "apply_button":
             file_path = self.query_one("#file_path_input", Input).value
             if file_path and self._proposed_content:
+                backup_path = f"{file_path}.bak"
                 try:
+                    shutil.copyfile(file_path, backup_path)
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write(self._proposed_content)
-                    self.query_one("#response_display").update(f"Changes applied to {file_path} successfully.")
+                    self.query_one("#response_display").update(
+                        f"Changes applied to {file_path} successfully. Backup saved to {backup_path}."
+                    )
                     self._proposed_content = ""
                     self.query_one("#apply_button").styles.display = "none"
                 except Exception as e:
@@ -76,8 +81,12 @@ class NeuroApp(App):
                 formatted_content = format_python_code(new_content)
                 diff = generate_diff(original_content, formatted_content)
                 markdown_display.update(diff)
-                self._proposed_content = formatted_content
-                self.query_one("#apply_button").styles.display = "block"
+                if diff == "No changes proposed.":
+                    self._proposed_content = ""
+                    self.query_one("#apply_button").styles.display = "none"
+                else:
+                    self._proposed_content = formatted_content
+                    self.query_one("#apply_button").styles.display = "block"
             else:
                 markdown_display.update(new_content)
                 self.query_one("#apply_button").styles.display = "none"
