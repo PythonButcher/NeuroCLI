@@ -1,11 +1,25 @@
+# neurocli_core/engine.py
+
 import os
 from neurocli_core.llm_api import call_gemini_api
 from neurocli_core.config import get_gemini_api_key
 from typing import Optional, Tuple
 
+# NEW: Add the system prompt as a constant
+SYSTEM_PROMPT = """
+You are an expert Python developer integrated into a command-line tool.
+Your task is to act as a coding assistant. When given a prompt and a file's content as context,
+you will return only the complete, modified, and syntactically correct Python code for that file.
+
+**CRITICAL RULES:**
+1.  **DO NOT** use Markdown code blocks (e.g., ```python ... ```) in your response.
+2.  **DO NOT** add any commentary, explanations, or introductory sentences.
+3.  Your output **MUST** be only the raw, valid code for the entire file.
+"""
+
 def get_greeting() -> str:
-    """A UI-agnostic function that represents a piece of core business logic.  
-    
+    """A UI-agnostic function that represents a piece of core business logic.
+
     Returns:
         str: A greeting message from the core engine.
     """
@@ -53,35 +67,41 @@ def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, 
     """
     Processes a user's prompt and returns an AI-generated response,
     optionally with file content as context.
-    
+
     Args:
         prompt: The user's input prompt.
         file_path: Optional path to a file to include as context.
-        
+
     Returns:
         A tuple containing the original file content and the AI response.
     """
     original_content = ""
-    context_prompt = prompt
+    # MODIFIED: Start with the system prompt
+    context_prompt = SYSTEM_PROMPT
 
     if file_path:
         if os.path.isfile(file_path):
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     original_content = f.read()
-                context_prompt = f"CONTEXT:\n---\n{original_content}\n---\n\nPROMPT: {prompt}"
+                # MODIFIED: Append the context and prompt to the system prompt
+                context_prompt += f"\n\nCONTEXT:\n---\n{original_content}\n---\n\nUSER PROMPT: {prompt}"
             except Exception as e:
                 return "", f"Error reading file {file_path}: {e}"
         else:
-            # For directories, we don't have a single original content
             context_content = create_context_from_path(file_path)
             if context_content.startswith("Error:"):
                 return "", context_content
-            context_prompt = f"CONTEXT:\n---\n{context_content}\n---\n\nPROMPT: {prompt}"
+            # MODIFIED: Append the context and prompt to the system prompt
+            context_prompt += f"\n\nCONTEXT:\n---\n{context_content}\n---\n\nUSER PROMPT: {prompt}"
+    else:
+        # MODIFIED: Handle prompts without a file path
+        context_prompt += f"\n\nUSER PROMPT: {prompt}"
+
 
     api_key = get_gemini_api_key()
     if not api_key:
         return "", "Error: Gemini API key not found. Please set it in the .env file."
-    
+
     response_text = call_gemini_api(api_key, context_prompt)
     return original_content, response_text
