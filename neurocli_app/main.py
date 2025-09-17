@@ -3,15 +3,18 @@ from textual.containers import VerticalScroll, Horizontal, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
+from theme import arctic_theme
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
 from neurocli_core.code_formatter import format_python_code
 
+
 class NeuroApp(App):
     """The main application for NeuroCLI."""
-
     BINDINGS = [("ctrl+q", "quit", "Quit")]
+
+   
 
     _proposed_content: str = ""
 
@@ -39,6 +42,10 @@ class NeuroApp(App):
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
+        self.register_theme(arctic_theme)  
+
+        # Set the app's theme
+        self.theme = "arctic"  
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
