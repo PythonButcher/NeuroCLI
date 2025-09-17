@@ -5,16 +5,12 @@ from neurocli_core.llm_api import call_gemini_api
 from neurocli_core.config import get_gemini_api_key
 from typing import Optional, Tuple
 
-# NEW: Add the system prompt as a constant
+# MODIFIED: A more flexible base prompt
 SYSTEM_PROMPT = """
-You are an expert Python developer integrated into a command-line tool.
-Your task is to act as a coding assistant. When given a prompt and a file's content as context,
-you will return only the complete, modified, and syntactically correct Python code for that file.
-
-**CRITICAL RULES:**
-1.  **DO NOT** use Markdown code blocks (e.g., ```python ... ```) in your response.
-2.  **DO NOT** add any commentary, explanations, or introductory sentences.
-3.  Your output **MUST** be only the raw, valid code for the entire file.
+You are NeuroCLI, an expert-level AI developer and assistant integrated into a command-line tool.
+Your primary goal is to help with coding and software development questions.
+- Act as an expert Python developer and a helpful assistant.
+- Your responses should be clear, concise, and directly address the user's prompt.
 """
 
 def get_greeting() -> str:
@@ -67,17 +63,23 @@ def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, 
     """
     Processes a user's prompt and returns an AI-generated response,
     optionally with file content as context.
-
-    Args:
-        prompt: The user's input prompt.
-        file_path: Optional path to a file to include as context.
-
-    Returns:
-        A tuple containing the original file content and the AI response.
     """
     original_content = ""
-    # MODIFIED: Start with the system prompt
+    # Start with the base system prompt
     context_prompt = SYSTEM_PROMPT
+
+    if file_path:
+        # --- THIS IS THE NEW LOGIC ---
+        # If a file is involved, add the strict rules for code generation.
+        context_prompt += """
+**IMPORTANT**: You are now in "Code Generation Mode".
+When a file's content is provided as context, you MUST return only the complete, modified,
+and syntactically correct code for that file.
+- DO NOT use Markdown code blocks (e.g., ```python ... ```).
+- DO NOT add any commentary, explanations, or introductory sentences.
+- Your output MUST be only the raw, valid code for the entire file.
+"""
+        # --- END OF NEW LOGIC ---
 
     if file_path:
         if os.path.isfile(file_path):
