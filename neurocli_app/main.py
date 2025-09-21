@@ -4,6 +4,8 @@ from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndi
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 #from theme import arctic_theme #, modern_theme
+from art import BACKGROUND_ART
+
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -16,26 +18,14 @@ class NeuroApp(App):
    # DEFAULT_THEME = modern_theme
     #CSS_PATH = "modern.css"
      # --- ADD THIS CSS TO STYLE THE LAYOUT ---
-    CSS = """
-    #file-container {
-        height: auto;
-    }
-
-    #file_path_input {
-        width: 1fr;
-    }
-
-    #browse_button {
-        width: auto;
-    }
-    """
-
+    CSS_PATH = "main.css"
 
     _proposed_content: str = ""
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         yield Header()
+        yield Static(BACKGROUND_ART, id="background-image")
         with VerticalScroll(id="main-content"):
             with Horizontal(id="file-container"):
                 yield Input(placeholder="Enter file path for context (optional)...", id="file_path_input")
@@ -105,6 +95,9 @@ class NeuroApp(App):
             file_path_input = self.query_one("#file_path_input", Input)
             file_path = file_path_input.value
 
+            # --- 4. HIDE THE BACKGROUND IMAGE ---
+            self.query_one("#background-image").styles.display = "none"
+
             self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
             message.input.value = ""
@@ -130,7 +123,9 @@ class NeuroApp(App):
             # Display the error in the Markdown widget
             error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
             markdown_display.update(error_message)
-        
+            
+        # --- 4. SHOW THE BACKGROUND IMAGE AGAIN ---
+        self.query_one("#background-image").styles.display = "block"
         loading_indicator.styles.display = "none"
 
 def main():
