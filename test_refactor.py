@@ -1,4 +1,5 @@
 def calculate_stats(data):
+    # test sync after moving repo
     """Calculates the sum and average of a list of numbers.
 
     Args:
