@@ -3,7 +3,7 @@ from textual.containers import VerticalScroll, Horizontal, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
-#from theme import arctic_theme #, modern_theme
+from theme import arctic_theme , modern_theme
 from art import BACKGROUND_ART
 
 
@@ -25,7 +25,8 @@ class NeuroApp(App):
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         yield Header()
-        yield Static(BACKGROUND_ART, id="background-image")
+        yield Static(BACKGROUND_ART, id="background_image")
+        yield Button("Reset", id="reset_screen")
         with VerticalScroll(id="main-content"):
             with Horizontal(id="file-container"):
                 yield Input(placeholder="Enter file path for context (optional)...", id="file_path_input")
@@ -37,22 +38,23 @@ class NeuroApp(App):
             
             # --- CORRECTED SECTION ---
             # The Container now properly wraps the dialog widgets.
-            # Each widget inside is yielded within the 'with' block.
+             # MODIFIED: Removed the extra Horizontal container around the buttons
             with Container(id="button_container"):
-                yield Static("Do you want to continue?", id="dialog_text")
+                yield Static("Apply these changes?", id="dialog_text")
                 yield Button("Yes", id="yes", variant="success")
                 yield Button("No", id="no", variant="error")
                 
         yield Footer()
 
+
     def on_mount(self) -> None:
         """Called when the app is mounted."""
-        #self.register_theme(arctic_theme) 
-        #self.register_theme(modern_theme)  
+        self.register_theme(arctic_theme) 
+        self.register_theme(modern_theme)  
 
         # Set the app's theme
-        #self.theme = "arctic" 
-        #self.theme = "modern_dark_neon" 
+        self.theme = "arctic" 
+        self.theme = "modern_dark_neon" 
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
@@ -96,7 +98,7 @@ class NeuroApp(App):
             file_path = file_path_input.value
 
             # --- 4. HIDE THE BACKGROUND IMAGE ---
-            self.query_one("#background-image").styles.display = "none"
+            self.query_one("#background_image").styles.display = "none"
 
             self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
@@ -125,7 +127,7 @@ class NeuroApp(App):
             markdown_display.update(error_message)
             
         # --- 4. SHOW THE BACKGROUND IMAGE AGAIN ---
-        self.query_one("#background-image").styles.display = "block"
+        self.query_one("#background_image").styles.display = "block"
         loading_indicator.styles.display = "none"
 
 def main():
