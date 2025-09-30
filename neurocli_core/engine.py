@@ -1,7 +1,7 @@
 # neurocli_core/engine.py
 
 import os
-from neurocli_core.llm_api import call_gemini_api
+from neurocli_core.llm_api_gemini import call_gemini_api
 from neurocli_core.config import get_gemini_api_key
 from typing import Optional, Tuple
 
