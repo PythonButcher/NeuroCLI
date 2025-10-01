@@ -1,8 +1,8 @@
 # neurocli_core/engine.py
 
 import os
-from neurocli_core.llm_api_gemini import call_gemini_api
-from neurocli_core.config import get_gemini_api_key
+from neurocli_core.llm_api_openai import call_openai_api
+from neurocli_core.config import get_openai_api_key
 from typing import Optional, Tuple
 
 # MODIFIED: A more flexible base prompt
@@ -101,9 +101,9 @@ and syntactically correct code for that file.
         context_prompt += f"\n\nUSER PROMPT: {prompt}"
 
 
-    api_key = get_gemini_api_key()
+    api_key = get_openai_api_key()
     if not api_key:
-        return "", "Error: Gemini API key not found. Please set it in the .env file."
+        return "", "Error: OpenAI API key not found. Please set it in the .env file."
 
-    response_text = call_gemini_api(api_key, context_prompt)
+    response_text = call_openai_api(api_key, context_prompt)
     return original_content, response_text
