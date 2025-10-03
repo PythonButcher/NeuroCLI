@@ -5,7 +5,6 @@ description = "An agentic, terminal-based AI assistant for developers."
 dependencies = [
     "textual",
     "python-dotenv",
-    "google-generativeai",
     "openai",                # ✅ OpenAI support
     "textual-fspicker",
     "ruff",
