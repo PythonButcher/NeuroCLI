@@ -15,6 +15,8 @@ The core architectural principle of NeuroCLI is a strict separation of concerns 
 
 ### Prerequisites
 * Python 3.10+
+* Git 2.30+ available on your `PATH` for the Git-assisted workflow
+* (Optional) An `$EDITOR` environment variable if you want to open files from NeuroCLI
 * An OpenAI API key stored in a project-level `.env` file:
 
   ```bash
@@ -30,3 +32,19 @@ pip install -e .
 ```bash
 neurocli
 ```
+
+## Git-Enabled Workflow
+
+NeuroCLI can now surface Git information and apply AI-generated patches directly through `git apply`.
+
+1. Select a file in the `file_path` input (or via **Browse...**) before submitting a prompt.
+2. After the diff is generated, use **Apply Changes** to choose between:
+   * **Apply (Working Tree)** – applies the diff with `git apply`. When the selected file is outside a Git repository, NeuroCLI falls back to writing the new content directly to disk so you never lose the proposal.
+   * **Apply & Stage** – applies the diff and stages the file with `git add`.
+3. Use **Stage Diff** at any time to stage the current file, and **Open in $EDITOR** to jump into your configured editor without leaving the TUI.
+
+### Safeguards and Status Feedback
+
+* The Git status panel automatically targets the selected file and displays the current branch and `git status --short` output.
+* When no repository is detected, staging actions are disabled, and the Apply workflow transparently writes to disk without invoking Git.
+* Errors and successes from Git helpers appear inline in the AI response panel so you can confirm each step.
