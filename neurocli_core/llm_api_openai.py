@@ -40,7 +40,9 @@ def call_openai_api(api_key: str, prompt: str) -> str:
                 },
             ],
         )
+        print("DEBUG: Using OpenAI API")
         return _extract_text_segments(response.output)
+        
     except Exception as exc:  # pragma: no cover - defensive logging path
         print(f"An error occurred while calling the OpenAI API: {exc}")
         return f"Error: Could not retrieve response from OpenAI API. Details: {exc}"
