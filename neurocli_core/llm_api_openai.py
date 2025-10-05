@@ -1,35 +1,48 @@
-"""
-This module provides the interface for interacting with the OpenAI Large Language Model API.
-"""
+"""Adapter functions that communicate with the OpenAI API."""
+
+from __future__ import annotations
+
+from typing import Iterable
 
 from openai import OpenAI
 
 
+SYSTEM_MESSAGE = "You are NeuroCLI, an expert AI assistant."
+
+
+def _extract_text_segments(output: Iterable) -> str:
+    """Concatenate text segments returned by the OpenAI responses API."""
+    text_parts: list[str] = []
+    for item in output:
+        if getattr(item, "type", None) != "message":
+            continue
+        for content in getattr(item, "content", []):
+            if getattr(content, "type", None) == "text":
+                text_parts.append(content.text)
+    return "".join(text_parts)
+
+
 def call_openai_api(api_key: str, prompt: str) -> str:
-    """
-    Communicates with the OpenAI API to get a response from the model.
+    """Communicate with the OpenAI API and return the model response."""
 
-    Args:
-        api_key: The API key for the OpenAI API.
-        prompt: The user's prompt to send to the model.
-
-    Returns:
-        The text response from the model.
-    """
     try:
-        # Create a client instance with the provided API key
         client = OpenAI(api_key=api_key)
-
-        # Call the chat completions endpoint
-        response = client.chat.completions.create(
-            model="gpt-4.1 mini",   # ✅ lightweight, low-latency model
-            messages=[
-                {"role": "system", "content": "You are NeuroCLI, an expert AI assistant."},
-                {"role": "user", "content": prompt},
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": SYSTEM_MESSAGE}],
+                },
+                {
+                    "role": "user",
+                    "content": [{"type": "text", "text": prompt}],
+                },
             ],
         )
-
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"An error occurred while calling the OpenAI API: {e}")
-        return f"Error: Could not retrieve response from OpenAI API. Details: {e}"
+        print("DEBUG: Using OpenAI API")
+        return _extract_text_segments(response.output)
+        
+    except Exception as exc:  # pragma: no cover - defensive logging path
+        print(f"An error occurred while calling the OpenAI API: {exc}")
+        return f"Error: Could not retrieve response from OpenAI API. Details: {exc}"
