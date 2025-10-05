@@ -30,19 +30,18 @@ def call_openai_api(api_key: str, prompt: str) -> str:
         response = client.responses.create(
             model="gpt-4.1-mini",
             input=[
-                {
-                    "role": "system",
-                    "content": [{"type": "text", "text": SYSTEM_MESSAGE}],
-                },
-                {
-                    "role": "user",
-                    "content": [{"type": "text", "text": prompt}],
-                },
+                {"role": "system", "content": [{"type": "input_text", "text": SYSTEM_MESSAGE}]},
+                {"role": "user", "content": [{"type": "input_text", "text": prompt}]},
             ],
         )
-        print("DEBUG: Using OpenAI API")
-        return _extract_text_segments(response.output)
-        
-    except Exception as exc:  # pragma: no cover - defensive logging path
+        # Extract the text response
+        output_items = response.output
+        for item in output_items:
+            if hasattr(item, "content"):
+                for c in item.content:
+                    if c.type == "output_text":
+                        return c.text
+        return "No text output found in response."
+    except Exception as exc:
         print(f"An error occurred while calling the OpenAI API: {exc}")
         return f"Error: Could not retrieve response from OpenAI API. Details: {exc}"
