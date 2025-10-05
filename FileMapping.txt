@@ -14,11 +14,11 @@ neurocli_app/main_app.py – Placeholder for an alternate/expanded UI (currently
 
 neurocli_core/__init__.py – Marks the core logic package (empty).
 
-neurocli_core/ai_services.py – Reserved for additional AI integrations (empty).
+neurocli_core/ai_services.py – Builds prompts and calls the OpenAI-backed LLM service.
 
 neurocli_core/code_formatter.py – Formats Python code via Ruff, falling back to original code on error.
 
-neurocli_core/config.py – Loads the Gemini API key from a project-level .env.
+neurocli_core/config.py – Loads the OpenAI API key from a project-level .env.
 
 neurocli_core/diff_generator.py – Produces unified diffs between original and proposed content.
 
@@ -26,10 +26,8 @@ neurocli_core/engine.py – Orchestrates context gathering and LLM calls, return
 
 neurocli_core/file_handler.py – Placeholder for future file utilities (empty).
 
-neurocli_core/llm_api.py – Wrapper around the Gemini Generative AI API.
+neurocli_core/llm_api_openai.py – Wrapper around the OpenAI API.
 
 pyproject.toml – Package metadata, dependencies, and CLI entry-point declaration.
-
-test_key.py – Simple script verifying .env loading of the Gemini API key.
 
 test_refactor.py – Example function (calculate_stats) used for refactoring/testing demonstrations.
