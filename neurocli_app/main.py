@@ -3,8 +3,8 @@ from textual.containers import VerticalScroll, Horizontal, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
-from theme import arctic_theme , modern_theme
-from art import BACKGROUND_ART
+from neurocli_app.theme import arctic_theme, modern_theme
+from neurocli_app.art import BACKGROUND_ART
 
 
 from neurocli_core.engine import get_ai_response
