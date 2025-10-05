@@ -49,18 +49,17 @@ Screen {
     padding: 2 3;
     height: 100%;
 }
-
-Screen (width < 120) #app_shell {
+#app_shell.narrow {
     grid-size: 1;
     grid-columns: 1fr;
 }
 
-Screen (width < 120) #brand_column {
+#brand_column.narrow {
     height: auto;
     margin-bottom: 2;
 }
 
-Screen (width < 120) #interaction_column {
+#interaction_column.narrow {
     height: 1fr;
 }
 

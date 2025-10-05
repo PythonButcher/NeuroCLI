@@ -1,3 +1,4 @@
+from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
@@ -5,7 +6,6 @@ from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme, nocturne_theme
 from neurocli_app.art import BACKGROUND_ART
-
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -67,6 +67,26 @@ class NeuroApp(App):
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
+        self.call_after_refresh(lambda: self._apply_responsive_layout(self.size.width))
+
+    def on_resize(self, event: events.Resize) -> None:
+        """Adjust the layout whenever the terminal is resized."""
+        self._apply_responsive_layout(event.size.width)
+
+    def _apply_responsive_layout(self, width: int) -> None:
+        """Toggle responsive styling classes based on terminal width."""
+        app_shell = self.query_one("#app_shell")
+        brand_column = self.query_one("#brand_column")
+        interaction_column = self.query_one("#interaction_column")
+
+        if width < 120:
+            app_shell.add_class("narrow")
+            brand_column.add_class("narrow")
+            interaction_column.add_class("narrow")
+        else:
+            app_shell.remove_class("narrow")
+            brand_column.remove_class("narrow")
+            interaction_column.remove_class("narrow")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the press of the 'Browse...' button."""
