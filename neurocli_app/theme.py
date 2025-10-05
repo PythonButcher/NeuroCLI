@@ -40,3 +40,24 @@ modern_theme = Theme(
         "input-selection-background": "#00E5FF 40%",  # cyan selection glow
     },
 )
+
+
+nocturne_theme = Theme(
+    name="nocturne",
+    primary="#5B8DEF",
+    secondary="#22345F",
+    accent="#8BA8FF",
+    foreground="#E2E8F0",
+    background="#060B16",
+    success="#58C4A3",
+    warning="#E6B673",
+    error="#F07178",
+    surface="#0B1324",
+    panel="#111C33",
+    dark=True,
+    variables={
+        "block-cursor-text-style": "reverse",
+        "footer-key-foreground": "#5B8DEF",
+        "input-selection-background": "#5B8DEF 35%",
+    },
+)

@@ -1,9 +1,9 @@
 from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll, Horizontal, Container
+from textual.containers import VerticalScroll, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
-from neurocli_app.theme import arctic_theme, modern_theme
+from neurocli_app.theme import arctic_theme, modern_theme, nocturne_theme
 from neurocli_app.art import BACKGROUND_ART
 
 
@@ -14,47 +14,56 @@ from neurocli_core.code_formatter import format_python_code
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
+
     BINDINGS = [("ctrl+q", "quit", "Quit")]
-   # DEFAULT_THEME = modern_theme
-    #CSS_PATH = "modern.css"
-     # --- ADD THIS CSS TO STYLE THE LAYOUT ---
     CSS_PATH = "main.css"
 
     _proposed_content: str = ""
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        yield Header()
-        yield Static(BACKGROUND_ART, id="background_image")
-        yield Button("Reset", id="reset_screen")
-        with VerticalScroll(id="main-content"):
-            with Horizontal(id="file-container"):
-                yield Input(placeholder="Enter file path for context (optional)...", id="file_path_input")
-                yield Button("Browse...", id="browse_button")
-            yield Input(placeholder="Enter your prompt...", id="prompt_input")
-            yield Markdown("AI response will appear here...", id="response_display")
-            yield Button("Apply Changes", id="apply_button")
-            yield LoadingIndicator(id="loading_indicator")
-            
-            # --- CORRECTED SECTION ---
-            # The Container now properly wraps the dialog widgets.
-             # MODIFIED: Removed the extra Horizontal container around the buttons
-            with Container(id="button_container"):
-                yield Static("Apply these changes?", id="dialog_text")
-                yield Button("Yes", id="yes", variant="success")
-                yield Button("No", id="no", variant="error")
-                
-        yield Footer()
+        yield Header(show_clock=False, id="app_header")
+
+        with Container(id="app_shell"):
+            with Container(id="brand_column"):
+                yield Static(BACKGROUND_ART, id="background_image")
+                yield Static(
+                    "Craft your development workflow with a focused AI copilot.",
+                    id="brand_caption",
+                )
+
+            with VerticalScroll(id="interaction_column"):
+                with Container(id="file_container"):
+                    yield Input(
+                        placeholder="Enter file path for context (optional)...",
+                        id="file_path_input",
+                    )
+                    yield Button("Browse", id="browse_button")
+
+                yield Input(placeholder="Describe what you need...", id="prompt_input")
+                yield Markdown("AI response will appear here...", id="response_display")
+
+                with Container(id="action_bar"):
+                    yield Button("Reset", id="reset_screen")
+                    yield Button("Apply Changes", id="apply_button", variant="primary")
+
+                yield LoadingIndicator(id="loading_indicator")
+
+                with Container(id="button_container"):
+                    yield Static("Apply these changes?", id="dialog_text")
+                    yield Button("Yes", id="yes", variant="success")
+                    yield Button("No", id="no", variant="error")
+
+        yield Footer(id="app_footer")
 
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
-        self.register_theme(arctic_theme) 
-        self.register_theme(modern_theme)  
+        self.register_theme(arctic_theme)
+        self.register_theme(modern_theme)
+        self.register_theme(nocturne_theme)
 
-        # Set the app's theme
-        self.theme = "arctic" 
-        self.theme = "modern_dark_neon" 
+        self.theme = "nocturne"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
@@ -64,7 +73,18 @@ class NeuroApp(App):
         if event.button.id == "browse_button":
             self.push_screen(FileOpen(), self.on_file_open_selected)
         elif event.button.id == "apply_button":
-            self.query_one("#button_container").styles.display = "block"
+            self.query_one("#button_container").styles.display = "grid"
+        elif event.button.id == "reset_screen":
+            self.query_one("#file_path_input", Input).value = ""
+            self.query_one("#prompt_input", Input).value = ""
+            self.query_one("#response_display", Markdown).update(
+                "AI response will appear here..."
+            )
+            self._proposed_content = ""
+            self.query_one("#apply_button").styles.display = "none"
+            self.query_one("#button_container").styles.display = "none"
+            self.query_one("#background_image").styles.display = "block"
+            self.query_one("#loading_indicator").styles.display = "none"
 
         # ---- When confirmed Yes on dialog box ---- #
         elif event.button.id == "yes":
@@ -76,6 +96,7 @@ class NeuroApp(App):
                     self.query_one("#response_display").update(f"Changes applied to {file_path} successfully.")
                     self._proposed_content = ""
                     self.query_one("#apply_button").styles.display = "none"
+                    self.query_one("#button_container").styles.display = "none"
                 except Exception as e:
                     self.query_one("#response_display").update(f"Error applying changes: {e}")
         

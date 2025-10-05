@@ -1,85 +1,137 @@
-/* --- Global Layout --- */
+/* Global layout */
 Screen {
-    background: #111827;  /* deep slate gray */
-    color: #E5E7EB;       /* light neutral text */
-    padding: 1;
-
+    background: #060B16;
+    color: #E2E8F0;
+    padding: 2 3;
 }
 
+#app_header, #app_footer {
+    background: #050814;
+    color: #7486A7;
+    border: none;
+    padding: 1 0;
+}
 
-#background-image {
+#app_shell {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 38% 1fr;
+    grid-gutter: 3;
+    height: 100%;
+}
+
+#brand_column {
+    background: #0B1324;
+    border: solid #15213B;
+    padding: 2 3;
+    height: 100%;
     align: center top;
-
+    gap: 2;
 }
 
-/* --- Inputs --- */
+#background_image {
+    color: #8BA8FF;
+    text-style: bold;
+    padding-bottom: 1;
+}
+
+#brand_caption {
+    color: #94A6C7;
+    text-style: italic;
+}
+
+#interaction_column {
+    background: #0B1324;
+    border: solid #15213B;
+    padding: 2 3;
+    height: 100%;
+    gap: 2;
+}
+
+#file_container {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 3fr 1fr;
+    grid-gutter: 1;
+    margin-bottom: 1;
+}
+
 Input {
-    background: #111827;   /* same as Screen for blending */
-    color: #E5E7EB;
-    border: solid #1F2937; /* very subtle outline */
+    background: #111C33;
+    color: #E2E8F0;
+    border: solid #1C2C4B;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #2563EB; /* refined blue highlight */
+    border: solid #5B8DEF;
+    background: #131F3A;
     color: #FFFFFF;
-    background: #111827;   /* no gray shading */
 }
 
-/* --- Buttons --- */
+#prompt_input {
+    margin-bottom: 1;
+}
+
+Markdown {
+    background: #111C33;
+    border: solid #1C2C4B;
+    padding: 1 2;
+    color: #D5DBE7;
+    height: 1fr;
+}
+
 Button {
-    background: #111827;   /* blend with background */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline */
+    background: #111C33;
+    color: #E2E8F0;
+    border: solid #1C2C4B;
     text-style: bold;
     padding: 0 2;
 }
 
 Button:hover {
-    background: #1F2937;   /* faint contrast on hover */
+    background: #1A2A49;
     color: #FFFFFF;
 }
 
-/* --- Response Display --- */
-#response_display {
-    background: #111827;   /* same as Screen */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline for separation */
-    padding: 1;
+#apply_button {
+    background: #1B2F57;
+    color: #E9EEFF;
+    border: solid #2E4A83;
 }
 
-/* --- Header & Footer --- */
-Header, Footer {
-    background: #111827;   /* unified with main background */
-    color: #9CA3AF;        /* muted text */
-    border-top: solid #1F2937; /* faint divider line */
+#apply_button:hover {
+    background: #2D4788;
+    border: solid #3F5EA6;
 }
 
-/* --- File Input Container --- */
-#file-container { height: auto; }
-#file_path_input { width: 1fr; }
-#browse_button {
-    width: auto;
-    margin-left: 1;
-    background: #111827;
-    border: solid #1F2937;
+#action_bar {
+    layout: horizontal;
+    gap: 1;
+    align: right middle;
 }
 
-/* --- Modal Dialog --- */
+#reset_screen {
+    color: #9AA7C3;
+    border: solid #1C2C4B;
+}
+
+#loading_indicator {
+    align: center;
+    height: auto;
+    color: #5B8DEF;
+}
+
 #button_container {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1;
     align: center middle;
-
     width: 60%;
     max-width: 50;
-    height: auto;
-
-    background: #111827;  /* blend into Screen */
-    border: solid #1F2937; /* subtle outline */
-    padding: 1 2;
-
+    background: #101B32;
+    border: solid #213561;
+    padding: 2 3;
     layer: overlay;
 }
 
@@ -87,5 +139,26 @@ Header, Footer {
     column-span: 2;
     width: 100%;
     text-align: center;
+    color: #C9D3E6;
     padding-bottom: 1;
+}
+
+Button#yes {
+    background: #1D3D3A;
+    border: solid #2F5F58;
+    color: #D8F3EA;
+}
+
+Button#yes:hover {
+    background: #2E5E58;
+}
+
+Button#no {
+    background: #3F2530;
+    border: solid #613845;
+    color: #F3D9E0;
+}
+
+Button#no:hover {
+    background: #613845;
 }
