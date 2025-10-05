@@ -25,7 +25,7 @@ class NeuroApp(App):
         yield Header(show_clock=False, id="app_header")
 
         with Container(id="app_shell"):
-            with Container(id="brand_column"):
+            with VerticalScroll(id="brand_column"):
                 yield Static(BACKGROUND_ART, id="background_image")
                 yield Static(
                     "Craft your development workflow with a focused AI copilot.",

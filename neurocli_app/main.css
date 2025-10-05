@@ -15,7 +15,7 @@ Screen {
 #app_shell {
     layout: grid;
     grid-size: 2;
-    grid-columns: 38% 1fr;
+    grid-columns: 5fr 7fr;
     grid-gutter: 3;
     height: 100%;
 }
@@ -26,17 +26,21 @@ Screen {
     padding: 2 3;
     height: 100%;
     align: center top;
+    content-align: center top;
 }
 
 #background_image {
     color: #8BA8FF;
     text-style: bold;
     padding-bottom: 1;
+    text-align: center;
 }
 
 #brand_caption {
     color: #94A6C7;
     text-style: italic;
+    text-align: center;
+    padding-top: 1;
 }
 
 #interaction_column {
@@ -44,6 +48,20 @@ Screen {
     border: solid #15213B;
     padding: 2 3;
     height: 100%;
+}
+
+Screen (width < 120) #app_shell {
+    grid-size: 1;
+    grid-columns: 1fr;
+}
+
+Screen (width < 120) #brand_column {
+    height: auto;
+    margin-bottom: 2;
+}
+
+Screen (width < 120) #interaction_column {
+    height: 1fr;
 }
 
 #file_container {
