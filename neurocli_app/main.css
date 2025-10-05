@@ -26,7 +26,6 @@ Screen {
     padding: 2 3;
     height: 100%;
     align: center top;
-    gap: 2;
 }
 
 #background_image {
@@ -45,7 +44,6 @@ Screen {
     border: solid #15213B;
     padding: 2 3;
     height: 100%;
-    gap: 2;
 }
 
 #file_container {
@@ -107,17 +105,17 @@ Button:hover {
 
 #action_bar {
     layout: horizontal;
-    gap: 1;
     align: right middle;
 }
 
 #reset_screen {
     color: #9AA7C3;
     border: solid #1C2C4B;
+    margin-right: 1;
 }
 
 #loading_indicator {
-    align: center;
+    align: center middle;
     height: auto;
     color: #5B8DEF;
 }
