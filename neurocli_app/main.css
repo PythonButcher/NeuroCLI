@@ -1,86 +1,79 @@
-/* Global layout */
 Screen {
-    background: #060B16;
-    color: #E2E8F0;
+    background: #050912;
+    color: #E6ECFF;
     padding: 2 3;
 }
 
 #app_header, #app_footer {
-    background: #050814;
-    color: #7486A7;
+    background: #04070F;
+    color: #6F7D9B;
     border: none;
     padding: 1 0;
 }
 
 #app_shell {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 5fr 7fr;
-    grid-gutter: 3;
-    height: 100%;
-}
-
-#brand_column {
-    background: #0B1324;
-    border: solid #15213B;
-    padding: 2 3;
-    height: 100%;
+    layout: vertical;
     align: center top;
-    content-align: center top;
-}
-
-#background_image {
-    color: #8BA8FF;
-    text-style: bold;
-    padding-bottom: 1;
-    text-align: center;
-}
-
-#brand_caption {
-    color: #94A6C7;
-    text-style: italic;
-    text-align: center;
-    padding-top: 1;
-}
-
-#interaction_column {
-    background: #0B1324;
-    border: solid #15213B;
-    padding: 2 3;
-    height: 100%;
-}
-#app_shell.narrow {
-    grid-size: 1;
-    grid-columns: 1fr;
-}
-
-#brand_column.narrow {
-    height: auto;
-    margin-bottom: 2;
-}
-
-#interaction_column.narrow {
     height: 1fr;
+    width: 100%;
+}
+
+#header_banner {
+    width: 100%;
+    max-width: 80;
+    background: #0F1A2B;
+    border: solid #1F2D46;
+    padding: 1 2;
+    margin-bottom: 2;
+    content-align: center middle;
+    align: center middle;
+}
+
+#app_title {
+    text-style: bold;
+    color: #00E5FF;
+    padding-bottom: 0;
+}
+
+#app_tagline {
+    color: #A3B4D9;
+    text-style: italic;
+}
+
+#main_content {
+    width: 100%;
+    height: 1fr;
+    align: center top;
+}
+
+#main_panel {
+    layout: vertical;
+    width: 100%;
+    max-width: 80;
+    background: #101B32;
+    border: solid #1F2D46;
+    padding: 2 3;
+    margin-bottom: 2;
 }
 
 #file_container {
     layout: grid;
     grid-size: 2;
-    grid-columns: 3fr 1fr;
+    grid-columns: 1fr 12;
     grid-gutter: 1;
     margin-bottom: 1;
 }
 
 Input {
-    background: #111C33;
-    color: #E2E8F0;
-    border: solid #1C2C4B;
+    background: #132544;
+    color: #E6ECFF;
+    border: solid #1F2D46;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #5B8DEF;
-    background: #131F3A;
+    border: solid #00E5FF;
+    background: #173354;
     color: #FFFFFF;
 }
 
@@ -89,63 +82,77 @@ Input:focus {
 }
 
 Markdown {
-    background: #111C33;
-    border: solid #1C2C4B;
+    background: #111F3A;
+    border: round #1F2D46;
     padding: 1 2;
-    color: #D5DBE7;
-    height: 1fr;
+    color: #D6E5FF;
+    max-height: 24;
+    overflow-y: auto;
+    margin-bottom: 1;
 }
 
 Button {
-    background: #111C33;
-    color: #E2E8F0;
-    border: solid #1C2C4B;
+    background: #152742;
+    color: #E6ECFF;
+    border: solid #1F3559;
     text-style: bold;
     padding: 0 2;
 }
 
 Button:hover {
-    background: #1A2A49;
+    background: #1D3657;
+    border: solid #2A4C77;
     color: #FFFFFF;
 }
 
-#apply_button {
-    background: #1B2F57;
-    color: #E9EEFF;
-    border: solid #2E4A83;
-}
-
-#apply_button:hover {
-    background: #2D4788;
-    border: solid #3F5EA6;
+Button:focus {
+    border: solid #00E5FF;
 }
 
 #action_bar {
-    layout: horizontal;
-    align: right middle;
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 1fr 1fr;
+    margin-bottom: 1;
+}
+
+#action_bar Button {
+    width: 100%;
 }
 
 #reset_screen {
-    color: #9AA7C3;
-    border: solid #1C2C4B;
+    color: #9FB0D1;
     margin-right: 1;
+}
+
+#apply_button {
+    background: #1E3B64;
+    border: solid #27538C;
+    color: #F2F6FF;
+}
+
+#apply_button:hover {
+    background: #284C80;
+    border: solid #3564AB;
 }
 
 #loading_indicator {
     align: center middle;
     height: auto;
-    color: #5B8DEF;
+    color: #00E5FF;
+    margin-bottom: 1;
 }
 
 #button_container {
     layout: grid;
     grid-size: 2;
+    grid-columns: 1fr 1fr;
     grid-gutter: 1;
     align: center middle;
     width: 60%;
     max-width: 50;
-    background: #101B32;
-    border: solid #213561;
+    background: #142748;
+    border: solid #264472;
     padding: 2 3;
     layer: overlay;
 }
@@ -154,26 +161,26 @@ Button:hover {
     column-span: 2;
     width: 100%;
     text-align: center;
-    color: #C9D3E6;
+    color: #C9D9F4;
     padding-bottom: 1;
 }
 
 Button#yes {
-    background: #1D3D3A;
-    border: solid #2F5F58;
-    color: #D8F3EA;
+    background: #17443F;
+    border: solid #246C63;
+    color: #D5F8F0;
 }
 
 Button#yes:hover {
-    background: #2E5E58;
+    background: #206057;
 }
 
 Button#no {
-    background: #3F2530;
-    border: solid #613845;
-    color: #F3D9E0;
+    background: #3F1F33;
+    border: solid #5B3148;
+    color: #FFD9E8;
 }
 
 Button#no:hover {
-    background: #613845;
+    background: #5B3148;
 }

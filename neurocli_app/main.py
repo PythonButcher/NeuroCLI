@@ -1,11 +1,9 @@
-from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme, nocturne_theme
-from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -25,34 +23,45 @@ class NeuroApp(App):
         yield Header(show_clock=False, id="app_header")
 
         with Container(id="app_shell"):
-            with VerticalScroll(id="brand_column"):
-                yield Static(BACKGROUND_ART, id="background_image")
+            with Container(id="header_banner"):
+                yield Static("NeuroCLI", id="app_title")
                 yield Static(
-                    "Craft your development workflow with a focused AI copilot.",
-                    id="brand_caption",
+                    "Focused AI iteration for your codebase.",
+                    id="app_tagline",
                 )
 
-            with VerticalScroll(id="interaction_column"):
-                with Container(id="file_container"):
+            with VerticalScroll(id="main_content"):
+                with Container(id="main_panel"):
+                    with Container(id="file_container"):
+                        yield Input(
+                            placeholder="Enter file path for context (optional)...",
+                            id="file_path_input",
+                        )
+                        yield Button("Browse", id="browse_button")
+
                     yield Input(
-                        placeholder="Enter file path for context (optional)...",
-                        id="file_path_input",
+                        placeholder="Describe what you need...",
+                        id="prompt_input",
                     )
-                    yield Button("Browse", id="browse_button")
+                    yield Markdown(
+                        "AI response will appear here...",
+                        id="response_display",
+                    )
 
-                yield Input(placeholder="Describe what you need...", id="prompt_input")
-                yield Markdown("AI response will appear here...", id="response_display")
+                    with Container(id="action_bar"):
+                        yield Button("Reset", id="reset_screen")
+                        yield Button(
+                            "Apply Changes",
+                            id="apply_button",
+                            variant="primary",
+                        )
 
-                with Container(id="action_bar"):
-                    yield Button("Reset", id="reset_screen")
-                    yield Button("Apply Changes", id="apply_button", variant="primary")
+                    yield LoadingIndicator(id="loading_indicator")
 
-                yield LoadingIndicator(id="loading_indicator")
-
-                with Container(id="button_container"):
-                    yield Static("Apply these changes?", id="dialog_text")
-                    yield Button("Yes", id="yes", variant="success")
-                    yield Button("No", id="no", variant="error")
+                    with Container(id="button_container"):
+                        yield Static("Apply these changes?", id="dialog_text")
+                        yield Button("Yes", id="yes", variant="success")
+                        yield Button("No", id="no", variant="error")
 
         yield Footer(id="app_footer")
 
@@ -63,30 +72,10 @@ class NeuroApp(App):
         self.register_theme(modern_theme)
         self.register_theme(nocturne_theme)
 
-        self.theme = "nocturne"
+        self.theme = "modern_dark_neon"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
-        self.call_after_refresh(lambda: self._apply_responsive_layout(self.size.width))
-
-    def on_resize(self, event: events.Resize) -> None:
-        """Adjust the layout whenever the terminal is resized."""
-        self._apply_responsive_layout(event.size.width)
-
-    def _apply_responsive_layout(self, width: int) -> None:
-        """Toggle responsive styling classes based on terminal width."""
-        app_shell = self.query_one("#app_shell")
-        brand_column = self.query_one("#brand_column")
-        interaction_column = self.query_one("#interaction_column")
-
-        if width < 120:
-            app_shell.add_class("narrow")
-            brand_column.add_class("narrow")
-            interaction_column.add_class("narrow")
-        else:
-            app_shell.remove_class("narrow")
-            brand_column.remove_class("narrow")
-            interaction_column.remove_class("narrow")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the press of the 'Browse...' button."""
@@ -103,7 +92,6 @@ class NeuroApp(App):
             self._proposed_content = ""
             self.query_one("#apply_button").styles.display = "none"
             self.query_one("#button_container").styles.display = "none"
-            self.query_one("#background_image").styles.display = "block"
             self.query_one("#loading_indicator").styles.display = "none"
 
         # ---- When confirmed Yes on dialog box ---- #
@@ -138,9 +126,6 @@ class NeuroApp(App):
             file_path_input = self.query_one("#file_path_input", Input)
             file_path = file_path_input.value
 
-            # --- 4. HIDE THE BACKGROUND IMAGE ---
-            self.query_one("#background_image").styles.display = "none"
-
             self.query_one("#loading_indicator").styles.display = "block"
             self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
             message.input.value = ""
@@ -167,8 +152,6 @@ class NeuroApp(App):
             error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
             markdown_display.update(error_message)
             
-        # --- 4. SHOW THE BACKGROUND IMAGE AGAIN ---
-        self.query_one("#background_image").styles.display = "block"
         loading_indicator.styles.display = "none"
 
 def main():
