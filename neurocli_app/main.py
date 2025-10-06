@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll, Container
+from textual.containers import Container
 from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
@@ -14,7 +14,7 @@ class NeuroApp(App):
     """The main application for NeuroCLI."""
 
     BINDINGS = [("ctrl+q", "quit", "Quit")]
-    CSS_PATH = "main.css"
+    CSS_PATH = "modern.css"
 
     _proposed_content: str = ""
 
@@ -22,46 +22,45 @@ class NeuroApp(App):
         """Create child widgets for the app."""
         yield Header(show_clock=False, id="app_header")
 
-        with Container(id="app_shell"):
-            with Container(id="header_banner"):
+        with Container(id="app"):
+            with Container(id="brand_header"):
                 yield Static("NeuroCLI", id="app_title")
                 yield Static(
                     "Focused AI iteration for your codebase.",
                     id="app_tagline",
                 )
 
-            with VerticalScroll(id="main_content"):
-                with Container(id="main_panel"):
-                    with Container(id="file_container"):
-                        yield Input(
-                            placeholder="Enter file path for context (optional)...",
-                            id="file_path_input",
-                        )
-                        yield Button("Browse", id="browse_button")
-
+            with Container(id="shell"):
+                with Container(id="file_row"):
                     yield Input(
-                        placeholder="Describe what you need...",
-                        id="prompt_input",
+                        placeholder="Enter file path for context (optional)...",
+                        id="file_path_input",
                     )
-                    yield Markdown(
-                        "AI response will appear here...",
-                        id="response_display",
+                    yield Button("Browse", id="browse_button")
+
+                yield Input(
+                    placeholder="Describe what you need...",
+                    id="prompt_input",
+                )
+                yield Markdown(
+                    "AI response will appear here...",
+                    id="response_display",
+                )
+
+                with Container(id="actions_row"):
+                    yield Button(
+                        "Apply Changes",
+                        id="apply_button",
+                        variant="primary",
                     )
+                    yield Button("Reset", id="reset_screen")
 
-                    with Container(id="action_bar"):
-                        yield Button("Reset", id="reset_screen")
-                        yield Button(
-                            "Apply Changes",
-                            id="apply_button",
-                            variant="primary",
-                        )
+                yield LoadingIndicator(id="loading_indicator")
 
-                    yield LoadingIndicator(id="loading_indicator")
-
-                    with Container(id="button_container"):
-                        yield Static("Apply these changes?", id="dialog_text")
-                        yield Button("Yes", id="yes", variant="success")
-                        yield Button("No", id="no", variant="error")
+                with Container(id="confirm_dialog"):
+                    yield Static("Apply these changes?", id="dialog_text")
+                    yield Button("Yes", id="yes", variant="success")
+                    yield Button("No", id="no", variant="error")
 
         yield Footer(id="app_footer")
 
@@ -75,14 +74,14 @@ class NeuroApp(App):
         self.theme = "modern_dark_neon"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
-        self.query_one("#button_container").styles.display = "none"
+        self.query_one("#confirm_dialog").styles.display = "none"
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the press of the 'Browse...' button."""
         if event.button.id == "browse_button":
             self.push_screen(FileOpen(), self.on_file_open_selected)
         elif event.button.id == "apply_button":
-            self.query_one("#button_container").styles.display = "grid"
+            self.query_one("#confirm_dialog").styles.display = "grid"
         elif event.button.id == "reset_screen":
             self.query_one("#file_path_input", Input).value = ""
             self.query_one("#prompt_input", Input).value = ""
@@ -91,7 +90,7 @@ class NeuroApp(App):
             )
             self._proposed_content = ""
             self.query_one("#apply_button").styles.display = "none"
-            self.query_one("#button_container").styles.display = "none"
+            self.query_one("#confirm_dialog").styles.display = "none"
             self.query_one("#loading_indicator").styles.display = "none"
 
         # ---- When confirmed Yes on dialog box ---- #
@@ -104,14 +103,14 @@ class NeuroApp(App):
                     self.query_one("#response_display").update(f"Changes applied to {file_path} successfully.")
                     self._proposed_content = ""
                     self.query_one("#apply_button").styles.display = "none"
-                    self.query_one("#button_container").styles.display = "none"
+                    self.query_one("#confirm_dialog").styles.display = "none"
                 except Exception as e:
                     self.query_one("#response_display").update(f"Error applying changes: {e}")
         
         # ---- When confirmed No on dialog box ---- #
         elif event.button.id == "no":
             # Just hide the dialog
-            self.query_one("#button_container").styles.display = "none"
+            self.query_one("#confirm_dialog").styles.display = "none"
 
 
     def on_file_open_selected(self, path: str) -> None:
