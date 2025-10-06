@@ -29,14 +29,17 @@ Screen {
     align: center top;
 }
 
-#app_title {
+#app_logo {
     text-style: bold;
     color: #00E5FF;
+    text-align: center;
     padding-bottom: 0;
 }
 
 #app_tagline {
     color: #FF77A8;
+    text-align: center;
+    padding-top: 0;
 }
 
 #shell {

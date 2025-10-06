@@ -4,6 +4,7 @@ from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndi
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme, nocturne_theme
+from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -24,7 +25,7 @@ class NeuroApp(App):
 
         with Container(id="app"):
             with Container(id="brand_header"):
-                yield Static("NeuroCLI", id="app_title")
+                yield Static(BACKGROUND_ART, id="app_logo")
                 yield Static(
                     "Focused AI iteration for your codebase.",
                     id="app_tagline",
