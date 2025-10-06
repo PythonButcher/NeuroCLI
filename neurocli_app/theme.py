@@ -22,22 +22,22 @@ arctic_theme = Theme(
 
 
 modern_theme = Theme(
-    name="modern_dark_neon",
-    primary="#00E5FF",        # Neon cyan (main highlight)
-    secondary="#FF4081",      # Neon magenta (secondary / hover)
-    accent="#00FF94",         # Neon green accent (rare use, "pop")
-    foreground="#ECEFF4",     # Soft white text (not blinding)
-    background="#0D1117",     # Deep charcoal (GitHub dark / modern terminals)
-    success="#00FF94",        # Neon green success
-    warning="#FFD54F",        # Warm yellow (modern, not eye-burn)
-    error="#FF1744",          # Bold crimson red (cleaner than NES)
-    surface="#161B22",        # Slightly lighter panel background
-    panel="#1E242C",          # Even lighter surface for widgets
+    name="modern_dark_neutral",
+    primary="#5A8DEE",        # Refined cobalt highlight
+    secondary="#7F8EA3",      # Muted slate accent
+    accent="#E4A788",         # Warm neutral accent
+    foreground="#E6ECF4",     # Gentle off-white for text
+    background="#0F141C",     # Deep charcoal backdrop
+    success="#58C4A3",        # Calming teal success
+    warning="#E6B673",        # Soft amber warning
+    error="#D96C6C",          # Muted crimson error
+    surface="#171D26",        # Elevated surface tone
+    panel="#1E2430",          # Panel background
     dark=True,
     variables={
         "block-cursor-text-style": "reverse",
-        "footer-key-foreground": "#00E5FF",  # footer hint neon
-        "input-selection-background": "#00E5FF 40%",  # cyan selection glow
+        "footer-key-foreground": "#5A8DEE",
+        "input-selection-background": "#5A8DEE 35%",
     },
 )
 

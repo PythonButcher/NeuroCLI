@@ -1,11 +1,11 @@
 Screen {
-    background: #0D1117;
-    color: #ECEFF4;
+    background: #0F141C;
+    color: #E6ECF4;
 }
 
 #app_header, #app_footer {
-    background: #10141C;
-    color: #9DA8C3;
+    background: #131923;
+    color: #A8B3C7;
     border: none;
 }
 
@@ -20,36 +20,43 @@ Screen {
 #brand_header {
     layout: vertical;
     width: 100%;
-    max-width: 120;
-    margin: 0 0 1 0;
-    padding: 1 2;
-    border: solid #1F2735;
-    background: #161B22;
+    max-width: 110;
+    margin-bottom: 1;
+    padding: 1;
+    border: solid #252D3A;
+    background: #171D26;
     content-align: center middle;
     align: center top;
 }
 
+#brand_header > * {
+    margin-bottom: 1;
+}
+
+#brand_header > *:last-child {
+    margin-bottom: 0;
+}
+
 #app_logo {
     text-style: bold;
-    color: #00E5FF;
+    color: #5A8DEE;
     text-align: center;
-    padding-bottom: 0;
+    padding: 0;
 }
 
 #app_tagline {
-    color: #FF77A8;
+    color: #9DA8BC;
     text-align: center;
-    padding-top: 0;
+    padding: 0;
 }
 
 #shell {
     layout: vertical;
     width: 100%;
-    max-width: 120;
-    margin: 0 0 2 0;
+    max-width: 110;
     padding: 1 2;
-    border: round #1F2735;
-    background: #111722;
+    border: round #2A3342;
+    background: #1B212C;
     align: center top;
 }
 
@@ -70,15 +77,15 @@ Screen {
 }
 
 Input {
-    background: #161B22;
-    color: #ECEFF4;
-    border: solid #00E5FF;
+    background: #1E2430;
+    color: #E6ECF4;
+    border: solid #3A4A63;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #FF4081;
-    background: #1F2735;
+    border: solid #5A8DEE;
+    background: #222A38;
     color: #FFFFFF;
 }
 
@@ -100,45 +107,45 @@ Input:focus {
 }
 
 Button {
-    background: #1E242C;
-    color: #ECEFF4;
-    border: solid #00E5FF;
+    background: #232A36;
+    color: #E6ECF4;
+    border: solid #3A4A63;
     text-style: bold;
 }
 
 Button:hover {
-    background: #00E5FF;
-    color: #0D1117;
+    background: #5A8DEE;
+    color: #0F141C;
 }
 
 Button:focus {
-    border: solid #FF4081;
+    border: solid #5A8DEE;
 }
 
 #apply_button {
-    background: #142D3D;
-    border: solid #00E5FF;
+    background: #202E45;
+    border: solid #5A8DEE;
     display: none;
 }
 
 #apply_button:hover {
-    background: #00E5FF;
-    color: #0D1117;
+    background: #5A8DEE;
+    color: #0F141C;
 }
 
 #reset_screen {
-    border: solid #FF4081;
+    border: solid #7F8EA3;
 }
 
 #reset_screen:hover {
-    background: #FF4081;
-    color: #0D1117;
+    background: #7F8EA3;
+    color: #0F141C;
 }
 
 #response_display {
-    background: #161B22;
-    color: #ECEFF4;
-    border: round #00E5FF;
+    background: #1E2430;
+    color: #E6ECF4;
+    border: round #3A4A63;
     padding: 1;
     max-height: 24;
     overflow-y: auto;
@@ -146,7 +153,7 @@ Button:focus {
 
 #loading_indicator {
     align: center middle;
-    color: #00E5FF;
+    color: #5A8DEE;
     height: auto;
     display: none;
 }
@@ -160,8 +167,8 @@ Button:focus {
     width: 60%;
     max-width: 60;
     padding: 2;
-    border: round #1F2735;
-    background: #161B22;
+    border: round #2A3342;
+    background: #1E2430;
     layer: overlay;
     display: none;
 }
@@ -169,30 +176,30 @@ Button:focus {
 #dialog_text {
     column-span: 2;
     text-align: center;
-    color: #ECEFF4;
+    color: #E6ECF4;
     padding-bottom: 1;
 }
 
 Button#yes {
-    background: #103F3C;
-    border: solid #00E5FF;
-    color: #D5F8F0;
+    background: #1F3A36;
+    border: solid #58C4A3;
+    color: #D3F4EA;
 }
 
 Button#yes:hover {
-    background: #00C8B3;
-    color: #0D1117;
+    background: #58C4A3;
+    color: #0F141C;
 }
 
 Button#no {
-    background: #402036;
-    border: solid #FF4081;
-    color: #FFD9E8;
+    background: #3A2428;
+    border: solid #D96C6C;
+    color: #F3D8D8;
 }
 
 Button#no:hover {
-    background: #FF4081;
-    color: #0D1117;
+    background: #D96C6C;
+    color: #0F141C;
 }
 
 Markdown {
