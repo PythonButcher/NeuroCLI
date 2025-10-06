@@ -32,7 +32,6 @@ Screen {
     max-width: 120;
     padding: 1;
     border: solid #30363D;
-    border-radius: 2;
     background: #1C2128;
     align: center top;
     content-align: center middle;
@@ -63,7 +62,6 @@ Screen {
     max-width: 120;
     padding: 1 2;
     border: solid #30363D;
-    border-radius: 2;
     background: #2D333B;
     align: center top;
 }
@@ -88,7 +86,6 @@ Input {
     background: #2D333B;
     color: #E6EDF3;
     border: solid #30363D;
-    border-radius: 1;
     padding: 0 1;
 }
 
@@ -118,7 +115,6 @@ Button {
     background: #1C2128;
     color: #E6EDF3;
     border: solid #30363D;
-    border-radius: 1;
     text-style: bold;
 }
 
@@ -153,7 +149,6 @@ Button:focus {
     background: #2D333B;
     color: #E6EDF3;
     border: solid #30363D;
-    border-radius: 2;
     padding: 1;
     max-height: 24;
     overflow-y: auto;
@@ -176,7 +171,6 @@ Button:focus {
     max-width: 60;
     padding: 2;
     border: solid #30363D;
-    border-radius: 2;
     background: #2D333B;
     layer: overlay;
     display: none;
