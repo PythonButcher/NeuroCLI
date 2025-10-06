@@ -72,7 +72,7 @@ class NeuroApp(App):
         self.register_theme(modern_theme)
         self.register_theme(nocturne_theme)
 
-        self.theme = "modern_dark_neutral"
+        self.theme = "modern_dark_pro"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#confirm_dialog").styles.display = "none"

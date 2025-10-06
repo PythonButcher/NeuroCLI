@@ -22,22 +22,22 @@ arctic_theme = Theme(
 
 
 modern_theme = Theme(
-    name="modern_dark_neutral",
-    primary="#5A8DEE",        # Refined cobalt highlight
-    secondary="#7F8EA3",      # Muted slate accent
-    accent="#E4A788",         # Warm neutral accent
-    foreground="#E6ECF4",     # Gentle off-white for text
-    background="#0F141C",     # Deep charcoal backdrop
-    success="#58C4A3",        # Calming teal success
-    warning="#E6B673",        # Soft amber warning
-    error="#D96C6C",          # Muted crimson error
-    surface="#171D26",        # Elevated surface tone
-    panel="#1E2430",          # Panel background
+    name="modern_dark_pro",
+    primary="#3B82F6",
+    secondary="#9DA5B4",
+    accent="#3B82F6",
+    foreground="#E6EDF3",
+    background="#0E1117",
+    success="#2EA043",
+    warning="#D29922",
+    error="#F85149",
+    surface="#1C2128",
+    panel="#2D333B",
     dark=True,
     variables={
         "block-cursor-text-style": "reverse",
-        "footer-key-foreground": "#5A8DEE",
-        "input-selection-background": "#5A8DEE 35%",
+        "footer-key-foreground": "#3B82F6",
+        "input-selection-background": "#3B82F6 35%",
     },
 )
 

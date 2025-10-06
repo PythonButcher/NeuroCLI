@@ -1,12 +1,21 @@
 Screen {
-    background: #0F141C;
-    color: #E6ECF4;
+    background: #0E1117;
+    color: #E6EDF3;
 }
 
-#app_header, #app_footer {
-    background: #131923;
-    color: #A8B3C7;
-    border: none;
+#app_header,
+#app_footer {
+    background: #1C2128;
+    color: #9DA5B4;
+    border-top: solid #30363D;
+}
+
+#app_header {
+    border-bottom: solid #30363D;
+}
+
+#app_footer {
+    border-bottom: none;
 }
 
 #app {
@@ -20,13 +29,14 @@ Screen {
 #brand_header {
     layout: vertical;
     width: 100%;
-    max-width: 110;
-    margin-bottom: 1;
+    max-width: 120;
     padding: 1;
-    border: solid #252D3A;
-    background: #171D26;
-    content-align: center middle;
+    border: solid #30363D;
+    border-radius: 2;
+    background: #1C2128;
     align: center top;
+    content-align: center middle;
+    margin-bottom: 1;
 }
 
 #brand_header > * {
@@ -38,25 +48,23 @@ Screen {
 }
 
 #app_logo {
-    text-style: bold;
-    color: #5A8DEE;
     text-align: center;
-    padding: 0;
+    color: #E6EDF3;
 }
 
 #app_tagline {
-    color: #9DA8BC;
+    color: #9DA5B4;
     text-align: center;
-    padding: 0;
 }
 
 #shell {
     layout: vertical;
     width: 100%;
-    max-width: 110;
+    max-width: 120;
     padding: 1 2;
-    border: round #2A3342;
-    background: #1B212C;
+    border: solid #30363D;
+    border-radius: 2;
+    background: #2D333B;
     align: center top;
 }
 
@@ -77,16 +85,16 @@ Screen {
 }
 
 Input {
-    background: #1E2430;
-    color: #E6ECF4;
-    border: solid #3A4A63;
+    background: #2D333B;
+    color: #E6EDF3;
+    border: solid #30363D;
+    border-radius: 1;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #5A8DEE;
-    background: #222A38;
-    color: #FFFFFF;
+    border: solid #3B82F6;
+    background: #1C2128;
 }
 
 #prompt_input {
@@ -107,45 +115,45 @@ Input:focus {
 }
 
 Button {
-    background: #232A36;
-    color: #E6ECF4;
-    border: solid #3A4A63;
+    background: #1C2128;
+    color: #E6EDF3;
+    border: solid #30363D;
+    border-radius: 1;
     text-style: bold;
 }
 
 Button:hover {
-    background: #5A8DEE;
-    color: #0F141C;
+    background: #2C313A;
+    border: solid #3B82F6;
 }
 
 Button:focus {
-    border: solid #5A8DEE;
+    border: solid #3B82F6;
 }
 
 #apply_button {
-    background: #202E45;
-    border: solid #5A8DEE;
+    border: solid #3B82F6;
     display: none;
 }
 
 #apply_button:hover {
-    background: #5A8DEE;
-    color: #0F141C;
+    background: #3B82F6;
+    color: #0E1117;
 }
 
 #reset_screen {
-    border: solid #7F8EA3;
+    border: solid #30363D;
 }
 
 #reset_screen:hover {
-    background: #7F8EA3;
-    color: #0F141C;
+    background: #2C313A;
 }
 
 #response_display {
-    background: #1E2430;
-    color: #E6ECF4;
-    border: round #3A4A63;
+    background: #2D333B;
+    color: #E6EDF3;
+    border: solid #30363D;
+    border-radius: 2;
     padding: 1;
     max-height: 24;
     overflow-y: auto;
@@ -153,7 +161,7 @@ Button:focus {
 
 #loading_indicator {
     align: center middle;
-    color: #5A8DEE;
+    color: #3B82F6;
     height: auto;
     display: none;
 }
@@ -167,8 +175,9 @@ Button:focus {
     width: 60%;
     max-width: 60;
     padding: 2;
-    border: round #2A3342;
-    background: #1E2430;
+    border: solid #30363D;
+    border-radius: 2;
+    background: #2D333B;
     layer: overlay;
     display: none;
 }
@@ -176,30 +185,26 @@ Button:focus {
 #dialog_text {
     column-span: 2;
     text-align: center;
-    color: #E6ECF4;
-    padding-bottom: 1;
+    color: #E6EDF3;
+    margin-bottom: 1;
 }
 
 Button#yes {
-    background: #1F3A36;
-    border: solid #58C4A3;
-    color: #D3F4EA;
+    border: solid #2EA043;
 }
 
 Button#yes:hover {
-    background: #58C4A3;
-    color: #0F141C;
+    background: #2EA043;
+    color: #0E1117;
 }
 
 Button#no {
-    background: #3A2428;
-    border: solid #D96C6C;
-    color: #F3D8D8;
+    border: solid #F85149;
 }
 
 Button#no:hover {
-    background: #D96C6C;
-    color: #0F141C;
+    background: #F85149;
+    color: #0E1117;
 }
 
 Markdown {
