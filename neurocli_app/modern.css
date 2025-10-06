@@ -14,18 +14,19 @@ Screen {
     width: 100%;
     height: 100%;
     padding: 1 2;
-    align: center top;
+    content-align: center top;
 }
 
 #brand_header {
     layout: vertical;
     width: 100%;
     max-width: 120;
-    margin: 0 auto 1 auto;
+    margin: 0 0 1 0;
     padding: 1 2;
     border: solid #1F2735;
     background: #161B22;
     content-align: center middle;
+    align: center top;
 }
 
 #app_title {
@@ -42,11 +43,11 @@ Screen {
     layout: vertical;
     width: 100%;
     max-width: 120;
-    margin: 0 auto;
+    margin: 0 0 2 0;
     padding: 1 2;
     border: round #1F2735;
     background: #111722;
-    shadow: 0 0 6 #05070C;
+    align: center top;
 }
 
 #shell > * {
@@ -114,6 +115,7 @@ Button:focus {
 #apply_button {
     background: #142D3D;
     border: solid #00E5FF;
+    display: none;
 }
 
 #apply_button:hover {
@@ -143,6 +145,7 @@ Button:focus {
     align: center middle;
     color: #00E5FF;
     height: auto;
+    display: none;
 }
 
 #confirm_dialog {
@@ -153,11 +156,11 @@ Button:focus {
     align: center middle;
     width: 60%;
     max-width: 60;
-    margin: 0 auto;
     padding: 2;
     border: round #1F2735;
     background: #161B22;
     layer: overlay;
+    display: none;
 }
 
 #dialog_text {
