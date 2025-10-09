@@ -11,6 +11,9 @@ from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
 from neurocli_core.code_formatter import format_python_code
 
+import os
+from neurocli_core.file_handler import create_backup
+
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
@@ -71,14 +74,23 @@ class NeuroApp(App):
             file_path = self.query_one("#file_path_input", Input).value
             if file_path and self._proposed_content:
                 try:
+                    # 🔹 2. DEFINE BACKUP DIRECTORY RELATIVE TO THE TARGET FILE
+                    backup_dir = os.path.join(os.path.dirname(file_path), "backups")
+                    # 🔹 Create a backup of the original file before applying changes
+                    create_backup(file_path, backup_dir)
+
+                    # 🔹 Now safely overwrite the file with the AI's new content
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write(self._proposed_content)
+
                     self.query_one("#response_display").update(f"Changes applied to {file_path} successfully.")
                     self._proposed_content = ""
                     self.query_one("#apply_button").styles.display = "none"
+                    self.query_one("#button_container").styles.display = "none"
                 except Exception as e:
                     self.query_one("#response_display").update(f"Error applying changes: {e}")
-        
+
+                
         # ---- When confirmed No on dialog box ---- #
         elif event.button.id == "no":
             # Just hide the dialog
