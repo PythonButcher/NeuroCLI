@@ -1,0 +1,51 @@
+/* Global screen */
+Screen {
+    background: #0D1117;
+    color: #ECEFF4;
+}
+
+/* Input fields */
+Input {
+    background: #161B22;
+    color: #ECEFF4;
+    border: solid #00E5FF;
+    border-title-color: #00E5FF;
+}
+
+Input:focus {
+    border: solid #FF4081; /* magenta highlight */
+    color: #FFFFFF;
+}
+
+/* Markdown / response display */
+#response_display {
+    background: #161B22;
+    color: #ECEFF4;
+    border: solid #00E5FF;
+    border-title-color: #00E5FF;
+    padding: 1;
+}
+
+/* Buttons */
+Button {
+    background: #1E242C;
+    color: #ECEFF4;
+    border: solid #00E5FF;
+    text-style: bold;
+}
+
+Button:hover {
+    background: #00E5FF;
+    color: #0D1117;
+}
+
+/* Footer & header */
+Header, Footer {
+    background: #161B22;
+    color: #ECEFF4;
+    border-top: solid #00E5FF;
+}
+
+Footer {
+    border-top: solid #FF4081;
+}

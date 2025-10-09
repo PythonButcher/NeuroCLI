@@ -1,13 +1,11 @@
-# pyproject.toml
-
 [project]
 name = "neurocli"
 version = "0.1.0"
 description = "An agentic, terminal-based AI assistant for developers."
 dependencies = [
     "textual",
-    "python-dotenv", # Add this line
-    "google-generativeai",
+    "python-dotenv",
+    "openai",                # ✅ OpenAI support
     "textual-fspicker",
     "ruff",
 ]
@@ -17,3 +15,7 @@ neurocli = "neurocli_app.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

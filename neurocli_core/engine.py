@@ -1,21 +1,7 @@
 # neurocli_core/engine.py
 
-import os
-from neurocli_core.llm_api import call_gemini_api
-from neurocli_core.config import get_gemini_api_key
+from neurocli_core.ai_services import get_ai_response as get_ai_response_from_service
 from typing import Optional, Tuple
-
-# NEW: Add the system prompt as a constant
-SYSTEM_PROMPT = """
-You are an expert Python developer integrated into a command-line tool.
-Your task is to act as a coding assistant. When given a prompt and a file's content as context,
-you will return only the complete, modified, and syntactically correct Python code for that file.
-
-**CRITICAL RULES:**
-1.  **DO NOT** use Markdown code blocks (e.g., ```python ... ```) in your response.
-2.  **DO NOT** add any commentary, explanations, or introductory sentences.
-3.  Your output **MUST** be only the raw, valid code for the entire file.
-"""
 
 def get_greeting() -> str:
     """A UI-agnostic function that represents a piece of core business logic.
@@ -25,83 +11,9 @@ def get_greeting() -> str:
     """
     return "Hello from neurocli_core The engine is running."
 
-def create_context_from_path(path: str) -> str:
-    """
-    Creates a context string from a given file or directory path.
-
-    Args:
-        path: The path to the file or directory.
-
-    Returns:
-        The content of the file or a concatenated string of all files in the directory,
-        or an error message if the path is invalid.
-    """
-    if not os.path.exists(path):
-        return f"Error: Path not found at {path}"
-
-    if os.path.isfile(path):
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                file_content = f.read()
-            return f"--- CONTEXT FROM FILE: {path} ---\n\n{file_content}"
-        except Exception as e:
-            return f"Error reading file {path}: {e}"
-
-    if os.path.isdir(path):
-        all_contents = []
-        for root, _, files in os.walk(path):
-            for name in files:
-                filepath = os.path.join(root, name)
-                try:
-                    with open(filepath, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                    all_contents.append(f"--- START OF {filepath} ---\n{content}\n--- END OF {filepath}---\n\n")
-                except Exception:
-                    # Silently ignore files that can't be read
-                    pass
-        return "".join(all_contents)
-
-    return f"Error: Path is not a file or a directory: {path}"
-
 def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, str]:
     """
     Processes a user's prompt and returns an AI-generated response,
     optionally with file content as context.
-
-    Args:
-        prompt: The user's input prompt.
-        file_path: Optional path to a file to include as context.
-
-    Returns:
-        A tuple containing the original file content and the AI response.
     """
-    original_content = ""
-    # MODIFIED: Start with the system prompt
-    context_prompt = SYSTEM_PROMPT
-
-    if file_path:
-        if os.path.isfile(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    original_content = f.read()
-                # MODIFIED: Append the context and prompt to the system prompt
-                context_prompt += f"\n\nCONTEXT:\n---\n{original_content}\n---\n\nUSER PROMPT: {prompt}"
-            except Exception as e:
-                return "", f"Error reading file {file_path}: {e}"
-        else:
-            context_content = create_context_from_path(file_path)
-            if context_content.startswith("Error:"):
-                return "", context_content
-            # MODIFIED: Append the context and prompt to the system prompt
-            context_prompt += f"\n\nCONTEXT:\n---\n{context_content}\n---\n\nUSER PROMPT: {prompt}"
-    else:
-        # MODIFIED: Handle prompts without a file path
-        context_prompt += f"\n\nUSER PROMPT: {prompt}"
-
-
-    api_key = get_gemini_api_key()
-    if not api_key:
-        return "", "Error: Gemini API key not found. Please set it in the .env file."
-
-    response_text = call_gemini_api(api_key, context_prompt)
-    return original_content, response_text
+    return get_ai_response_from_service(prompt, file_path)
