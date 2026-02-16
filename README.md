@@ -29,4 +29,3 @@ pip install -e .
 ### Running the Application
 ```bash
 neurocli
-```
