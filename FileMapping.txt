@@ -1,0 +1,33 @@
+.gitattributes – Normalizes line endings for text files.
+
+.gitignore – Ignores common Python build artifacts, environments, and IDE files.
+
+GEMINI.md – Project conventions and persona guidelines emphasizing core/UI separation.
+
+README.md – High-level overview of NeuroCLI and basic usage notes.
+
+neurocli_app/__init__.py – Marks the Textual UI package (empty).
+
+neurocli_app/main.py – Textual TUI entry point: collects prompt/file path, shows AI output/diffs, and applies changes.
+
+neurocli_app/main_app.py – Placeholder for an alternate/expanded UI (currently empty).
+
+neurocli_core/__init__.py – Marks the core logic package (empty).
+
+neurocli_core/ai_services.py – Builds prompts and calls the OpenAI-backed LLM service.
+
+neurocli_core/code_formatter.py – Formats Python code via Ruff, falling back to original code on error.
+
+neurocli_core/config.py – Loads the OpenAI API key from a project-level .env.
+
+neurocli_core/diff_generator.py – Produces unified diffs between original and proposed content.
+
+neurocli_core/engine.py – Orchestrates context gathering and LLM calls, returning original text and AI response.
+
+neurocli_core/file_handler.py – Placeholder for future file utilities (empty).
+
+neurocli_core/llm_api_openai.py – Wrapper around the OpenAI API.
+
+pyproject.toml – Package metadata, dependencies, and CLI entry-point declaration.
+
+test_refactor.py – Example function (calculate_stats) used for refactoring/testing demonstrations.
