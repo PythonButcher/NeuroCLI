@@ -1,91 +1,165 @@
-/* --- Global Layout --- */
 Screen {
-    background: #111827;  /* deep slate gray */
-    color: #E5E7EB;       /* light neutral text */
+    background: #0a0f17;
+    color: #d8e2f0;
     padding: 1;
-
 }
 
-
-#background-image {
-    align: center top;
-
+Header,
+Footer {
+    background: #0f1724;
+    color: #8ca2bf;
+    border: tall #1f2d40;
 }
 
-/* --- Inputs --- */
+#reset_screen {
+    dock: top;
+    width: 14;
+    margin: 0 0 1 0;
+}
+
+#app_layout {
+    height: 1fr;
+    width: 100%;
+}
+
+#sidebar {
+    width: 28;
+    min-width: 24;
+    max-width: 34;
+    padding: 1;
+    margin-right: 1;
+    background: #0d1522;
+    border: round #26364a;
+}
+
+#background_image {
+    height: auto;
+    width: 100%;
+    content-align: left top;
+    color: #9dd2ff;
+    margin-bottom: 1;
+}
+
+#sidebar_nav {
+    height: 1fr;
+}
+
+.nav_button {
+    width: 100%;
+    margin-bottom: 1;
+    background: #0f1a2a;
+    color: #d8e2f0;
+    border: round #2e435d;
+    text-style: bold;
+}
+
+.nav_button:hover {
+    background: #1a2940;
+    border: round #4a7db2;
+}
+
+#workspace {
+    height: 1fr;
+    width: 1fr;
+}
+
+#workspace_panel {
+    height: auto;
+    min-height: 100%;
+    padding: 1;
+    border: round #26364a;
+    background: #101827;
+}
+
+#file-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+#file_path_input {
+    width: 1fr;
+}
+
+#browse_button {
+    width: 14;
+    min-width: 12;
+    margin-left: 1;
+}
+
+#prompt_input {
+    margin-bottom: 1;
+}
+
 Input {
-    background: #111827;   /* same as Screen for blending */
-    color: #E5E7EB;
-    border: solid #1F2937; /* very subtle outline */
+    background: #0b1320;
+    color: #d8e2f0;
+    border: round #2e435d;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #2563EB; /* refined blue highlight */
-    color: #FFFFFF;
-    background: #111827;   /* no gray shading */
+    border: round #4a7db2;
 }
 
-/* --- Buttons --- */
 Button {
-    background: #111827;   /* blend with background */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline */
+    background: #0f1a2a;
+    color: #d8e2f0;
+    border: round #2e435d;
     text-style: bold;
-    padding: 0 2;
 }
 
 Button:hover {
-    background: #1F2937;   /* faint contrast on hover */
-    color: #FFFFFF;
+    background: #1a2940;
+    border: round #4a7db2;
 }
 
-/* --- Response Display --- */
+#run_row {
+    align-horizontal: center;
+    margin-bottom: 1;
+}
+
+#run_button {
+    width: 18;
+}
+
 #response_display {
-    background: #111827;   /* same as Screen */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline for separation */
+    height: 1fr;
+    min-height: 20;
+    background: #090f19;
+    color: #d8e2f0;
+    border: round #2e435d;
     padding: 1;
 }
 
-/* --- Header & Footer --- */
-Header, Footer {
-    background: #111827;   /* unified with main background */
-    color: #9CA3AF;        /* muted text */
-    border-top: solid #1F2937; /* faint divider line */
+#loading_indicator {
+    margin-top: 1;
+    color: #9dd2ff;
 }
 
-/* --- File Input Container --- */
-#file-container { height: auto; }
-#file_path_input { width: 1fr; }
-#browse_button {
-    width: auto;
-    margin-left: 1;
-    background: #111827;
-    border: solid #1F2937;
+#apply_button {
+    margin-top: 1;
+    width: 24;
+    align-horizontal: right;
 }
 
-/* --- Modal Dialog --- */
 #button_container {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1;
     align: center middle;
-
     width: 60%;
-    max-width: 50;
+    max-width: 60;
     height: auto;
-
-    background: #111827;  /* blend into Screen */
-    border: solid #1F2937; /* subtle outline */
+    background: #0f1724;
+    border: round #2e435d;
     padding: 1 2;
-
     layer: overlay;
 }
 
 #dialog_text {
     column-span: 2;
     width: 100%;
-    text-align: center;
+    content-align: center middle;
     padding-bottom: 1;
 }
