@@ -24,42 +24,39 @@ class NeuroApp(App):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        with VerticalScroll(id="main_layout"):
-            with Container(id="logo_container"):
-                yield Static(BACKGROUND_ART, id="background_image")
+        with Horizontal(id="app_layout"):
+            with Container(id="sidebar"):
+                yield Static("NeuroCLI", id="sidebar_title")
+                with VerticalScroll(id="sidebar_nav"):
+                    yield Button("Engine", id="nav_engine", classes="nav_button")
+                    yield Button("Dashboard", id="nav_dashboard", classes="nav_button")
+                    yield Button("Code Diffing", id="nav_code_diffing", classes="nav_button")
+                    yield Button("Settings", id="nav_settings", classes="nav_button")
+                yield Button("Reset", id="reset_screen")
 
-            yield Button("Reset", id="reset_screen")
+            with Container(id="workspace"):
+                yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                with Container(id="workspace_panel"):
+                    with Horizontal(id="file-container"):
+                        yield Input(
+                            placeholder="Enter file path for context (optional)...",
+                            id="file_path_input",
+                        )
+                        yield Button("Browse...", id="browse_button")
 
-            with Horizontal(id="app_layout"):
-                with Container(id="sidebar"):
-                    with VerticalScroll(id="sidebar_nav"):
-                        yield Button("Engine", id="nav_engine", classes="nav_button")
-                        yield Button("Dashboard", id="nav_dashboard", classes="nav_button")
-                        yield Button("Code Diffing", id="nav_code_diffing", classes="nav_button")
-                        yield Button("Settings", id="nav_settings", classes="nav_button")
+                    yield Input(placeholder="Enter your prompt...", id="prompt_input")
 
-                with VerticalScroll(id="workspace"):
-                    with Container(id="workspace_panel"):
-                        with Horizontal(id="file-container"):
-                            yield Input(
-                                placeholder="Enter file path for context (optional)...",
-                                id="file_path_input",
-                            )
-                            yield Button("Browse...", id="browse_button")
+                    with Container(id="run_row"):
+                        yield Button("Run", id="run_button")
 
-                        yield Input(placeholder="Enter your prompt...", id="prompt_input")
+                    yield Markdown("AI response will appear here...", id="response_display")
+                    yield LoadingIndicator(id="loading_indicator")
+                    yield Button("Apply Changes", id="apply_button")
 
-                        with Container(id="run_row"):
-                            yield Button("Run", id="run_button")
-
-                        yield Markdown("AI response will appear here...", id="response_display")
-                        yield LoadingIndicator(id="loading_indicator")
-                        yield Button("Apply Changes", id="apply_button")
-
-                        with Container(id="button_container"):
-                            yield Static("Apply these changes?", id="dialog_text")
-                            yield Button("Yes", id="yes", variant="success")
-                            yield Button("No", id="no", variant="error")
+                    with Container(id="button_container"):
+                        yield Static("Apply these changes?", id="dialog_text")
+                        yield Button("Yes", id="yes", variant="success")
+                        yield Button("No", id="no", variant="error")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
@@ -80,7 +77,6 @@ class NeuroApp(App):
             return
 
         file_path = self.query_one("#file_path_input", Input).value
-        self.query_one("#background_image").styles.display = "none"
         self.query_one("#loading_indicator").styles.display = "block"
         self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
         prompt_input.value = ""
@@ -149,7 +145,6 @@ class NeuroApp(App):
             error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
             markdown_display.update(error_message)
 
-        self.query_one("#background_image").styles.display = "block"
         loading_indicator.styles.display = "none"
 
 
