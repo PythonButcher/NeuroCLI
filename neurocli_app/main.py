@@ -1,9 +1,10 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal, Container
-from textual.widgets import Header, Footer, Input, Button, Markdown, LoadingIndicator, Static
+from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme
+from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -11,11 +12,6 @@ from neurocli_core.code_formatter import format_python_code
 
 import os
 from neurocli_core.file_handler import create_backup
-
-
-SIDEBAR_LOGO = """╔════════════════════╗
-║    >_  NeuroCLI    ║
-╚════════════════════╝"""
 
 
 class NeuroApp(App):
@@ -28,42 +24,42 @@ class NeuroApp(App):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        yield Header()
-        yield Button("Reset", id="reset_screen")
+        with VerticalScroll(id="main_layout"):
+            with Container(id="logo_container"):
+                yield Static(BACKGROUND_ART, id="background_image")
 
-        with Horizontal(id="app_layout"):
-            with Container(id="sidebar"):
-                yield Static(SIDEBAR_LOGO, id="background_image")
-                with VerticalScroll(id="sidebar_nav"):
-                    yield Button("Engine", id="nav_engine", classes="nav_button")
-                    yield Button("Dashboard", id="nav_dashboard", classes="nav_button")
-                    yield Button("Code Diffing", id="nav_code_diffing", classes="nav_button")
-                    yield Button("Settings", id="nav_settings", classes="nav_button")
+            yield Button("Reset", id="reset_screen")
 
-            with VerticalScroll(id="workspace"):
-                with Container(id="workspace_panel"):
-                    with Horizontal(id="file-container"):
-                        yield Input(
-                            placeholder="Enter file path for context (optional)...",
-                            id="file_path_input",
-                        )
-                        yield Button("Browse...", id="browse_button")
+            with Horizontal(id="app_layout"):
+                with Container(id="sidebar"):
+                    with VerticalScroll(id="sidebar_nav"):
+                        yield Button("Engine", id="nav_engine", classes="nav_button")
+                        yield Button("Dashboard", id="nav_dashboard", classes="nav_button")
+                        yield Button("Code Diffing", id="nav_code_diffing", classes="nav_button")
+                        yield Button("Settings", id="nav_settings", classes="nav_button")
 
-                    yield Input(placeholder="Enter your prompt...", id="prompt_input")
+                with VerticalScroll(id="workspace"):
+                    with Container(id="workspace_panel"):
+                        with Horizontal(id="file-container"):
+                            yield Input(
+                                placeholder="Enter file path for context (optional)...",
+                                id="file_path_input",
+                            )
+                            yield Button("Browse...", id="browse_button")
 
-                    with Container(id="run_row"):
-                        yield Button("Run", id="run_button")
+                        yield Input(placeholder="Enter your prompt...", id="prompt_input")
 
-                    yield Markdown("AI response will appear here...", id="response_display")
-                    yield LoadingIndicator(id="loading_indicator")
-                    yield Button("Apply Changes", id="apply_button")
+                        with Container(id="run_row"):
+                            yield Button("Run", id="run_button")
 
-                    with Container(id="button_container"):
-                        yield Static("Apply these changes?", id="dialog_text")
-                        yield Button("Yes", id="yes", variant="success")
-                        yield Button("No", id="no", variant="error")
+                        yield Markdown("AI response will appear here...", id="response_display")
+                        yield LoadingIndicator(id="loading_indicator")
+                        yield Button("Apply Changes", id="apply_button")
 
-        yield Footer()
+                        with Container(id="button_container"):
+                            yield Static("Apply these changes?", id="dialog_text")
+                            yield Button("Yes", id="yes", variant="success")
+                            yield Button("No", id="no", variant="error")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""

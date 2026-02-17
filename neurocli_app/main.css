@@ -4,15 +4,25 @@ Screen {
     padding: 1;
 }
 
-Header,
-Footer {
-    background: #0f1724;
-    color: #8ca2bf;
-    border: tall #1f2d40;
+#main_layout {
+    height: 1fr;
+}
+
+#logo_container {
+    width: 100%;
+    align: center top;
+    padding-top: 1;
+    padding-bottom: 1;
+}
+
+#background_image {
+    height: auto;
+    width: auto;
+    content-align: center middle;
+    color: #9dd2ff;
 }
 
 #reset_screen {
-    dock: top;
     width: 14;
     margin: 0 0 1 0;
 }
@@ -30,14 +40,6 @@ Footer {
     margin-right: 1;
     background: #0d1522;
     border: round #26364a;
-}
-
-#background_image {
-    height: auto;
-    width: 100%;
-    content-align: left top;
-    color: #9dd2ff;
-    margin-bottom: 1;
 }
 
 #sidebar_nav {
