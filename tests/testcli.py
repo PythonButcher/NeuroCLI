@@ -1,2 +1,1 @@
-# This script prints "Hello world"
-print("Hello world")
+Error: Could not retrieve response from OpenAI API. Details: 'OpenAI' object has no attribute 'responses'
