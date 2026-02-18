@@ -1,91 +1,174 @@
-/* --- Global Layout --- */
 Screen {
-    background: #111827;  /* deep slate gray */
-    color: #E5E7EB;       /* light neutral text */
+    background: #0a0f17;
+    color: #d8e2f0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#app_layout {
+    height: 100%;
+    width: 100%;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    width: 32;
+    height: 100%;
+    background: #0d1522;
+    border-right: tall #26364a;
+    padding: 0;
+}
+
+#sidebar_title {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    color: #9dd2ff;
+    background: #0f1a2a;
+    text-style: bold;
+    border-bottom: tall #26364a;
+}
+
+#sidebar_nav {
+    height: 1fr;
+    padding: 1 1 0 1;
+}
+
+.nav_button {
+    width: 100%;
+    margin-bottom: 0;
+    background: #0f1a2a;
+    color: #d8e2f0;
+    border: none;
+    text-style: bold;
+}
+
+.nav_button:hover {
+    background: #1a2940;
+    color: #9dd2ff;
+}
+
+#reset_screen {
+    width: 100%;
+    margin: 0;
+    background: #1a2940;
+    border: none;
+    border-top: tall #26364a;
+}
+
+/* Workspace Styling */
+#workspace {
+    height: 100%;
+    width: 1fr;
+    background: #101827;
+}
+
+#workspace_header {
+    width: 100%;
+    height: 3;
+    content-align: center middle;
+    background: #0d1522;
+    color: #9dd2ff;
+    text-style: bold;
+    border-bottom: tall #26364a;
+}
+
+#workspace_panel {
+    height: 1fr;
     padding: 1;
-
 }
 
-
-#background-image {
-    align: center top;
-
+#file-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 0;
 }
 
-/* --- Inputs --- */
+#file_path_input {
+    width: 1fr;
+}
+
+#browse_button {
+    width: 12;
+    margin-left: 1;
+}
+
+#prompt_input {
+    margin-top: 0;
+}
+
 Input {
-    background: #111827;   /* same as Screen for blending */
-    color: #E5E7EB;
-    border: solid #1F2937; /* very subtle outline */
+    background: #0b1320;
+    color: #d8e2f0;
+    border: round #2e435d;
     padding: 0 1;
 }
 
 Input:focus {
-    border: solid #2563EB; /* refined blue highlight */
-    color: #FFFFFF;
-    background: #111827;   /* no gray shading */
+    border: round #4a7db2;
 }
 
-/* --- Buttons --- */
 Button {
-    background: #111827;   /* blend with background */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline */
+    background: #0f1a2a;
+    color: #d8e2f0;
+    border: round #2e435d;
     text-style: bold;
-    padding: 0 2;
 }
 
 Button:hover {
-    background: #1F2937;   /* faint contrast on hover */
-    color: #FFFFFF;
+    background: #1a2940;
+    border: round #4a7db2;
 }
 
-/* --- Response Display --- */
+#run_row {
+    align-horizontal: center;
+    margin: 0;
+    height: auto;
+}
+
+#run_button {
+    width: 18;
+}
+
 #response_display {
-    background: #111827;   /* same as Screen */
-    color: #E5E7EB;
-    border: solid #1F2937; /* subtle outline for separation */
+    height: 1fr;
+    background: #090f19;
+    color: #d8e2f0;
+    border: round #2e435d;
     padding: 1;
+    overflow-y: auto;
+    margin-top: 1;
 }
 
-/* --- Header & Footer --- */
-Header, Footer {
-    background: #111827;   /* unified with main background */
-    color: #9CA3AF;        /* muted text */
-    border-top: solid #1F2937; /* faint divider line */
+#loading_indicator {
+    height: 1;
+    margin: 0;
+    color: #9dd2ff;
 }
 
-/* --- File Input Container --- */
-#file-container { height: auto; }
-#file_path_input { width: 1fr; }
-#browse_button {
-    width: auto;
-    margin-left: 1;
-    background: #111827;
-    border: solid #1F2937;
+#apply_button {
+    margin-top: 0;
+    width: 24;
+    align-horizontal: right;
 }
 
-/* --- Modal Dialog --- */
 #button_container {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1;
     align: center middle;
-
     width: 60%;
-    max-width: 50;
+    max-width: 60;
     height: auto;
-
-    background: #111827;  /* blend into Screen */
-    border: solid #1F2937; /* subtle outline */
+    background: #0f1724;
+    border: round #2e435d;
     padding: 1 2;
-
     layer: overlay;
 }
 
 #dialog_text {
     column-span: 2;
     width: 100%;
-    text-align: center;
+    content-align: center middle;
     padding-bottom: 1;
 }
