@@ -31,7 +31,18 @@ Screen {
 
 #sidebar_nav {
     height: 1fr;
-    padding: 1 1 0 1;
+    padding: 0;
+}
+
+#file_tree {
+    background: #0d1522;
+    color: #d8e2f0;
+    border: none;
+    height: 1fr;
+}
+
+#file_tree > Tree {
+    background: #0d1522;
 }
 
 .nav_button {
