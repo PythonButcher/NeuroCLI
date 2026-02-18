@@ -132,13 +132,20 @@ Button:hover {
 }
 
 #run_row {
-    align-horizontal: center;
-    margin: 0;
-    height: auto;
+    align: center middle;
+    margin: 1 0;
+    height: 3;
+    width: 100%;
 }
 
 #run_button {
     width: 18;
+    margin-right: 1;
+}
+
+#format_button {
+    width: 18;
+    margin-left: 1;
 }
 
 #response_display {
