@@ -71,7 +71,31 @@ class NeuroApp(App):
         self, event: DirectoryTree.FileSelected
     ) -> None:
         """Called when a file is selected in the DirectoryTree."""
-        self.query_one("#file_path_input", Input).value = str(event.path)
+        path = event.path
+        self.query_one("#file_path_input", Input).value = str(path)
+
+        # Clear proposed content and hide apply button as we are viewing a new file
+        self._proposed_content = ""
+        self.query_one("#apply_button").styles.display = "none"
+        self.query_one("#button_container").styles.display = "none"
+
+        try:
+            # Determine extension for syntax highlighting
+            ext = path.suffix.lower().lstrip(".")
+            if not ext:
+                ext = "text"
+
+            # Read file content safely
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Update the response display with the file content
+            markdown_view = f"### Viewing: {path.name}\n\n```{ext}\n{content}\n```"
+            self.query_one("#response_display", Markdown).update(markdown_view)
+        except Exception as e:
+            self.query_one("#response_display", Markdown).update(
+                f"### Error\n\nFailed to read file: {e}"
+            )
 
     def _run_prompt(self) -> None:
         """Run the AI request using values from existing inputs."""
