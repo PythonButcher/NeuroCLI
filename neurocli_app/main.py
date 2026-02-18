@@ -43,8 +43,9 @@ class NeuroApp(App):
 
                     yield Input(placeholder="Enter your prompt...", id="prompt_input")
 
-                    with Container(id="run_row"):
+                    with Horizontal(id="run_row"):
                         yield Button("Run", id="run_button")
+                        yield Button("Format", id="format_button")
 
                     yield Markdown("AI response will appear here...", id="response_display")
                     yield LoadingIndicator(id="loading_indicator")
@@ -84,12 +85,39 @@ class NeuroApp(App):
         self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
         prompt_input.value = ""
 
+    def _format_file(self) -> None:
+        """Format the currently selected file."""
+        file_path = self.query_one("#file_path_input", Input).value
+        if not file_path or not os.path.exists(file_path):
+            self.query_one("#response_display", Markdown).update("Please select a valid file to format.")
+            return
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                original_content = f.read()
+
+            formatted_content = format_python_code(original_content)
+            
+            if formatted_content == original_content:
+                self.query_one("#response_display", Markdown).update("No formatting needed.")
+                self.query_one("#apply_button").styles.display = "none"
+                self._proposed_content = ""
+            else:
+                diff = generate_diff(original_content, formatted_content)
+                self.query_one("#response_display", Markdown).update(diff)
+                self._proposed_content = formatted_content
+                self.query_one("#apply_button").styles.display = "block"
+        except Exception as e:
+            self.query_one("#response_display", Markdown).update(f"Error formatting file: {e}")
+
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button actions while keeping existing wiring intact."""
         if event.button.id == "browse_button":
             self.push_screen(FileOpen(), self.on_file_open_selected)
         elif event.button.id == "run_button":
             self._run_prompt()
+        elif event.button.id == "format_button":
+            self._format_file()
         elif event.button.id == "apply_button":
             self.query_one("#button_container").styles.display = "block"
 
