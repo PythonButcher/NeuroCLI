@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll, Horizontal, Container
-from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static
+from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static, DirectoryTree
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme
@@ -28,10 +28,7 @@ class NeuroApp(App):
             with Container(id="sidebar"):
                 yield Static("NeuroCLI", id="sidebar_title")
                 with VerticalScroll(id="sidebar_nav"):
-                    yield Button("Engine", id="nav_engine", classes="nav_button")
-                    yield Button("Dashboard", id="nav_dashboard", classes="nav_button")
-                    yield Button("Code Diffing", id="nav_code_diffing", classes="nav_button")
-                    yield Button("Settings", id="nav_settings", classes="nav_button")
+                    yield DirectoryTree(path="./", id="file_tree")
                 yield Button("Reset", id="reset_screen")
 
             with Container(id="workspace"):
@@ -68,6 +65,12 @@ class NeuroApp(App):
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
+
+    def on_directory_tree_file_selected(
+        self, event: DirectoryTree.FileSelected
+    ) -> None:
+        """Called when a file is selected in the DirectoryTree."""
+        self.query_one("#file_path_input", Input).value = str(event.path)
 
     def _run_prompt(self) -> None:
         """Run the AI request using values from existing inputs."""
