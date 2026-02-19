@@ -19,6 +19,12 @@ def format_python_code(code_string: str) -> str:
             check=True,
         )
         return result.stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        # If ruff is not installed or fails, return the original code
+    except FileNotFoundError:
+        # Explicitly report when ruff is missing
+        raise RuntimeError(
+            "The 'ruff' formatter is not installed or not in PATH. "
+            "Please run 'pip install ruff'."
+        )
+    except subprocess.CalledProcessError:
+        # If ruff fails for other reasons, return the original code
         return code_string
