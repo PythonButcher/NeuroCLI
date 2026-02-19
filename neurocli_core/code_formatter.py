@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 def format_python_code(code_string: str) -> str:
     """
@@ -12,7 +13,7 @@ def format_python_code(code_string: str) -> str:
     """
     try:
         result = subprocess.run(
-            ["ruff", "format", "-"],
+            [sys.executable, "-m", "ruff", "format", "-"],
             input=code_string,
             capture_output=True,
             text=True,
