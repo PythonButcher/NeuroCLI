@@ -71,7 +71,16 @@ class NeuroApp(App):
         self, event: DirectoryTree.FileSelected
     ) -> None:
         """Called when a file is selected in the DirectoryTree."""
-        path = event.path
+        self._display_file_content(str(event.path))
+
+    def _display_file_content(self, path_str: str) -> None:
+        """Helper to read and display file content in the Markdown widget."""
+        import pathlib
+        path = pathlib.Path(path_str)
+        
+        if not path.exists() or not path.is_file():
+            return
+
         self.query_one("#file_path_input", Input).value = str(path)
 
         # Clear proposed content and hide apply button as we are viewing a new file
@@ -131,6 +140,8 @@ class NeuroApp(App):
                 self.query_one("#response_display", Markdown).update(diff)
                 self._proposed_content = formatted_content
                 self.query_one("#apply_button").styles.display = "block"
+        except RuntimeError as e:
+            self.query_one("#response_display", Markdown).update(f"### Formatter Error\n\n{e}")
         except Exception as e:
             self.query_one("#response_display", Markdown).update(f"Error formatting file: {e}")
 
@@ -172,12 +183,14 @@ class NeuroApp(App):
     def on_file_open_selected(self, path: str) -> None:
         """Callback for when a file is selected from the dialog."""
         if path:
-            self.query_one("#file_path_input", Input).value = str(path)
+            self._display_file_content(str(path))
 
     async def on_input_submitted(self, message: Input.Submitted) -> None:
-        """Handle prompt input submit on Enter."""
+        """Handle input submit on Enter for both prompt and file path."""
         if message.input.id == "prompt_input":
             self._run_prompt()
+        elif message.input.id == "file_path_input":
+            self._display_file_content(message.input.value)
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
