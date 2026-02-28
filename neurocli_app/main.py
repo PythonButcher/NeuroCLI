@@ -8,7 +8,7 @@ from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
-from neurocli_core.code_formatter import format_python_code
+from neurocli_core.code_formatter import format_code
 
 import os
 from neurocli_core.file_handler import create_backup
@@ -129,7 +129,7 @@ class NeuroApp(App):
             with open(file_path, "r", encoding="utf-8") as f:
                 original_content = f.read()
 
-            formatted_content = format_python_code(original_content)
+            formatted_content = format_code(original_content, file_path)
             
             if formatted_content == original_content:
                 self.query_one("#response_display", Markdown).update("No formatting needed.")
@@ -200,7 +200,8 @@ class NeuroApp(App):
         if event.state == WorkerState.SUCCESS:
             original_content, new_content = event.worker.result
             if original_content:
-                formatted_content = format_python_code(new_content)
+                file_path = self.query_one("#file_path_input", Input).value
+                formatted_content = format_code(new_content, file_path)
                 diff = generate_diff(original_content, formatted_content)
                 markdown_display.update(diff)
                 self._proposed_content = formatted_content
