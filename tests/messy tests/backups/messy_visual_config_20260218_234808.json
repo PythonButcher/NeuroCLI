@@ -1,0 +1,6 @@
+{"visualName":"Starfield System Map","version":"1.0.0",
+  "author": { "name":"NeuroCLI","email":"test@example.com" },
+      "dataRoles":[
+    {"name":"System","kind":"Grouping","displayName":"Star System"},
+{"name":"Planets","kind":"Measure","displayName":"Planet Count"}
+  ]}
