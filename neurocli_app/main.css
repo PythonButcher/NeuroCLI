@@ -174,7 +174,9 @@ Screen {
     height: auto;
     width: 100%;
     margin-bottom: 1;
+    padding-bottom: 1;
     background: transparent;
+    border-bottom: dashed $secondary;
 }
 
 #file_path_input {
@@ -202,6 +204,7 @@ Screen {
 #prompt_input {
     height: auto;
     margin-bottom: 1;
+    margin-top: 1;
     background: transparent;
     color: $foreground;
     text-style: bold;
@@ -225,21 +228,52 @@ Input>.input--placeholder {
     text-style: italic;
 }
 
-#run_row {
-    align: left middle;
-    margin: 0;
-    height: 1;
+#action_row {
+    layout: horizontal;
+    height: auto;
     width: 100%;
+    margin-top: 1;
+    padding-top: 1;
+    border-top: dashed $secondary;
+}
+
+#toolbox {
+    width: 1fr;
+    align: left middle;
+    height: auto;
+}
+
+.tool_btn {
+    width: auto;
+    min-width: 3;
+    height: 1;
+    border: none;
+    background: transparent;
+    color: $secondary;
+    margin-right: 1;
+    padding: 0;
+}
+
+.tool_btn:hover {
+    color: $foreground;
+    text-style: bold;
+}
+
+#run_row {
+    width: auto;
+    align: right middle;
+    height: 1;
 }
 
 #run_button {
     width: auto;
-    margin-right: 2;
+    margin-left: 2;
     background: transparent;
     color: $accent;
     text-style: bold;
     border: none;
     height: 1;
+    padding: 0;
 }
 
 #run_button:hover {
@@ -252,8 +286,10 @@ Input>.input--placeholder {
     color: $secondary;
     border: none;
     height: 1;
+    padding: 0;
 }
 
 #format_button:hover {
     color: $foreground;
+    text-style: bold;
 }

@@ -55,9 +55,16 @@ class NeuroApp(App):
 
                         yield Input(placeholder="❯ Enter your prompt...", id="prompt_input")
 
-                        with Horizontal(id="run_row"):
-                            yield Button("Run", id="run_button")
-                            yield Button("Format", id="format_button")
+                        with Horizontal(id="action_row"):
+                            with Horizontal(id="toolbox"):
+                                yield Button("⚙️", id="btn_settings", classes="tool_btn")
+                                yield Button("🗑️", id="btn_clear", classes="tool_btn")
+                                yield Button("🤖 Model", id="btn_model", classes="tool_btn")
+                                yield Button("📎 Context", id="btn_context", classes="tool_btn")
+
+                            with Horizontal(id="run_row"):
+                                yield Button("Format", id="format_button")
+                                yield Button("Run", id="run_button")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
