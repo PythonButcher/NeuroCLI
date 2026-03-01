@@ -1,21 +1,33 @@
-import React, { useState } from "react";
+import React, { useState } from "react"
 
 const ShipInventory = ({ shipName, cargoCapacity }) => {
-  const [items, setItems] = useState([]);
+
+  const [items, setItems] = useState([])
 
   return (
-    <div className="inventory-panel">
-      <h2> {shipName} Payload</h2>
-      <ul>
-        {items.map((item, index) => (
-          <li key={index}>
-            {item.name} - {item.weight}kg
-          </li>
-        ))}
-      </ul>
-      <button onClick={() => console.log("Jettison cargo")}>Empty Hold</button>
-    </div>
-  );
-};
+    <div className="inventory-panel"    >
 
-export default ShipInventory;
+      <h2>{shipName}    Payload</h2>
+
+      <ul>
+
+        {items.map((item, index) => {
+
+          return <li key={index}>
+            {item.name}-{item.weight}kg
+          </li>
+
+        })}
+
+      </ul>
+
+      <button onClick={() => { console.log('Jettison cargo') }}>
+        Empty   Hold
+      </button>
+
+    </div>
+  )
+
+}
+
+export default ShipInventory

@@ -3,7 +3,7 @@ from textual.containers import VerticalScroll, Horizontal, Container
 from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static, DirectoryTree
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
-from neurocli_app.theme import arctic_theme, modern_theme
+from neurocli_app.theme import arctic_theme, modern_theme, solid_modern, fleet_dark
 from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
@@ -60,9 +60,10 @@ class NeuroApp(App):
         """Called when the app is mounted."""
         self.register_theme(arctic_theme)
         self.register_theme(modern_theme)
+        self.register_theme(solid_modern)
+        self.register_theme(fleet_dark)
 
-        self.theme = "arctic"
-        self.theme = "modern_dark_neon"
+        self.theme = "fleet_dark"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"
