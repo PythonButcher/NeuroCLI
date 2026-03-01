@@ -34,19 +34,7 @@ class NeuroApp(App):
             with Container(id="workspace"):
                 yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
                 with Container(id="workspace_panel"):
-                    with Horizontal(id="file-container"):
-                        yield Input(
-                            placeholder="Enter file path for context (optional)...",
-                            id="file_path_input",
-                        )
-                        yield Button("Browse...", id="browse_button")
-
-                    yield Input(placeholder="Enter your prompt...", id="prompt_input")
-
-                    with Horizontal(id="run_row"):
-                        yield Button("Run", id="run_button")
-                        yield Button("Format", id="format_button")
-
+                    # Output/History Section
                     yield Markdown("AI response will appear here...", id="response_display")
                     yield LoadingIndicator(id="loading_indicator")
                     yield Button("Apply Changes", id="apply_button")
@@ -55,6 +43,21 @@ class NeuroApp(App):
                         yield Static("Apply these changes?", id="dialog_text")
                         yield Button("Yes", id="yes", variant="success")
                         yield Button("No", id="no", variant="error")
+
+                    # Input/Prompt Section (Warp-style Block)
+                    with Container(id="prompt_block"):
+                        with Horizontal(id="file-container"):
+                            yield Input(
+                                placeholder="Target file path (optional)...",
+                                id="file_path_input",
+                            )
+                            yield Button("Browse...", id="browse_button")
+
+                        yield Input(placeholder="❯ Enter your prompt...", id="prompt_input")
+
+                        with Horizontal(id="run_row"):
+                            yield Button("Run", id="run_button")
+                            yield Button("Format", id="format_button")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""

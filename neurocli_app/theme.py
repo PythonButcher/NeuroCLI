@@ -65,20 +65,20 @@ solid_modern = Theme(
 
 fleet_dark = Theme(
     name="fleet_dark",
-    primary="#4A90E2",        # Clean bright blue for primary actions
-    secondary="#1C2E4A",      # Deep blue secondary
-    accent="#4A90E2",         # Accent blue
-    foreground="#F0F4F8",     # Crisp white/light-grey text
-    background="#091425",     # Deep navy base background
+    primary="#38BDF8",        # Bright modern blue
+    secondary="#475569",      # Slate grey for borders/dividers
+    accent="#0EA5E9",         # Solid blue for borders/accents
+    foreground="#F8FAFC",     # Crisp white text
+    background="#0B1320",     # Deep terminal navy (unified)
     success="#10B981",        # Clean green
     warning="#F59E0B",        # Clean yellow
     error="#EF4444",          # Clean red
-    surface="#0F1E36",        # Slightly lighter navy for inputs
-    panel="#091425",          # Same as background to avoid boxed-in look
+    surface="#0B1320",        # Unified background
+    panel="#0B1320",          # Unified background
     dark=True,
     variables={
         "block-cursor-text-style": "none",
-        "footer-key-foreground": "#4A90E2",
-        "input-selection-background": "#4A90E2 35%",
+        "footer-key-foreground": "#38BDF8",
+        "input-selection-background": "#0EA5E9 35%",
     },
 )

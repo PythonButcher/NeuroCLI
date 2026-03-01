@@ -9,20 +9,20 @@ Screen {
     width: 100%;
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - Clean and integrated */
 #sidebar {
-    width: 32;
+    width: 35;
     height: 100%;
-    background: $background;
-    padding: 1 2;
-    border: none;
+    background: transparent;
+    padding: 2;
+    border-right: solid $secondary;
 }
 
 #sidebar_title {
     width: 100%;
     height: 2;
     content-align: left middle;
-    color: $foreground;
+    color: $accent;
     text-style: bold;
     padding-bottom: 1;
     background: transparent;
@@ -34,13 +34,13 @@ Screen {
 }
 
 #file_tree {
-    background: $background;
+    background: transparent;
     color: $foreground;
     border: none;
 }
 
-#file_tree > Tree {
-    background: $background;
+#file_tree>Tree {
+    background: transparent;
     padding: 0;
 }
 
@@ -51,11 +51,12 @@ Screen {
     border: none;
     color: $foreground;
     content-align: left middle;
+    text-style: dim;
 }
 
 #reset_screen:hover {
     color: $accent;
-    background: transparent;
+    text-style: none;
 }
 
 /* Workspace Styling */
@@ -63,7 +64,7 @@ Screen {
     height: 100%;
     width: 1fr;
     background: $background;
-    padding: 1 4;
+    padding: 2 4;
 }
 
 #workspace_header {
@@ -71,7 +72,7 @@ Screen {
     height: 2;
     content-align: left middle;
     color: $foreground;
-    text-style: bold;
+    text-style: bold dim;
     padding-bottom: 1;
     background: transparent;
 }
@@ -79,161 +80,180 @@ Screen {
 #workspace_panel {
     height: 1fr;
     padding: 0;
-    background: $background;
+    background: transparent;
+    layout: vertical;
+}
+
+/* Response/History takes available space */
+#response_display {
+    height: 1fr;
+    background: transparent;
+    color: $foreground;
+    border: none;
+    padding: 0 1 1 1;
+    overflow-y: auto;
+}
+
+#loading_indicator {
+    height: 1;
+    margin: 1 1;
+    color: $accent;
+}
+
+#apply_button {
+    margin: 1 1;
+    width: auto;
+    align-horizontal: right;
+    background: $surface;
+    color: $success;
+    text-style: bold;
+    border: none;
+    padding: 0 2;
+}
+
+#apply_button:hover {
+    background: $success;
+    color: $background;
+}
+
+#button_container {
+    layout: grid;
+    grid-size: 2;
+    grid-gutter: 1;
+    align: right middle;
+    width: auto;
+    height: auto;
+    background: transparent;
+    border: none;
+    padding: 0 0 1 0;
+}
+
+#dialog_text {
+    column-span: 2;
+    width: 100%;
+    content-align: right middle;
+    padding-bottom: 1;
+    text-style: bold;
+}
+
+#yes,
+#no {
+    width: 16;
+    background: $surface;
+    border: none;
+}
+
+#yes {
+    color: $success;
+}
+
+#no {
+    color: $error;
+}
+
+#yes:hover {
+    background: $success;
+    color: $background;
+}
+
+#no:hover {
+    background: $error;
+    color: $background;
+}
+
+/* Prompt Block - Warp style */
+#prompt_block {
+    height: auto;
+    background: transparent;
+    border-left: thick $accent;
+    padding: 1 2;
+    margin-top: 1;
 }
 
 #file-container {
     height: auto;
     width: 100%;
     margin-bottom: 1;
+    background: transparent;
 }
 
 #file_path_input {
     width: 1fr;
+    height: 1;
+    background: transparent;
+    color: $secondary;
+    padding: 0;
 }
 
 #browse_button {
     width: 12;
-    margin-left: 2;
+    margin-left: 1;
     background: transparent;
     color: $accent;
+    border: none;
+    height: 1;
 }
 
 #browse_button:hover {
-    background: transparent;
-    color: $foreground;
+    color: $primary;
     text-style: bold;
 }
 
 #prompt_input {
-    margin-bottom: 2;
+    height: auto;
+    margin-bottom: 1;
+    background: transparent;
+    color: $foreground;
+    text-style: bold;
+    padding: 0;
 }
 
 Input {
-    background: $surface;
+    background: transparent;
     color: $foreground;
     border: none;
-    padding: 1 2;
 }
 
 Input:focus {
     border: none;
-    background: $surface;
-    color: $accent;
-    text-style: bold;
+    background: transparent;
+    color: $primary;
 }
 
-Button {
-    background: transparent;
-    color: $accent;
-    border: none;
-}
-
-Button:hover {
-    background: transparent;
-    color: $foreground;
-    text-style: bold;
+Input>.input--placeholder {
+    color: $secondary;
+    text-style: italic;
 }
 
 #run_row {
     align: left middle;
-    margin: 1 0 2 0;
-    height: auto;
+    margin: 0;
+    height: 1;
     width: 100%;
 }
 
 #run_button {
-    width: 18;
+    width: auto;
     margin-right: 2;
     background: transparent;
     color: $accent;
     text-style: bold;
+    border: none;
+    height: 1;
 }
 
 #run_button:hover {
-    background: transparent;
-    color: $foreground;
-    text-style: bold;
+    color: $primary;
 }
 
 #format_button {
-    width: 18;
+    width: auto;
     background: transparent;
-    color: $foreground;
+    color: $secondary;
+    border: none;
+    height: 1;
 }
 
 #format_button:hover {
-    color: $accent;
-}
-
-#response_display {
-    height: 1fr;
-    background: $background;
     color: $foreground;
-    border: none;
-    padding: 2 0;
-    overflow-y: auto;
-}
-
-#loading_indicator {
-    height: 1;
-    margin: 1 0;
-    color: $accent;
-}
-
-#apply_button {
-    margin-top: 2;
-    width: 24;
-    align-horizontal: right;
-    background: transparent;
-    color: $success;
-    text-style: bold;
-}
-
-#apply_button:hover {
-    background: transparent;
-    color: $foreground;
-    text-style: bold;
-}
-
-#button_container {
-    layout: grid;
-    grid-size: 2;
-    grid-gutter: 2;
-    align: center middle;
-    width: 100%;
-    height: auto;
-    background: $background;
-    border: none;
-    padding: 2 0;
-    margin-top: 2;
-}
-
-#dialog_text {
-    column-span: 2;
-    width: 100%;
-    content-align: center middle;
-    padding-bottom: 1;
-    text-style: bold;
-}
-
-#yes {
-    background: transparent;
-    color: $success;
-    text-style: bold;
-}
-
-#no {
-    background: transparent;
-    color: $error;
-}
-
-#yes:hover {
-    background: transparent;
-    color: $foreground;
-}
-
-#no:hover {
-    background: transparent;
-    text-style: bold;
 }
