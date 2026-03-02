@@ -6,6 +6,7 @@ from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme, solid_modern, fleet_dark
 from neurocli_app.art import BACKGROUND_ART
 from neurocli_app.context_modal import ContextModal
+from neurocli_app.radar_modal import RadarModal
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -63,6 +64,7 @@ class NeuroApp(App):
                                 yield Button("🗑️", id="btn_clear", classes="tool_btn")
                                 yield Button("🤖 Model", id="btn_model", classes="tool_btn")
                                 yield Button("📎 Context", id="btn_context", classes="tool_btn")
+                                yield Button("📊 Radar", id="btn_radar", classes="tool_btn")
 
                             with Horizontal(id="run_row"):
                                 yield Button("Format", id="format_button")
@@ -170,6 +172,8 @@ class NeuroApp(App):
             self._format_file()
         elif event.button.id == "btn_context":
             self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
+        elif event.button.id == "btn_radar":
+            self.push_screen(RadarModal())
         elif event.button.id == "apply_button":
             self.query_one("#button_container").styles.display = "block"
 

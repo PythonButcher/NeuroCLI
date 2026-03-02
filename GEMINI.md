@@ -27,3 +27,7 @@ This is the most important rule for this project. The architecture MUST be kept 
 -   When asked to generate or modify code, always respect the core architectural principle of separating logic from the UI.
 -   Your primary goal is to help build robust, maintainable, scalable, and versatile software that handles diverse project needs.
 -   **Never delete or modify a file unless explicitly instructed to do so.** Always confirm destructive actions before proceeding.
+
+<!-- TODO: Add a section detailing how to handle database migrations. -->
+<!-- FIXME: The multi-language support section needs practical examples. -->
+<!-- TODO: Define a clear branching strategy for the Git repository in this document. -->

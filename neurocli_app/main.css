@@ -293,6 +293,7 @@ Input>.input--placeholder {
     color: $foreground;
     text-style: bold;
 }
+
 /* --- Context Modal Styling --- */
 ContextModal {
     align: center middle;
@@ -409,4 +410,93 @@ ListItem:hover {
     background: $background;
     color: $success;
     text-style: bold;
+}
+
+/* --- Radar Modal Styling --- */
+RadarModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#radar_dialog {
+    width: 90%;
+    height: 90%;
+    border: thick $primary;
+    background: $surface;
+    padding: 1 2;
+}
+
+#radar_header {
+    text-style: bold;
+    color: $text;
+    width: 100%;
+    content-align: center middle;
+    padding-bottom: 1;
+    border-bottom: solid $primary;
+}
+
+#radar_grid {
+    grid-size: 2 2;
+    grid-rows: 3fr 1fr;
+    grid-columns: 1fr 2fr;
+    grid-gutter: 1 2;
+    margin: 1 0;
+}
+
+#radar_composition {
+    height: 100%;
+    border: solid $panel;
+    padding: 1;
+}
+
+#radar_debt {
+    height: 100%;
+    border: solid $panel;
+    padding: 1;
+}
+
+#radar_heatmap {
+    column-span: 2;
+    height: 100%;
+    border: dashed $panel;
+    padding: 1;
+    content-align: center middle;
+}
+
+.radar_section_title {
+    text-style: bold;
+    color: $accent;
+    width: 100%;
+    border-bottom: solid $panel;
+    margin-bottom: 1;
+}
+
+#composition_content {
+    overflow-y: auto;
+}
+
+#total_loc_label {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.lang_row {
+    color: $text-muted;
+}
+
+#debt_table {
+    height: 100%;
+}
+
+#heatmap_placeholder {
+    color: $text-muted;
+    text-style: italic;
+    content-align: center middle;
+    width: 100%;
+}
+
+#radar_action_row {
+    align: right middle;
+    height: auto;
+    margin-top: 1;
 }
