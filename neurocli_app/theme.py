@@ -40,3 +40,45 @@ modern_theme = Theme(
         "input-selection-background": "#00E5FF 40%",  # cyan selection glow
     },
 )
+
+
+solid_modern = Theme(
+    name="solid_modern",
+    primary="#37474F",        # Blue Grey 800
+    secondary="#546E7A",      # Blue Grey 600
+    accent="#00ACC1",         # Cyan 600
+    foreground="#ECEFF1",     # Blue Grey 50
+    background="#263238",     # Blue Grey 900
+    success="#43A047",        # Green 600
+    warning="#FB8C00",        # Orange 600
+    error="#E53935",          # Red 600
+    surface="#263238",        # Match background for solid look
+    panel="#263238",          # Match background for solid look
+    dark=True,
+    variables={
+        "block-cursor-text-style": "none",
+        "footer-key-foreground": "#00ACC1",
+        "input-selection-background": "#00ACC1 35%",
+    },
+)
+
+
+fleet_dark = Theme(
+    name="fleet_dark",
+    primary="#38BDF8",        # Bright modern blue
+    secondary="#475569",      # Slate grey for borders/dividers
+    accent="#0EA5E9",         # Solid blue for borders/accents
+    foreground="#F8FAFC",     # Crisp white text
+    background="#0B1320",     # Deep terminal navy (unified)
+    success="#10B981",        # Clean green
+    warning="#F59E0B",        # Clean yellow
+    error="#EF4444",          # Clean red
+    surface="#0B1320",        # Unified background
+    panel="#0B1320",          # Unified background
+    dark=True,
+    variables={
+        "block-cursor-text-style": "none",
+        "footer-key-foreground": "#38BDF8",
+        "input-selection-background": "#0EA5E9 35%",
+    },
+)

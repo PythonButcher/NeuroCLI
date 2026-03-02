@@ -3,7 +3,7 @@ from textual.containers import VerticalScroll, Horizontal, Container
 from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static, DirectoryTree
 from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
-from neurocli_app.theme import arctic_theme, modern_theme
+from neurocli_app.theme import arctic_theme, modern_theme, solid_modern, fleet_dark
 from neurocli_app.art import BACKGROUND_ART
 
 from neurocli_core.engine import get_ai_response
@@ -34,19 +34,7 @@ class NeuroApp(App):
             with Container(id="workspace"):
                 yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
                 with Container(id="workspace_panel"):
-                    with Horizontal(id="file-container"):
-                        yield Input(
-                            placeholder="Enter file path for context (optional)...",
-                            id="file_path_input",
-                        )
-                        yield Button("Browse...", id="browse_button")
-
-                    yield Input(placeholder="Enter your prompt...", id="prompt_input")
-
-                    with Horizontal(id="run_row"):
-                        yield Button("Run", id="run_button")
-                        yield Button("Format", id="format_button")
-
+                    # Output/History Section
                     yield Markdown("AI response will appear here...", id="response_display")
                     yield LoadingIndicator(id="loading_indicator")
                     yield Button("Apply Changes", id="apply_button")
@@ -56,13 +44,36 @@ class NeuroApp(App):
                         yield Button("Yes", id="yes", variant="success")
                         yield Button("No", id="no", variant="error")
 
+                    # Input/Prompt Section (Warp-style Block)
+                    with Container(id="prompt_block"):
+                        with Horizontal(id="file-container"):
+                            yield Input(
+                                placeholder="Target file path (optional)...",
+                                id="file_path_input",
+                            )
+                            yield Button("Browse...", id="browse_button")
+
+                        yield Input(placeholder="❯ Enter your prompt...", id="prompt_input")
+
+                        with Horizontal(id="action_row"):
+                            with Horizontal(id="toolbox"):
+                                yield Button("⚙️", id="btn_settings", classes="tool_btn")
+                                yield Button("🗑️", id="btn_clear", classes="tool_btn")
+                                yield Button("🤖 Model", id="btn_model", classes="tool_btn")
+                                yield Button("📎 Context", id="btn_context", classes="tool_btn")
+
+                            with Horizontal(id="run_row"):
+                                yield Button("Format", id="format_button")
+                                yield Button("Run", id="run_button")
+
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         self.register_theme(arctic_theme)
         self.register_theme(modern_theme)
+        self.register_theme(solid_modern)
+        self.register_theme(fleet_dark)
 
-        self.theme = "arctic"
-        self.theme = "modern_dark_neon"
+        self.theme = "fleet_dark"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#button_container").styles.display = "none"

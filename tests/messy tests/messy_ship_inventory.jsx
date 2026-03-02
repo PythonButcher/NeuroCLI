@@ -5,15 +5,25 @@ const ShipInventory = ({ shipName, cargoCapacity }) => {
 
   return (
     <div className="inventory-panel">
-      <h2> {shipName} Payload</h2>
+      <h2>{shipName} Payload</h2>
+
       <ul>
-        {items.map((item, index) => (
-          <li key={index}>
-            {item.name} - {item.weight}kg
-          </li>
-        ))}
+        {items.map((item, index) => {
+          return (
+            <li key={index}>
+              {item.name}-{item.weight}kg
+            </li>
+          );
+        })}
       </ul>
-      <button onClick={() => console.log("Jettison cargo")}>Empty Hold</button>
+
+      <button
+        onClick={() => {
+          console.log("Jettison cargo");
+        }}
+      >
+        Empty Hold
+      </button>
     </div>
   );
 };
