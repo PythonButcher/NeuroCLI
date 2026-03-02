@@ -1,8 +1,7 @@
 Screen {
-    background: #0a0f17;
-    color: #d8e2f0;
+    background: $background;
+    color: $foreground;
     padding: 0;
-    overflow: hidden;
 }
 
 #app_layout {
@@ -10,183 +9,287 @@ Screen {
     width: 100%;
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - Clean and integrated */
 #sidebar {
-    width: 32;
+    width: 35;
     height: 100%;
-    background: #0d1522;
-    border-right: tall #26364a;
-    padding: 0;
+    background: transparent;
+    padding: 2;
+    border-right: solid $secondary;
 }
 
 #sidebar_title {
     width: 100%;
-    height: 3;
-    content-align: center middle;
-    color: #9dd2ff;
-    background: #0f1a2a;
+    height: 2;
+    content-align: left middle;
+    color: $accent;
     text-style: bold;
-    border-bottom: tall #26364a;
+    padding-bottom: 1;
+    background: transparent;
 }
 
 #sidebar_nav {
     height: 1fr;
-    padding: 0;
+    padding: 1 0;
 }
 
 #file_tree {
-    background: #0d1522;
-    color: #d8e2f0;
+    background: transparent;
+    color: $foreground;
     border: none;
-    height: 1fr;
 }
 
-#file_tree > Tree {
-    background: #0d1522;
-}
-
-.nav_button {
-    width: 100%;
-    margin-bottom: 0;
-    background: #0f1a2a;
-    color: #d8e2f0;
-    border: none;
-    text-style: bold;
-}
-
-.nav_button:hover {
-    background: #1a2940;
-    color: #9dd2ff;
+#file_tree>Tree {
+    background: transparent;
+    padding: 0;
 }
 
 #reset_screen {
     width: 100%;
-    margin: 0;
-    background: #1a2940;
+    margin-top: 1;
+    background: transparent;
     border: none;
-    border-top: tall #26364a;
+    color: $foreground;
+    content-align: left middle;
+    text-style: dim;
+}
+
+#reset_screen:hover {
+    color: $accent;
+    text-style: none;
 }
 
 /* Workspace Styling */
 #workspace {
     height: 100%;
     width: 1fr;
-    background: #101827;
+    background: $background;
+    padding: 2 4;
 }
 
 #workspace_header {
     width: 100%;
-    height: 3;
-    content-align: center middle;
-    background: #0d1522;
-    color: #9dd2ff;
-    text-style: bold;
-    border-bottom: tall #26364a;
+    height: 2;
+    content-align: left middle;
+    color: $foreground;
+    text-style: bold dim;
+    padding-bottom: 1;
+    background: transparent;
 }
 
 #workspace_panel {
     height: 1fr;
-    padding: 1;
+    padding: 0;
+    background: transparent;
+    layout: vertical;
 }
 
-#file-container {
-    height: auto;
-    width: 100%;
-    margin-bottom: 0;
-}
-
-#file_path_input {
-    width: 1fr;
-}
-
-#browse_button {
-    width: 12;
-    margin-left: 1;
-}
-
-#prompt_input {
-    margin-top: 0;
-}
-
-Input {
-    background: #0b1320;
-    color: #d8e2f0;
-    border: round #2e435d;
-    padding: 0 1;
-}
-
-Input:focus {
-    border: round #4a7db2;
-}
-
-Button {
-    background: #0f1a2a;
-    color: #d8e2f0;
-    border: round #2e435d;
-    text-style: bold;
-}
-
-Button:hover {
-    background: #1a2940;
-    border: round #4a7db2;
-}
-
-#run_row {
-    align: center middle;
-    margin: 1 0;
-    height: 3;
-    width: 100%;
-}
-
-#run_button {
-    width: 18;
-    margin-right: 1;
-}
-
-#format_button {
-    width: 18;
-    margin-left: 1;
-}
-
+/* Response/History takes available space */
 #response_display {
     height: 1fr;
-    background: #090f19;
-    color: #d8e2f0;
-    border: round #2e435d;
-    padding: 1;
+    background: transparent;
+    color: $foreground;
+    border: none;
+    padding: 0 1 1 1;
     overflow-y: auto;
-    margin-top: 1;
 }
 
 #loading_indicator {
     height: 1;
-    margin: 0;
-    color: #9dd2ff;
+    margin: 1 1;
+    color: $accent;
 }
 
 #apply_button {
-    margin-top: 0;
-    width: 24;
+    margin: 1 1;
+    width: auto;
     align-horizontal: right;
+    background: $surface;
+    color: $success;
+    text-style: bold;
+    border: none;
+    padding: 0 2;
+}
+
+#apply_button:hover {
+    background: $success;
+    color: $background;
 }
 
 #button_container {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1;
-    align: center middle;
-    width: 60%;
-    max-width: 60;
+    align: right middle;
+    width: auto;
     height: auto;
-    background: #0f1724;
-    border: round #2e435d;
-    padding: 1 2;
-    layer: overlay;
+    background: transparent;
+    border: none;
+    padding: 0 0 1 0;
 }
 
 #dialog_text {
     column-span: 2;
     width: 100%;
-    content-align: center middle;
+    content-align: right middle;
     padding-bottom: 1;
+    text-style: bold;
+}
+
+#yes,
+#no {
+    width: 16;
+    background: $surface;
+    border: none;
+}
+
+#yes {
+    color: $success;
+}
+
+#no {
+    color: $error;
+}
+
+#yes:hover {
+    background: $success;
+    color: $background;
+}
+
+#no:hover {
+    background: $error;
+    color: $background;
+}
+
+/* Prompt Block - Warp style */
+#prompt_block {
+    height: auto;
+    background: transparent;
+    border-left: thick $accent;
+    padding: 1 2;
+    margin-top: 1;
+}
+
+#file-container {
+    height: auto;
+    width: 100%;
+    margin-bottom: 1;
+    padding-bottom: 1;
+    background: transparent;
+    border-bottom: dashed $secondary;
+}
+
+#file_path_input {
+    width: 1fr;
+    height: 1;
+    background: transparent;
+    color: $secondary;
+    padding: 0;
+}
+
+#browse_button {
+    width: 12;
+    margin-left: 1;
+    background: transparent;
+    color: $accent;
+    border: none;
+    height: 1;
+}
+
+#browse_button:hover {
+    color: $primary;
+    text-style: bold;
+}
+
+#prompt_input {
+    height: auto;
+    margin-bottom: 1;
+    margin-top: 1;
+    background: transparent;
+    color: $foreground;
+    text-style: bold;
+    padding: 0;
+}
+
+Input {
+    background: transparent;
+    color: $foreground;
+    border: none;
+}
+
+Input:focus {
+    border: none;
+    background: transparent;
+    color: $primary;
+}
+
+Input>.input--placeholder {
+    color: $secondary;
+    text-style: italic;
+}
+
+#action_row {
+    layout: horizontal;
+    height: auto;
+    width: 100%;
+    margin-top: 1;
+    padding-top: 1;
+    border-top: dashed $secondary;
+}
+
+#toolbox {
+    width: 1fr;
+    align: left middle;
+    height: auto;
+}
+
+.tool_btn {
+    width: auto;
+    min-width: 3;
+    height: 1;
+    border: none;
+    background: transparent;
+    color: $secondary;
+    margin-right: 1;
+    padding: 0;
+}
+
+.tool_btn:hover {
+    color: $foreground;
+    text-style: bold;
+}
+
+#run_row {
+    width: auto;
+    align: right middle;
+    height: 1;
+}
+
+#run_button {
+    width: auto;
+    margin-left: 2;
+    background: transparent;
+    color: $accent;
+    text-style: bold;
+    border: none;
+    height: 1;
+    padding: 0;
+}
+
+#run_button:hover {
+    color: $primary;
+}
+
+#format_button {
+    width: auto;
+    background: transparent;
+    color: $secondary;
+    border: none;
+    height: 1;
+    padding: 0;
+}
+
+#format_button:hover {
+    color: $foreground;
+    text-style: bold;
 }
