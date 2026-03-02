@@ -11,9 +11,13 @@ def get_greeting() -> str:
     """
     return "Hello from neurocli_core The engine is running."
 
-def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, str]:
+def get_ai_response(
+    prompt: str,
+    file_path: Optional[str] = None,
+    context_paths: Optional[list[str]] = None,
+) -> Tuple[str, str]:
     """
     Processes a user's prompt and returns an AI-generated response,
-    optionally with file content as context.
+    optionally with file content and additional context paths.
     """
-    return get_ai_response_from_service(prompt, file_path)
+    return get_ai_response_from_service(prompt, file_path, context_paths)

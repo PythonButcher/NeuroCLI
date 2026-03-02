@@ -26,7 +26,11 @@ and syntactically correct code for that file.
 """
 
 
-def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, str]:
+def get_ai_response(
+    prompt: str,
+    file_path: Optional[str] = None,
+    context_paths: Optional[list[str]] = None,
+) -> Tuple[str, str]:
     """Return the original content and OpenAI response for ``prompt``.
 
     Parameters
@@ -34,7 +38,9 @@ def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, 
     prompt:
         The user's prompt.
     file_path:
-        Optional path to a file or directory whose content should be provided as context.
+        Optional target path to a file whose content should be modified.
+    context_paths:
+        Optional list of additional file/directory paths to provide as context.
     """
 
     original_content = ""
@@ -48,12 +54,19 @@ def get_ai_response(prompt: str, file_path: Optional[str] = None) -> Tuple[str, 
                 original_content = path.read_text(encoding="utf-8")
             except Exception as exc:  # pragma: no cover - filesystem error path
                 return "", f"Error reading file {file_path}: {exc}"
-            context_prompt += f"\n\nCONTEXT:\n---\n{original_content}\n---"
+            context_prompt += f"\n\nTARGET FILE CONTEXT:\n---\n{original_content}\n---"
         else:
             context_content = create_context_from_path(path)
             if context_content.startswith("Error:"):
                 return "", context_content
-            context_prompt += f"\n\nCONTEXT:\n---\n{context_content}\n---"
+            context_prompt += f"\n\nTARGET CONTEXT:\n---\n{context_content}\n---"
+
+    if context_paths:
+        context_prompt += "\n\nADDITIONAL CONTEXT FILES:\n"
+        for cp in context_paths:
+            cp_path = Path(cp)
+            if cp_path.exists():
+                context_prompt += f"{create_context_from_path(cp_path)}\n"
 
     context_prompt += f"\n\nUSER PROMPT: {prompt}"
 

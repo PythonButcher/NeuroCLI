@@ -5,6 +5,7 @@ from textual.worker import Worker, WorkerState
 from textual_fspicker import FileOpen
 from neurocli_app.theme import arctic_theme, modern_theme, solid_modern, fleet_dark
 from neurocli_app.art import BACKGROUND_ART
+from neurocli_app.context_modal import ContextModal
 
 from neurocli_core.engine import get_ai_response
 from neurocli_core.diff_generator import generate_diff
@@ -21,6 +22,7 @@ class NeuroApp(App):
     CSS_PATH = "main.css"
 
     _proposed_content: str = ""
+    context_paths: set[str] = set()
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -125,8 +127,10 @@ class NeuroApp(App):
             return
 
         file_path = self.query_one("#file_path_input", Input).value
+        context_files = list(self.context_paths) if self.context_paths else None
+        
         self.query_one("#loading_indicator").styles.display = "block"
-        self.run_worker(lambda: get_ai_response(prompt, file_path), thread=True)
+        self.run_worker(lambda: get_ai_response(prompt, file_path, context_files), thread=True)
         prompt_input.value = ""
 
     def _format_file(self) -> None:
@@ -164,6 +168,8 @@ class NeuroApp(App):
             self._run_prompt()
         elif event.button.id == "format_button":
             self._format_file()
+        elif event.button.id == "btn_context":
+            self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
         elif event.button.id == "apply_button":
             self.query_one("#button_container").styles.display = "block"
 
@@ -190,6 +196,19 @@ class NeuroApp(App):
 
         elif event.button.id == "no":
             self.query_one("#button_container").styles.display = "none"
+
+    def _on_context_modal_dismissed(self, selected_paths: set[str] | None) -> None:
+        """Callback for when ContextModal finishes."""
+        if selected_paths is not None:
+            self.context_paths = selected_paths
+            btn = self.query_one("#btn_context", Button)
+            
+            if self.context_paths:
+                btn.label = f"📎 Context ({len(self.context_paths)})"
+                btn.variant = "primary"
+            else:
+                btn.label = "📎 Context"
+                btn.variant = "default"
 
     def on_file_open_selected(self, path: str) -> None:
         """Callback for when a file is selected from the dialog."""

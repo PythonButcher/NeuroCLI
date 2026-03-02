@@ -1,0 +1,118 @@
+
+/* --- Context Modal Styling --- */
+ContextModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#context_dialog {
+    width: 80;
+    height: 30;
+    background: $surface;
+    border: outer $accent;
+    padding: 1 2;
+}
+
+#context_header {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+    border-bottom: solid $secondary;
+}
+
+#context_main_area {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+#context_tree_container {
+    width: 1fr;
+    border-right: solid $secondary;
+    padding-right: 1;
+}
+
+#context_tree {
+    background: $background;
+    height: 1fr;
+    border: none;
+    margin-top: 1;
+}
+
+#context_selection_container {
+    width: 1fr;
+    padding-left: 1;
+}
+
+#context_list {
+    background: $background;
+    height: 1fr;
+    border: none;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+ListItem {
+    padding: 0 1;
+    color: $foreground;
+}
+
+ListItem:hover {
+    background: $secondary;
+}
+
+#context_info_row {
+    height: 3;
+    align: left middle;
+}
+
+#token_estimator {
+    width: 1fr;
+    content-align: left middle;
+    color: $warning;
+    text-style: italic;
+}
+
+#btn_clear_context {
+    width: auto;
+    background: transparent;
+    color: $error;
+    border: none;
+}
+
+#btn_clear_context:hover {
+    background: $error;
+    color: $background;
+}
+
+#context_action_row {
+    height: 3;
+    align: right middle;
+    border-top: solid $secondary;
+    padding-top: 1;
+}
+
+#btn_cancel_context {
+    margin-right: 2;
+    background: transparent;
+    color: $secondary;
+    border: none;
+}
+
+#btn_cancel_context:hover {
+    color: $foreground;
+}
+
+#btn_save_context {
+    background: $success;
+    color: $background;
+    text-style: bold;
+    border: none;
+}
+
+#btn_save_context:hover {
+    background: $background;
+    color: $success;
+    text-style: bold;
+}
