@@ -43,11 +43,6 @@ class NeuroApp(App):
                     yield LoadingIndicator(id="loading_indicator")
                     yield Button("Apply Changes", id="apply_button")
 
-                    with Container(id="button_container"):
-                        yield Static("Apply these changes?", id="dialog_text")
-                        yield Button("Yes", id="yes", variant="success")
-                        yield Button("No", id="no", variant="error")
-
                     # Input/Prompt Section (Warp-style Block)
                     with Container(id="prompt_block"):
                         with Horizontal(id="file-container"):
@@ -66,9 +61,9 @@ class NeuroApp(App):
                                 yield Button("🤖 Model", id="btn_model", classes="tool_btn")
                                 yield Button("📎 Context", id="btn_context", classes="tool_btn")
                                 yield Button("📊 Radar", id="btn_radar", classes="tool_btn")
-                                yield Button("🐙 Commit", id="btn_commit", classes="tool_btn")
 
                             with Horizontal(id="run_row"):
+                                yield Button("Commit 🐙", id="btn_commit", classes="run_btn")
                                 yield Button("Format", id="format_button")
                                 yield Button("Run", id="run_button")
 
@@ -82,7 +77,6 @@ class NeuroApp(App):
         self.theme = "fleet_dark"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
-        self.query_one("#button_container").styles.display = "none"
 
     def on_directory_tree_file_selected(
         self, event: DirectoryTree.FileSelected
@@ -103,7 +97,6 @@ class NeuroApp(App):
         # Clear proposed content and hide apply button as we are viewing a new file
         self._proposed_content = ""
         self.query_one("#apply_button").styles.display = "none"
-        self.query_one("#button_container").styles.display = "none"
 
         try:
             # Determine extension for syntax highlighting
@@ -179,9 +172,6 @@ class NeuroApp(App):
         elif event.button.id == "btn_commit":
             self.push_screen(GitModal())
         elif event.button.id == "apply_button":
-            self.query_one("#button_container").styles.display = "block"
-
-        elif event.button.id == "yes":
             file_path = self.query_one("#file_path_input", Input).value
             if file_path and self._proposed_content:
                 try:
@@ -196,14 +186,10 @@ class NeuroApp(App):
                     )
                     self._proposed_content = ""
                     self.query_one("#apply_button").styles.display = "none"
-                    self.query_one("#button_container").styles.display = "none"
                 except Exception as error:
                     self.query_one("#response_display").update(
                         f"Error applying changes: {error}"
                     )
-
-        elif event.button.id == "no":
-            self.query_one("#button_container").styles.display = "none"
 
     def _on_context_modal_dismissed(self, selected_paths: set[str] | None) -> None:
         """Callback for when ContextModal finishes."""

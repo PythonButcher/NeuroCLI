@@ -20,6 +20,7 @@ const ShipInventory = ({ shipName, cargoCapacity }) => {
       <button
         onClick={() => {
           console.log("Jettison cargo");
+          console.log("Current cargo items:", items);
         }}
       >
         Empty Hold

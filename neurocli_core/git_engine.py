@@ -22,7 +22,8 @@ def get_staged_diff() -> Tuple[str, bool]:
         staged_result = subprocess.run(
             ["git", "diff", "--cached"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True
         )
         staged_diff = staged_result.stdout.strip()
@@ -34,10 +35,12 @@ def get_staged_diff() -> Tuple[str, bool]:
         unstaged_result = subprocess.run(
             ["git", "diff"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True
         )
-        unstaged_diff = unstaged_result.stdout.strip()
+        # Handle the case where the fallback reading thread somehow still fails
+        unstaged_diff = unstaged_result.stdout.strip() if unstaged_result.stdout else ""
         
         return unstaged_diff, True
 
@@ -89,7 +92,8 @@ def execute_commit_and_push(commit_message: str, add_all: bool = False) -> None:
         commit_result = subprocess.run(
             commit_cmd,
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True
         )
         
@@ -97,7 +101,8 @@ def execute_commit_and_push(commit_message: str, add_all: bool = False) -> None:
         push_result = subprocess.run(
             ["git", "push"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True
         )
         
