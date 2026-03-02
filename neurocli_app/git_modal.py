@@ -37,7 +37,7 @@ class GitModal(ModalScreen[None]):
         self.query_one("#git_action_row").styles.display = "none"
         
         # Start a worker thread to perform the diff and AI call without blocking the UI
-        self.run_worker(self._generate_message_worker, thread=True, id="fetch_commit_message")
+        self.run_worker(self._generate_message_worker, thread=True, name="fetch_commit_message")
 
     def _generate_message_worker(self) -> str:
         """Worker thread function to run the process."""
@@ -53,7 +53,7 @@ class GitModal(ModalScreen[None]):
         """Called when any worker state changes."""
         
         # Handle the fetch worker finishing
-        if event.worker.id == "fetch_commit_message":
+        if event.worker.name == "fetch_commit_message":
             if event.state == WorkerState.SUCCESS:
                 self.query_one("#git_loading_indicator").styles.display = "none"
                 text_area = self.query_one("#commit_text_area", TextArea)
@@ -70,7 +70,7 @@ class GitModal(ModalScreen[None]):
                 # Don't show commit button if there's an error
                 
         # Handle the push worker finishing
-        elif event.worker.id == "execute_commit":
+        elif event.worker.name == "execute_commit":
             if event.state == WorkerState.SUCCESS:
                 self.app.notify("Successfully committed and pushed changes!", title="Git", severity="information")
                 self.dismiss()
@@ -95,5 +95,5 @@ class GitModal(ModalScreen[None]):
             self.run_worker(
                 lambda: execute_commit_and_push(commit_message, self._add_all),
                 thread=True,
-                id="execute_commit"
+                name="execute_commit"
             )

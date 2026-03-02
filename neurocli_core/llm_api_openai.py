@@ -27,21 +27,15 @@ def call_openai_api(api_key: str, prompt: str) -> str:
 
     try:
         client = OpenAI(api_key=api_key)
-        response = client.responses.create(
-            model="gpt-4.1-mini",
-            input=[
-                {"role": "system", "content": [{"type": "input_text", "text": SYSTEM_MESSAGE}]},
-                {"role": "user", "content": [{"type": "input_text", "text": prompt}]},
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_MESSAGE},
+                {"role": "user", "content": prompt},
             ],
         )
         # Extract the text response
-        output_items = response.output
-        for item in output_items:
-            if hasattr(item, "content"):
-                for c in item.content:
-                    if c.type == "output_text":
-                        return c.text
-        return "No text output found in response."
+        return response.choices[0].message.content
     except Exception as exc:
         print(f"An error occurred while calling the OpenAI API: {exc}")
         return f"Error: Could not retrieve response from OpenAI API. Details: {exc}"
