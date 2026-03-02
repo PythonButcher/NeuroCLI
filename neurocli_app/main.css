@@ -500,3 +500,77 @@ RadarModal {
     height: auto;
     margin-top: 1;
 }
+
+/* --- Git Modal Styling --- */
+GitModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#git_dialog {
+    width: 80;
+    height: 30;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#git_header {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $secondary;
+}
+
+#git_main_area {
+    height: 1fr;
+    margin-bottom: 1;
+    content-align: center middle;
+}
+
+#git_loading_indicator {
+    height: 1;
+    margin: 1 1;
+    color: $accent;
+}
+
+#commit_text_area {
+    width: 1fr;
+    height: 1fr;
+    border: ascii $secondary;
+    background: $background;
+}
+
+#git_action_row {
+    height: 3;
+    align: right middle;
+    border-top: solid $secondary;
+    padding-top: 1;
+}
+
+#btn_cancel_git {
+    margin-right: 2;
+    background: transparent;
+    color: $error;
+    border: none;
+}
+
+#btn_cancel_git:hover {
+    background: $error;
+    color: $background;
+}
+
+#btn_commit_push {
+    background: $success;
+    color: $background;
+    text-style: bold;
+    border: none;
+}
+
+#btn_commit_push:hover {
+    background: $background;
+    color: $success;
+    text-style: bold;
+}
