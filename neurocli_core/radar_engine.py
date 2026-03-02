@@ -1,0 +1,113 @@
+import os
+import re
+from typing import Dict, List, Any
+
+# Exclude standard problematic folders
+EXCLUDED_DIRS = {'.git', '.venv', '__pycache__', 'node_modules', 'tests', '.idea', '.vscode', 'build', 'dist', 'neurocli.egg-info'}
+
+# Mapping of file extensions to languages
+LANGUAGE_MAP = {
+    '.py': 'Python',
+    '.css': 'CSS',
+    '.md': 'Markdown',
+    '.txt': 'Text',
+    '.js': 'JavaScript',
+    '.html': 'HTML',
+    '.json': 'JSON',
+    '.sh': 'Shell',
+    '.yaml': 'YAML',
+    '.yml': 'YAML',
+    '.toml': 'TOML'
+}
+
+# Regex to find common TODO/FIXME patterns
+# Matches # TODO, // FIXME, <!-- TODO, /* FIXME */, etc.
+DEBT_REGEX = re.compile(r'(?i)(?:#|//|<!--|/\*\*?|\*)\s*(TODO|FIXME)\b\s*:?\s*(.*)')
+
+def _is_valid_file(file_name: str) -> bool:
+    """Check if the file has a mapped extension."""
+    _, ext = os.path.splitext(file_name)
+    return ext.lower() in LANGUAGE_MAP
+
+def scan_workspace_health(cwd: str = '.') -> Dict[str, Any]:
+    """
+    Scans the workspace to calculate Lines of Code (LOC) per language.
+    """
+    loc_by_lang = {}
+    total_loc = 0
+    
+    for root, dirs, files in os.walk(cwd):
+        # Modify dirs in-place to exclude unwanted directories
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        
+        for file in files:
+            if _is_valid_file(file):
+                ext = os.path.splitext(file)[1].lower()
+                lang = LANGUAGE_MAP[ext]
+                
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        # Count non-empty lines for LOC
+                        count = sum(1 for line in f if line.strip())
+                        
+                        if lang not in loc_by_lang:
+                            loc_by_lang[lang] = 0
+                        loc_by_lang[lang] += count
+                        total_loc += count
+                except (UnicodeDecodeError, IOError):
+                    # Skip files that can't be read as text
+                    continue
+                    
+    # Calculate percentages and sort by volume
+    composition = {}
+    for lang, count in sorted(loc_by_lang.items(), key=lambda item: item[1], reverse=True):
+        percentage = round((count / total_loc) * 100, 1) if total_loc > 0 else 0
+        composition[lang] = {
+            'loc': count,
+            'percentage': percentage
+        }
+        
+    return {
+        'total_loc': total_loc,
+        'composition': composition
+    }
+
+def scan_technical_debt(cwd: str = '.') -> List[Dict[str, Any]]:
+    """
+    Scans valid files line-by-line to find TODO/FIXME comments.
+    """
+    debt_list = []
+    
+    for root, dirs, files in os.walk(cwd):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        
+        for file in files:
+            if _is_valid_file(file):
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, cwd)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        for line_num, line in enumerate(f, 1):
+                            match = DEBT_REGEX.search(line)
+                            if match:
+                                msg_type = match.group(1).upper()
+                                raw_msg = match.group(2).strip()
+                                
+                                # Clean up closing comment tags and hashes
+                                clean_msg = re.sub(r'(-->|\*/|#)+$', '', raw_msg).strip()
+                                
+                                if not clean_msg:
+                                    message = msg_type
+                                else:
+                                    message = f"{msg_type} {clean_msg}"
+                                    
+                                debt_list.append({
+                                    'file_name': rel_path,
+                                    'line_number': line_num,
+                                    'message': message
+                                })
+                except (UnicodeDecodeError, IOError):
+                    continue
+                    
+    return debt_list
