@@ -1,9 +1,10 @@
 import os
 import re
 from typing import Dict, List, Any
+from datetime import datetime
 
 # Exclude standard problematic folders
-EXCLUDED_DIRS = {'.git', '.venv', '__pycache__', 'node_modules', 'tests', '.idea', '.vscode', 'build', 'dist', 'neurocli.egg-info'}
+EXCLUDED_DIRS = {'.git', '.venv', '__pycache__', 'node_modules', '.idea', '.vscode', 'build', 'dist', 'neurocli.egg-info'}
 
 # Mapping of file extensions to languages
 LANGUAGE_MAP = {
@@ -111,3 +112,69 @@ def scan_technical_debt(cwd: str = '.') -> List[Dict[str, Any]]:
                     continue
                     
     return debt_list
+
+def scan_recent_edits(cwd: str = '.', max_items: int = 20, max_days: int = 7) -> List[Dict[str, Any]]:
+    """
+    Scans the workspace to find recent AI modifications by looking for 
+    `backups/` directories and parsing the timestamped files within them.
+    Filters out edits older than max_days and returns up to max_items most recent edits.
+    """
+    edits = []
+    now = datetime.now()
+    
+    # Matches filenames like: my_file_20260303_224551.py
+    # Group 1: original name (my_file), Group 2: timestamp, Group 3: extension (.py)
+    backup_regex = re.compile(r'^(.*)_(\d{8}_\d{6})(\.[a-zA-Z0-9]+)?$')
+    
+    for root, dirs, files in os.walk(cwd):
+        # We still exclude the main problematic folders
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        
+        # Only process files if we are inside a 'backups' directory
+        if os.path.basename(root) == 'backups':
+            for file in files:
+                match = backup_regex.search(file)
+                if match:
+                    base_name, timestamp_str, ext = match.groups()
+                    original_name = f"{base_name}{ext}" if ext else base_name
+                    
+                    try:
+                        # Parse the timestamp: YYYYMMDD_HHMMSS
+                        backup_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                        
+                        delta = now - backup_time
+                        if delta.days > max_days:
+                            continue
+                            
+                        # Format the time ago
+                        if delta.days > 0:
+                            time_ago = f"{delta.days} {'day' if delta.days == 1 else 'days'} ago"
+                        elif delta.seconds >= 3600:
+                            hours = delta.seconds // 3600
+                            time_ago = f"{hours} {'hour' if hours == 1 else 'hours'} ago"
+                        elif delta.seconds >= 60:
+                            minutes = delta.seconds // 60
+                            time_ago = f"{minutes} {'minute' if minutes == 1 else 'minutes'} ago"
+                        else:
+                            time_ago = "Just now"
+                        
+                        # Build the relative path representing the original file location
+                        # The original file is one level up from the /backups folder
+                        parent_dir = os.path.dirname(root)
+                        original_path = os.path.join(parent_dir, original_name)
+                        rel_path = os.path.relpath(original_path, cwd)
+                        
+                        edits.append({
+                            'original_file': rel_path,
+                            'backup_time': backup_time,
+                            'time_ago': time_ago,
+                            'timestamp_str': backup_time.strftime("%Y-%m-%d %H:%M:%S")
+                        })
+                    except ValueError:
+                        pass # Ignore if timestamp matching fails
+                        
+    # Sort by the most recent edits first
+    edits.sort(key=lambda x: x['backup_time'], reverse=True)
+    
+    # Return top N recent edits
+    return edits[:max_items]
