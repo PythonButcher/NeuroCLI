@@ -1,6 +1,7 @@
 import os
 import re
 from typing import Dict, List, Any
+from datetime import datetime
 
 # Exclude standard problematic folders
 EXCLUDED_DIRS = {'.git', '.venv', '__pycache__', 'node_modules', 'tests', '.idea', '.vscode', 'build', 'dist', 'neurocli.egg-info'}
@@ -111,3 +112,51 @@ def scan_technical_debt(cwd: str = '.') -> List[Dict[str, Any]]:
                     continue
                     
     return debt_list
+
+def scan_recent_edits(cwd: str = '.') -> List[Dict[str, Any]]:
+    """
+    Scans the workspace to find recent AI modifications by looking for 
+    `backups/` directories and parsing the timestamped files within them.
+    Returns the 10 most recent edits.
+    """
+    edits = []
+    
+    # Matches filenames like: my_file_20260303_224551.py
+    # Group 1: original name (my_file), Group 2: timestamp, Group 3: extension (.py)
+    backup_regex = re.compile(r'^(.*)_(\d{8}_\d{6})(\.[a-zA-Z0-9]+)?$')
+    
+    for root, dirs, files in os.walk(cwd):
+        # We still exclude the main problematic folders
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        
+        # Only process files if we are inside a 'backups' directory
+        if os.path.basename(root) == 'backups':
+            for file in files:
+                match = backup_regex.search(file)
+                if match:
+                    base_name, timestamp_str, ext = match.groups()
+                    original_name = f"{base_name}{ext}" if ext else base_name
+                    
+                    try:
+                        # Parse the timestamp: YYYYMMDD_HHMMSS
+                        backup_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                        
+                        # Build the relative path representing the original file location
+                        # The original file is one level up from the /backups folder
+                        parent_dir = os.path.dirname(root)
+                        original_path = os.path.join(parent_dir, original_name)
+                        rel_path = os.path.relpath(original_path, cwd)
+                        
+                        edits.append({
+                            'original_file': rel_path,
+                            'backup_time': backup_time,
+                            'timestamp_str': backup_time.strftime("%Y-%m-%d %H:%M:%S")
+                        })
+                    except ValueError:
+                        pass # Ignore if timestamp matching fails
+                        
+    # Sort by the most recent edits first
+    edits.sort(key=lambda x: x['backup_time'], reverse=True)
+    
+    # Return top 10 recent edits
+    return edits[:10]

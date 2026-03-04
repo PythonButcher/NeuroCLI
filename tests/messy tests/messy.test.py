@@ -7,3 +7,4 @@ def calculate_stuff(x, y):
 
 
 print(calculate_stuff(10, 20))
+print(calculate_stuff(30, 40))
