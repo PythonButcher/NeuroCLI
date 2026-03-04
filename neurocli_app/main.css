@@ -420,7 +420,6 @@ RadarModal {
     height: 100%;
     border: dashed $panel;
     padding: 1;
-    content-align: center middle;
 }
 
 .radar_section_title {
@@ -445,6 +444,10 @@ RadarModal {
 }
 
 #debt_table {
+    height: 100%;
+}
+
+#edits_table {
     height: 100%;
 }
 
