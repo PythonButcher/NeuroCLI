@@ -1,6 +1,16 @@
 import subprocess
 import sys
 import os
+import re
+
+def strip_markdown_blocks(text: str) -> str:
+    """Removes markdown code block formatting (```python ... ```) if present."""
+    # Match ```language\n...``` or just ```\n...```
+    pattern = r"^```[a-zA-Z0-9_]*\n(.*?)```$"
+    match = re.search(pattern, text.strip(), flags=re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return text
 
 def format_code(code_string: str, file_path: str) -> str:
     """
@@ -13,6 +23,7 @@ def format_code(code_string: str, file_path: str) -> str:
     Returns:
         The formatted code string, or the original string if the extension is unsupported or if formatting fails.
     """
+    code_string = strip_markdown_blocks(code_string)
     _, ext = os.path.splitext(file_path.lower())
     
     python_exts = ['.py']
