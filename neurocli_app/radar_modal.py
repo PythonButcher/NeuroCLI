@@ -4,7 +4,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Label, DataTable, Static
 from pathlib import Path
 
-from neurocli_core.radar_engine import scan_workspace_health, scan_technical_debt
+from neurocli_core.radar_engine import scan_workspace_health, scan_technical_debt, scan_recent_edits
 
 class RadarModal(ModalScreen[None]):
     """A modal screen that displays Workspace Radar (Health & Heatmap)."""
@@ -28,8 +28,8 @@ class RadarModal(ModalScreen[None]):
                     
                 # Bottom: AI Heatmap
                 with Container(id="radar_heatmap"):
-                    yield Label("Recent AI Heatmap", classes="radar_section_title")
-                    yield Static("Tracking active...", id="heatmap_placeholder")
+                    yield Label("Recent AI Edits", classes="radar_section_title")
+                    yield DataTable(id="edits_table")
                     
             with Horizontal(id="radar_action_row"):
                 yield Button("Close", id="btn_close_radar", variant="error")
@@ -37,6 +37,7 @@ class RadarModal(ModalScreen[None]):
     def on_mount(self) -> None:
         self._load_health()
         self._load_debt()
+        self._load_recent_edits()
 
     def _load_health(self) -> None:
         # Load the stats dynamically, ensuring we scan the project root
@@ -71,6 +72,22 @@ class RadarModal(ModalScreen[None]):
         
         for item in debt_data:
             table.add_row(item["file_name"], str(item["line_number"]), item["message"])
+
+    def _load_recent_edits(self) -> None:
+        project_root = str(Path(__file__).parent.parent.resolve())
+        # Thresholds can be adjusted here as needed
+        edits_data = scan_recent_edits(project_root, max_items=20, max_days=7)
+        table = self.query_one("#edits_table", DataTable)
+        table.cursor_type = "row"
+        table.zebra_stripes = True
+        
+        table.add_columns("File", "Last Edited")
+        
+        if edits_data:
+            for edit in edits_data:
+                table.add_row(edit["original_file"], edit["time_ago"])
+        else:
+            table.add_row("No recent AI edits found.", "")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn_close_radar":
