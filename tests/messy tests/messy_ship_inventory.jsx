@@ -21,6 +21,9 @@ const ShipInventory = ({ shipName, cargoCapacity }) => {
         onClick={() => {
           console.log("Jettison cargo");
           console.log("Current cargo items:", items);
+          console.log(
+            `Total cargo weight: ${items.reduce((total, item) => total + item.weight, 0)}kg`,
+          );
         }}
       >
         Empty Hold

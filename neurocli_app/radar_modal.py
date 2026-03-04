@@ -75,16 +75,17 @@ class RadarModal(ModalScreen[None]):
 
     def _load_recent_edits(self) -> None:
         project_root = str(Path(__file__).parent.parent.resolve())
-        edits_data = scan_recent_edits(project_root)
+        # Thresholds can be adjusted here as needed
+        edits_data = scan_recent_edits(project_root, max_items=20, max_days=7)
         table = self.query_one("#edits_table", DataTable)
         table.cursor_type = "row"
         table.zebra_stripes = True
         
-        table.add_columns("File", "Backup Timestamp")
+        table.add_columns("File", "Last Edited")
         
         if edits_data:
             for edit in edits_data:
-                table.add_row(edit["original_file"], edit["timestamp_str"])
+                table.add_row(edit["original_file"], edit["time_ago"])
         else:
             table.add_row("No recent AI edits found.", "")
 
