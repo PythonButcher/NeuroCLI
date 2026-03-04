@@ -396,11 +396,13 @@ RadarModal {
 }
 
 #radar_grid {
+    layout: grid;
     grid-size: 2 2;
-    grid-rows: 3fr 1fr;
-    grid-columns: 1fr 2fr;
+    grid-rows: 1fr 1fr;
+    grid-columns: 1fr 1fr;
     grid-gutter: 1 2;
-    margin: 1 0;
+    margin-bottom: 1;
+    height: 1fr;
 }
 
 #radar_composition {
