@@ -116,48 +116,8 @@ Screen {
     color: $background;
 }
 
-#button_container {
-    layout: grid;
-    grid-size: 2;
-    grid-gutter: 1;
-    align: right middle;
-    width: auto;
-    height: auto;
-    background: transparent;
-    border: none;
-    padding: 0 0 1 0;
-}
-
-#dialog_text {
-    column-span: 2;
-    width: 100%;
-    content-align: right middle;
-    padding-bottom: 1;
-    text-style: bold;
-}
-
-#yes,
-#no {
-    width: 16;
-    background: $surface;
-    border: none;
-}
-
-#yes {
-    color: $success;
-}
-
-#no {
-    color: $error;
-}
-
-#yes:hover {
+#apply_button:hover {
     background: $success;
-    color: $background;
-}
-
-#no:hover {
-    background: $error;
     color: $background;
 }
 
@@ -245,13 +205,13 @@ Input>.input--placeholder {
 
 .tool_btn {
     width: auto;
-    min-width: 3;
+    min-width: 1;
     height: 1;
     border: none;
     background: transparent;
     color: $secondary;
     margin-right: 1;
-    padding: 0;
+    padding: 0 1;
 }
 
 .tool_btn:hover {
@@ -265,7 +225,7 @@ Input>.input--placeholder {
     height: 1;
 }
 
-#run_button {
+.run_btn {
     width: auto;
     margin-left: 2;
     background: transparent;
@@ -276,7 +236,7 @@ Input>.input--placeholder {
     padding: 0;
 }
 
-#run_button:hover {
+.run_btn:hover {
     color: $primary;
 }
 
@@ -499,4 +459,78 @@ RadarModal {
     align: right middle;
     height: auto;
     margin-top: 1;
+}
+
+/* --- Git Modal Styling --- */
+GitModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#git_dialog {
+    width: 80;
+    height: 30;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#git_header {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $secondary;
+}
+
+#git_main_area {
+    height: 1fr;
+    margin-bottom: 1;
+    content-align: center middle;
+}
+
+#git_loading_indicator {
+    height: 1;
+    margin: 1 1;
+    color: $accent;
+}
+
+#commit_text_area {
+    width: 1fr;
+    height: 1fr;
+    border: ascii $secondary;
+    background: $background;
+}
+
+#git_action_row {
+    height: 3;
+    align: right middle;
+    border-top: solid $secondary;
+    padding-top: 1;
+}
+
+#btn_cancel_git {
+    margin-right: 2;
+    background: transparent;
+    color: $error;
+    border: none;
+}
+
+#btn_cancel_git:hover {
+    background: $error;
+    color: $background;
+}
+
+#btn_commit_push {
+    background: $success;
+    color: $background;
+    text-style: bold;
+    border: none;
+}
+
+#btn_commit_push:hover {
+    background: $background;
+    color: $success;
+    text-style: bold;
 }
