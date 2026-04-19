@@ -9,10 +9,15 @@ Repair NeuroCLI so both supported product modes remain functional:
 
 Both modes must use a real backend for the main AI workflow.
 
+## Current Status
+
+Phase 1 is now implemented in `neurocli_core`.
+Phase 2 is the active next step: replace the fake FastAPI prompt flow with the shared backend service contract.
+
 ## Execution Order
 
-1. Stabilize `neurocli_core` as the shared backend contract.
-2. Replace the fake AI flow in `api/main.py` with real backend integration.
+1. Stabilize `neurocli_core` as the shared backend contract. Completed.
+2. Replace the fake AI flow in `api/main.py` with real backend integration. Active next step.
 3. Wire `web_client` to the real API contract.
 4. Fix React placeholder areas and runtime issues.
 5. Preserve and verify `neurocli_app`.
