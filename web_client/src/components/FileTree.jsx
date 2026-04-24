@@ -1,105 +1,171 @@
-import { useState, useEffect } from 'react'
-import { Folder, FolderOpen, File, ChevronRight, ChevronDown } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import {
+  ChevronDown,
+  ChevronRight,
+  File,
+  Folder,
+  FolderOpen,
+  Paperclip,
+} from 'lucide-react'
+import { fetchJson } from '../lib/api'
 
-// Recursive component for rendering the tree
-const FileTreeNode = ({ node, level = 0, onSelect, contextPaths = new Set() }) => {
-    const [isOpen, setIsOpen] = useState(false)
+const FileTreeNode = ({
+  node,
+  level = 0,
+  onSelect,
+  onToggleContextPath,
+  contextPaths = new Set(),
+  targetFile = '',
+  showContextToggle = true,
+}) => {
+  const [isOpen, setIsOpen] = useState(level === 0)
 
-    const isDir = node.type === 'directory'
-    const paddingLeft = `${level * 16}px`
-    const inContext = !isDir && contextPaths.has(node.path)
+  const isDirectory = node.type === 'directory'
+  const isInContext = !isDirectory && contextPaths.has(node.path)
+  const isTargetFile = !isDirectory && targetFile === node.path
 
-    const toggleOpen = (e) => {
-        e.stopPropagation()
-        if (isDir) {
-            setIsOpen(!isOpen)
-        } else {
-            onSelect(node.path)
-        }
+  const handlePrimaryClick = (event) => {
+    event.stopPropagation()
+
+    if (isDirectory) {
+      setIsOpen((previousState) => !previousState)
+      return
     }
 
-    return (
-        <div>
-            <div
-                className={`flex items-center justify-between py-1 px-2 cursor-pointer hover:bg-[#30363d] select-none text-sm transition-colors duration-150 ${isDir ? 'text-[#c9d1d9]' : inContext ? 'text-[#3fb950]' : 'text-[#8b949e] hover:text-[#c9d1d9]'}`}
-                style={{ paddingLeft: `calc(${paddingLeft} + 8px)` }}
-                onClick={toggleOpen}
-            >
-                <div className="flex items-center min-w-0 flex-1 pr-2">
-                    <span className="w-4 h-4 mr-1.5 flex-shrink-0 flex items-center justify-center text-[#8b949e]">
-                        {isDir ? (
-                            isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />
-                        ) : (
-                            <span className="w-4"></span> // Spacer for files so they align
-                        )}
-                    </span>
+    onSelect(node.path)
+  }
 
-                    <span className="mr-2 flex-shrink-0">
-                        {isDir ? (
-                            isOpen ? <FolderOpen size={14} className="text-[#e3b341]" /> : <Folder size={14} className="text-[#e3b341]" />
-                        ) : (
-                            <File size={14} className={inContext ? "text-[#3fb950]" : ""} />
-                        )}
-                    </span>
+  const handleContextToggle = (event) => {
+    event.stopPropagation()
+    if (!isDirectory) {
+      onToggleContextPath?.(node.path)
+    }
+  }
 
-                    <span className="truncate">{node.name}</span>
-                </div>
+  return (
+    <div>
+      <div
+        className={`flex cursor-pointer items-center justify-between px-2 py-1 text-sm transition-colors duration-150 select-none ${
+          isDirectory
+            ? 'text-[#c9d1d9] hover:bg-[#30363d]'
+            : isTargetFile
+              ? 'bg-[#58a6ff]/10 text-[#79c0ff]'
+              : isInContext
+                ? 'text-[#3fb950] hover:bg-[#30363d]'
+                : 'text-[#8b949e] hover:bg-[#30363d] hover:text-[#c9d1d9]'
+        }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={handlePrimaryClick}
+      >
+        <div className="min-w-0 flex-1 pr-2">
+          <div className="flex items-center">
+            <span className="mr-1.5 flex h-4 w-4 flex-shrink-0 items-center justify-center text-[#8b949e]">
+              {isDirectory ? (
+                isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />
+              ) : (
+                <span className="w-4"></span>
+              )}
+            </span>
 
-                {inContext && (
-                    <div className="w-2 h-2 rounded-full bg-[#3fb950] shadow-[0_0_5px_rgba(63,185,80,0.8)] mr-1 shrink-0"></div>
-                )}
-            </div>
+            <span className="mr-2 flex-shrink-0">
+              {isDirectory ? (
+                isOpen ? (
+                  <FolderOpen size={14} className="text-[#e3b341]" />
+                ) : (
+                  <Folder size={14} className="text-[#e3b341]" />
+                )
+              ) : (
+                <File size={14} className={isTargetFile ? 'text-[#79c0ff]' : isInContext ? 'text-[#3fb950]' : ''} />
+              )}
+            </span>
 
-            {isDir && isOpen && node.children && (
-                <div>
-                    {node.children.map((child) => (
-                        <FileTreeNode
-                            key={child.path}
-                            node={child}
-                            level={level + 1}
-                            onSelect={onSelect}
-                            contextPaths={contextPaths}
-                        />
-                    ))}
-                </div>
-            )}
+            <span className="truncate">{node.name}</span>
+          </div>
         </div>
-    )
+
+        {!isDirectory && showContextToggle && (
+          <button
+            type="button"
+            onClick={handleContextToggle}
+            title={isInContext ? 'Remove from prompt context' : 'Add to prompt context'}
+            className={`rounded p-1 transition-colors ${
+              isInContext ? 'text-[#3fb950] hover:bg-[#3fb950]/10' : 'text-[#8b949e] hover:bg-[#21262d] hover:text-white'
+            }`}
+          >
+            <Paperclip size={12} />
+          </button>
+        )}
+      </div>
+
+      {isDirectory && isOpen && node.children && (
+        <div>
+          {node.children.map((child) => (
+            <FileTreeNode
+              key={child.path}
+              node={child}
+              level={level + 1}
+              onSelect={onSelect}
+              onToggleContextPath={onToggleContextPath}
+              contextPaths={contextPaths}
+              targetFile={targetFile}
+              showContextToggle={showContextToggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
-export default function FileTree({ onFileSelect, contextPaths }) {
-    const [treeData, setTreeData] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+export default function FileTree({
+  onFileSelect,
+  onToggleContextPath,
+  contextPaths,
+  targetFile,
+  showContextToggle = true,
+}) {
+  const [treeData, setTreeData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-    useEffect(() => {
-        const fetchTree = async () => {
-            try {
-                const res = await fetch('http://localhost:8000/api/files')
-                if (!res.ok) throw new Error('Failed to fetch files')
-                const data = await res.json()
+  useEffect(() => {
+    const fetchTree = async () => {
+      try {
+        const data = await fetchJson('/api/files')
+        setTreeData(data)
+        setError(null)
+      } catch (fetchError) {
+        setError(fetchError.message)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-                // Sometimes the root itself shouldn't be rendered as a single node, 
-                // we might just want to render its children. We'll render the root for now.
-                setTreeData(data)
-                setLoading(false)
-            } catch (err) {
-                setError(err.message)
-                setLoading(false)
-            }
-        }
+    fetchTree()
+  }, [])
 
-        fetchTree()
-    }, [])
+  if (loading) {
+    return <div className="p-4 text-sm text-[#8b949e]">Loading workspace...</div>
+  }
 
-    if (loading) return <div className="text-sm p-4 text-[#8b949e]">Loading workspace...</div>
-    if (error) return <div className="text-sm p-4 text-[#f85149]">Error: {error}</div>
-    if (!treeData) return null
+  if (error) {
+    return <div className="p-4 text-sm text-[#f85149]">Error: {error}</div>
+  }
 
-    return (
-        <div className="overflow-y-auto h-full w-full py-2 custom-scrollbar">
-            {/* We typically start rendering from the root node itself */}
-            <FileTreeNode node={treeData} onSelect={onFileSelect} />
-        </div>
-    )
+  if (!treeData) {
+    return null
+  }
+
+  return (
+    <div className="h-full w-full overflow-y-auto py-2 custom-scrollbar">
+      <FileTreeNode
+        node={treeData}
+        onSelect={onFileSelect}
+        onToggleContextPath={onToggleContextPath}
+        contextPaths={contextPaths}
+        targetFile={targetFile}
+        showContextToggle={showContextToggle}
+      />
+    </div>
+  )
 }

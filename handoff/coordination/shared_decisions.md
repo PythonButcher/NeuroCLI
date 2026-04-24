@@ -49,6 +49,13 @@ Stream event fields:
 - `delta`
 - optional `response`
 
+Stream event semantics:
+
+- `start` begins a request and carries an empty `delta`
+- `delta` carries incremental text in `delta`
+- `complete` carries the final normalized workflow response in `response`
+- `error` carries the normalized workflow error response in `response`
+
 ## API Rules
 
 - the main API routes are `POST /api/ai/prompt` and `POST /api/ai/stream`
@@ -56,7 +63,17 @@ Stream event fields:
 - file endpoints reject reads and writes outside the workspace
 - local backend startup should use `http://127.0.0.1:8010`
 
+## React Phase 3 Contract Notes
+
+- `web_client` now uses a shared API client in `web_client/src/lib/api.js`
+- the frontend API base URL comes from `VITE_API_BASE_URL` and defaults to `http://127.0.0.1:8010`
+- the React app must use `POST` streaming with `fetch`; it must not use the old `GET /stream?command=...` EventSource flow
+- file selection in the tree controls `target_file`
+- paperclip toggles in the tree control `context_paths`
+- the model modal controls the optional `model` and `model_options` request fields
+- the Git modal should use only `/api/git/status`, `/api/git/diff`, and `/api/git/commit`
+
 ## Open Work
 
-- Phase 3 still needs to rewire the React app to the real API contract
+- Phase 3 still needs a final live browser smoke test against the local backend and real model runtime
 - frontend cleanup should not change backend rules without updating this file

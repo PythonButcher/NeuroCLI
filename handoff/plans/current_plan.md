@@ -12,14 +12,14 @@ Both should use the same real AI workflow in `neurocli_core`.
 
 - Phase 1 is done.
 - Phase 2 is done.
-- Phase 3 is next.
+- Phase 3 is active and the React integration wiring is now in place.
 - Phase 4 comes after Phase 3.
 
 ## Next Work
 
-1. Rewire the React app to the real API contract.
-2. Remove the last placeholder frontend behavior.
-3. Verify the Python app still matches the shared backend contract.
+1. Finish Phase 3 verification with a live browser run against the local backend and model runtime.
+2. Verify the Python app still matches the shared backend contract.
+3. Start Phase 4 only after the shared contract is confirmed across both app surfaces.
 
 ## Main Files For The Next Step
 
@@ -27,6 +27,8 @@ Both should use the same real AI workflow in `neurocli_core`.
 - `web_client/src/components/FileTree.jsx`
 - `web_client/src/components/ContextModal.jsx`
 - `web_client/src/components/GitModal.jsx`
+- `web_client/src/components/ModelModal.jsx`
+- `web_client/src/lib/api.js`
 - `api/main.py`
 - `handoff/coordination/shared_decisions.md`
 

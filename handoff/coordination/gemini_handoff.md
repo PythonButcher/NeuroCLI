@@ -20,3 +20,6 @@ Gemini owns React presentation work only.
 
 - treat `api` and `neurocli_core` as the source of truth for behavior
 - prefer UI work that keeps existing props and state boundaries unless Codex documents a new contract
+- the React logic layer now sends `target_file`, `context_paths`, `model`, and `model_options` to the backend
+- the file tree paperclip control and context modal now reflect real backend-bound prompt context instead of placeholder UX
+- avoid reintroducing the old fake stream assumptions or placeholder AI git behaviors

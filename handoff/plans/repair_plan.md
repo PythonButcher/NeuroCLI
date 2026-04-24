@@ -40,25 +40,31 @@ The API now has:
 ## Next Work
 
 ### Phase 3: Wire the React App to the Real Backend
-This is the next active phase.
+This is the current active phase.
 
 What we need to do:
 
-1. Update `web_client/src/App.jsx` to use the real API routes.
-2. Stop using the old fake stream flow.
-3. Parse the real streaming event format from the backend.
-4. Send `target_file` and `context_paths` in the request body.
-5. Make the context picker actually control what gets sent to the backend.
-6. Fix the `GitModal.jsx` runtime issue and remove placeholder-only git behavior that has no real backend support.
-7. Move the API base URL into a cleaner frontend config path such as environment variables or a Vite proxy.
+1. Run a final live browser smoke test against the local backend with the real model runtime available.
+2. Confirm no contract drift remains between the React app and `api/main.py`.
 
-What Phase 3 should look like when done:
+What is already done in Phase 3:
+
+1. `web_client/src/App.jsx` now sends the real request body to `POST /api/ai/stream` and falls back to `POST /api/ai/prompt` when streaming is unavailable.
+2. The web app now parses the structured stream events from the backend instead of assuming plain-text SSE chunks.
+3. `target_file`, `context_paths`, `model`, and `model_options` are now wired into the React request payload.
+4. The file tree now controls `target_file` selection and lets users toggle prompt context files directly.
+5. The context modal now reflects the real `context_paths` payload instead of placeholder-only behavior.
+6. `GitModal.jsx` no longer crashes at runtime and now uses only the backend git endpoints that actually exist.
+7. The frontend API base URL now comes from `VITE_API_BASE_URL`, defaulting to `http://127.0.0.1:8010`, through a shared client module.
+
+What Phase 3 should look like when closed:
 
 - a web user can send a prompt and get a real backend response
 - a web user can target a file
 - a web user can attach context files
 - the web app can handle backend errors without breaking
 - the web app is no longer using the old fake AI flow
+- local browser verification is complete against the running backend
 
 ### Phase 4: Preserve and Align the Python App
 This phase comes right after Phase 3.
