@@ -73,7 +73,19 @@ Stream event semantics:
 - the model modal controls the optional `model` and `model_options` request fields
 - the Git modal should use only `/api/git/status`, `/api/git/diff`, and `/api/git/commit`
 
+## Textual Phase 4 Contract Notes
+
+- `neurocli_app/workflow_adapter.py` is the Textual-side adapter for the shared workflow contract
+- the Textual app now sends the same request fields as the web path: `prompt`, optional `target_file`, optional `context_paths`, optional `model`, and optional `model_options`
+- the Textual model modal maps directly to `model` and raw JSON `model_options`; it does not invent extra backend fields
+- the Textual run flow now consumes structured events from `stream_ai_workflow`
+- the Textual app uses the same normalized final response shape for both streamed completions and direct workflow responses
+- local formatting, diff review, apply with backup, radar, and git actions remain app-side integrations over `neurocli_core` services
+- context selections are sorted before request construction so the set-backed Textual UI produces deterministic `context_paths`
+
 ## Open Work
 
 - Phase 3 still needs a final live browser smoke test against the local backend and real model runtime
+- Phase 4 still needs a manual Textual smoke test against a real model runtime
+- local API verification is currently blocked because the environment is missing `fastapi`
 - frontend cleanup should not change backend rules without updating this file

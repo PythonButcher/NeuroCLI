@@ -67,7 +67,7 @@ What Phase 3 should look like when closed:
 - local browser verification is complete against the running backend
 
 ### Phase 4: Preserve and Align the Python App
-This phase comes right after Phase 3.
+This phase is now active in code.
 
 What we need to do:
 
@@ -81,6 +81,21 @@ What Phase 4 should look like when done:
 - the Python app still works end to end
 - the Python app and web backend use the same workflow rules
 - there is no drift between the Python path and the web path for the main AI flow
+
+What is already done in Phase 4:
+
+1. `neurocli_app/main.py` now builds the same normalized workflow request fields used by the web path: `prompt`, optional `target_file`, optional `context_paths`, optional `model`, and optional `model_options`.
+2. The Textual app now uses `stream_ai_workflow` through `neurocli_app/workflow_adapter.py` and applies the same final normalized response shape used by sync and streaming callers.
+3. The Textual app now has a model settings modal so users can set `model` and raw JSON `model_options` without introducing app-specific request fields.
+4. File updates still go through the existing local review flow: the normalized workflow response is formatted, diffed, and then applied with backup creation.
+5. Radar and git flows remain on the existing `neurocli_core` services instead of duplicating backend logic in the app.
+6. Added adapter-level tests to pin the Phase 4 request mapping and streaming contract.
+
+Remaining Phase 4 gaps:
+
+- manual end-to-end Textual verification with a real model runtime still needs to be run
+- API/browser verification is blocked in this environment until `fastapi` is installed again
+- larger end-to-end test expansion is still deferred to the later test phase
 
 ## Later Work
 

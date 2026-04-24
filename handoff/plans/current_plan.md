@@ -12,23 +12,22 @@ Both should use the same real AI workflow in `neurocli_core`.
 
 - Phase 1 is done.
 - Phase 2 is done.
-- Phase 3 is active and the React integration wiring is now in place.
-- Phase 4 comes after Phase 3.
+- Phase 3 code wiring is done, but the final live browser smoke test is still pending.
+- Phase 4 contract alignment work is now in place for `neurocli_app`.
 
 ## Next Work
 
-1. Finish Phase 3 verification with a live browser run against the local backend and model runtime.
-2. Verify the Python app still matches the shared backend contract.
-3. Start Phase 4 only after the shared contract is confirmed across both app surfaces.
+1. Run a manual Textual app smoke test against the real model runtime now that the shared stream contract is wired in.
+2. Install or restore missing FastAPI runtime dependencies in the local environment, then rerun the API and browser verification.
+3. Expand end-to-end verification for both app surfaces in the later test phase.
 
 ## Main Files For The Next Step
 
-- `web_client/src/App.jsx`
-- `web_client/src/components/FileTree.jsx`
-- `web_client/src/components/ContextModal.jsx`
-- `web_client/src/components/GitModal.jsx`
-- `web_client/src/components/ModelModal.jsx`
-- `web_client/src/lib/api.js`
+- `neurocli_app/main.py`
+- `neurocli_app/model_modal.py`
+- `neurocli_app/workflow_adapter.py`
+- `neurocli_core/workflow_service.py`
+- `tests/test_textual_workflow_adapter.py`
 - `api/main.py`
 - `handoff/coordination/shared_decisions.md`
 
