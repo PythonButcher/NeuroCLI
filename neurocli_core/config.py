@@ -1,30 +1,45 @@
+"""Configuration helpers shared across the backend surface area."""
+
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
-def get_openai_api_key() -> str:
-    """Loads the OpenAI API key from a .env file in the project root.
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:  # pragma: no cover - depends on local environment
+    def load_dotenv(*args, **kwargs):  # type: ignore[no-redef]
+        """Fallback no-op when python-dotenv is not installed."""
 
-    Raises:
-        ValueError: If the OPENAI_API_KEY is not found in the .env file.
+        return False
 
-    Returns:
-        The OpenAI API key.
+
+DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+
+
+def _load_project_env() -> None:
+    """Load the project ``.env`` file when it exists.
+
+    The service layer should be able to report clean errors when configuration
+    is missing, so this helper intentionally avoids raising when the file is not
+    present.
     """
-    # Correctly determine the project root by going up from the current file's directory
-    # __file__ -> config.py
-    # Path(__file__).parent -> neurocli_core
-    # Path(__file__).parent.parent -> project root (NeuroCLI)
+
     project_root = Path(__file__).parent.parent
     dotenv_path = project_root / ".env"
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path=dotenv_path, override=False)
 
-    if not dotenv_path.exists():
-        raise FileNotFoundError(f".env file not found at {dotenv_path}")
 
-    load_dotenv(dotenv_path=dotenv_path)
-    
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY not found in .env file.")
-        
-    return api_key
+def get_openai_api_key() -> str | None:
+    """Return the configured OpenAI API key, or ``None`` when missing."""
+
+    _load_project_env()
+    return os.getenv("OPENAI_API_KEY")
+
+
+def get_default_openai_model() -> str:
+    """Return the configured default model name for NeuroCLI."""
+
+    _load_project_env()
+    return os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)

@@ -9,7 +9,7 @@ from neurocli_app.context_modal import ContextModal
 from neurocli_app.radar_modal import RadarModal
 from neurocli_app.git_modal import GitModal
 
-from neurocli_core.engine import get_ai_response
+from neurocli_core.engine import build_ai_workflow_request, execute_ai_workflow
 from neurocli_core.diff_generator import generate_diff
 from neurocli_core.code_formatter import format_code
 
@@ -127,7 +127,12 @@ class NeuroApp(App):
         context_files = list(self.context_paths) if self.context_paths else None
         
         self.query_one("#loading_indicator").styles.display = "block"
-        self.run_worker(lambda: get_ai_response(prompt, file_path, context_files), thread=True)
+        request = build_ai_workflow_request(
+            prompt,
+            target_file=file_path,
+            context_paths=context_files,
+        )
+        self.run_worker(lambda: execute_ai_workflow(request), thread=True)
         prompt_input.value = ""
 
     def _format_file(self) -> None:
@@ -222,16 +227,28 @@ class NeuroApp(App):
         markdown_display = self.query_one("#response_display", Markdown)
 
         if event.state == WorkerState.SUCCESS:
-            original_content, new_content = event.worker.result
-            if original_content:
-                file_path = self.query_one("#file_path_input", Input).value
-                formatted_content = format_code(new_content, file_path)
-                diff = generate_diff(original_content, formatted_content)
-                markdown_display.update(diff)
-                self._proposed_content = formatted_content
-                self.query_one("#apply_button").styles.display = "block"
+            response = event.worker.result
+            if not response.ok:
+                self._proposed_content = ""
+                markdown_display.update(response.error or "Unknown AI workflow error.")
+                self.query_one("#apply_button").styles.display = "none"
+            elif response.response_kind == "file_update":
+                file_path = response.target_file or self.query_one("#file_path_input", Input).value
+                try:
+                    # The formatter runs after generation so both UIs can share one
+                    # backend contract while still presenting a clean diff locally.
+                    formatted_content = format_code(response.output_text, file_path)
+                    diff = generate_diff(response.original_content, formatted_content)
+                    markdown_display.update(diff)
+                    self._proposed_content = formatted_content
+                    self.query_one("#apply_button").styles.display = "block"
+                except RuntimeError as error:
+                    self._proposed_content = ""
+                    markdown_display.update(f"### Formatter Error\n\n{error}")
+                    self.query_one("#apply_button").styles.display = "none"
             else:
-                markdown_display.update(new_content)
+                self._proposed_content = ""
+                markdown_display.update(response.output_text)
                 self.query_one("#apply_button").styles.display = "none"
 
         elif event.state == WorkerState.ERROR:

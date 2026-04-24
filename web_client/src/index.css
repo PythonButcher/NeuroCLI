@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-terminal-bg: #0d1117;
+  --color-terminal-text: #c9d1d9;
+  --color-terminal-accent: #58a6ff;
+  --color-terminal-error: #f85149;
+  --color-terminal-success: #3fb950;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  background-color: var(--color-terminal-bg);
+  color: var(--color-terminal-text);
+  font-family: var(--font-mono);
+  margin: 0;
+  min-height: 100vh;
+}

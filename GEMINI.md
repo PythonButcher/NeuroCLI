@@ -1,33 +1,67 @@
-# GEMINI.md - NeuroCLI AI Assistant Instructions
+# GEMINI.md
 
-## 1. Project Overview
+## NeuroCLI Gemini Instructions
 
--   **Name:** NeuroCLI
--   **Description:** A command-line application built with Python and the Textual TUI framework. It acts as an intelligent assistant for developers, using AI models (like Gemini and OpenAI) to process, generate, modify, and integrate code into local files.
--   **Goal:** The primary goal of NeuroCLI is to be a versatile development tool **capable of working with many different file types across various languages and frameworks, not just Python.** Its intelligent features should be designed to handle general text processing, code formatting, and code modifications for any standard development file, such as Javascript, CSS, HTML, Markdown, and more.
+Read this file first for Gemini work in this repository.
 
-## 2. Core Architectural Principle: Separation of Concerns
+## Project Overview
 
-This is the most important rule for this project. The architecture MUST be kept separate:
+- **Name:** NeuroCLI
+- **Goal:** Maintain two supported product surfaces:
+  - the Python-only Textual app
+  - the React web frontend
+- **Shared architecture:** `neurocli_core` remains the reusable backend source of truth.
 
--   **`neurocli_core`:** This package is the "engine." It contains all business logic (API calls, file handling, diff generation, code processing, etc.). Code in this package MUST be pure, UI-agnostic Python. It MUST NOT import from or depend on `neurocli_app`.
--   **`neurocli_app`:** This package is the "dashboard." It contains the Textual TUI, which serves as the user interface. It IMPORTS and USES the logic from `neurocli_core`.
--   **Reasoning:** This separation is critical for future integration of `neurocli_core` into web applications or other frontends, ensuring maximum reusability.
+## Gemini Role
 
-## 3. Coding Standards & Conventions
+Gemini is responsible for React frontend UI work only.
 
--   All Python code should use modern practices, including **type hints**.
--   Follow **PEP 8** style guidelines for code formatting.
--   Prioritize creating **modular, reusable, and easily testable functions**, especially within the `neurocli_core` package.
--   Always consider multi-language support when writing core logic (e.g., using appropriate formatters or syntax highlighters based on file extensions).
+### Gemini should focus on
 
-## 4. Your Persona & Behavior
+- Visual design in `web_client`
+- Styling and layout
+- Presentational React components
+- UX polish, empty states, loading states, and consistency
 
--   Act as an expert software developer and a helpful assistant.
--   When asked to generate or modify code, always respect the core architectural principle of separating logic from the UI.
--   Your primary goal is to help build robust, maintainable, scalable, and versatile software that handles diverse project needs.
--   **Never delete or modify a file unless explicitly instructed to do so.** Always confirm destructive actions before proceeding.
+### Gemini should not be the primary owner for
 
-<!-- TODO: Add a section detailing how to handle database migrations. -->
-<!-- FIXME: The multi-language support section needs practical examples. -->
-<!-- TODO: Define a clear branching strategy for the Git repository in this document. -->
+- `neurocli_core`
+- `api`
+- `neurocli_app`
+- Python backend work
+- Main AI workflow behavior
+- React business logic and integration contracts unless Codex has already defined them
+
+## Core Architectural Principle
+
+Keep business logic separate from presentation:
+
+- **`neurocli_core`:** backend engine and shared logic
+- **`neurocli_app`:** Python Textual interface
+- **`api`:** FastAPI backend for the React app
+- **`web_client`:** React frontend
+
+The React frontend should not become the place where backend logic lives.
+
+## Collaboration With Codex
+
+- Codex owns backend, Python, API, shared logic, and React integration logic.
+- Gemini owns UI-only work in `web_client`.
+- If a UI task depends on new backend data or changed payloads, record that in `handoff/coordination/shared_decisions.md`.
+- Before starting, review:
+  - `handoff/README.md`
+  - `handoff/plans/current_plan.md`
+  - `handoff/coordination/gemini_handoff.md`
+  - `handoff/coordination/shared_decisions.md`
+
+## UI Conventions
+
+- Preserve established component boundaries where possible.
+- Prefer presentational improvements over logic rewrites.
+- Do not move stateful backend behavior into JSX components.
+- Keep components ready to consume backend data from Codex-defined contracts.
+
+## Safety
+
+- Never delete or modify unrelated files without clear intent.
+- Avoid changing backend-facing behavior without documenting it in the handoff docs.

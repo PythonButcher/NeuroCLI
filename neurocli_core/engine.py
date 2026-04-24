@@ -1,7 +1,19 @@
 # neurocli_core/engine.py
+"""Public entry points for shared NeuroCLI backend behavior."""
+
+from __future__ import annotations
+
+from typing import Optional, Tuple
 
 from neurocli_core.ai_services import get_ai_response as get_ai_response_from_service
-from typing import Optional, Tuple
+from neurocli_core.workflow_service import (
+    AIWorkflowRequest,
+    AIWorkflowResponse,
+    AIWorkflowStreamEvent,
+    build_ai_workflow_request,
+    execute_ai_workflow,
+    stream_ai_workflow,
+)
 
 def get_greeting() -> str:
     """A UI-agnostic function that represents a piece of core business logic.
@@ -21,3 +33,15 @@ def get_ai_response(
     optionally with file content and additional context paths.
     """
     return get_ai_response_from_service(prompt, file_path, context_paths)
+
+
+__all__ = [
+    "AIWorkflowRequest",
+    "AIWorkflowResponse",
+    "AIWorkflowStreamEvent",
+    "build_ai_workflow_request",
+    "execute_ai_workflow",
+    "get_ai_response",
+    "get_greeting",
+    "stream_ai_workflow",
+]
