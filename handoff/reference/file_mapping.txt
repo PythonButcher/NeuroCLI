@@ -1,0 +1,27 @@
+.gitattributes – Normalizes line endings for text files.
+
+.gitignore – Ignores common Python build artifacts, environments, and IDE files.
+
+AGENTS.md – Project routing and ownership rules for Codex and Gemini.
+
+GEMINI.md – Project rules for Gemini, with emphasis on keeping UI and backend work separate.
+
+README.md – High-level overview and basic setup notes.
+
+handoff/plans/current_plan.md – Short status file that shows what the team should do next.
+
+handoff/plans/repair_plan.md – Main repair roadmap for the project.
+
+handoff/coordination/codex_handoff.md – Codex-owned backend and integration notes.
+
+handoff/coordination/gemini_handoff.md – Gemini-owned frontend presentation notes.
+
+handoff/coordination/shared_decisions.md – Shared rules and API contract notes.
+
+neurocli_app/main.py – Textual app entry point.
+
+api/main.py – FastAPI backend for the web app.
+
+neurocli_core/workflow_service.py – Shared AI workflow service used by both app paths.
+
+web_client/src/App.jsx – Main React app entry point.
