@@ -47,12 +47,12 @@ The React frontend should not become the place where backend logic lives.
 
 - Codex owns backend, Python, API, shared logic, and React integration logic.
 - Gemini owns UI-only work in `web_client`.
-- If a UI task depends on new backend data or changed payloads, record that in `handoff/shared_decisions.md`.
+- If a UI task depends on new backend data or changed payloads, record that in `handoff/coordination/shared_decisions.md`.
 - Before starting, review:
   - `handoff/README.md`
-  - `handoff/current_plan.md`
-  - `handoff/gemini_handoff.md`
-  - `handoff/shared_decisions.md`
+  - `handoff/plans/current_plan.md`
+  - `handoff/coordination/gemini_handoff.md`
+  - `handoff/coordination/shared_decisions.md`
 
 ## UI Conventions
 

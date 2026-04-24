@@ -8,6 +8,10 @@ dependencies = [
     "openai",                # ✅ OpenAI support
     "textual-fspicker",
     "ruff",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "sse-starlette",
 ]
 
 [project.scripts]

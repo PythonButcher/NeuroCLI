@@ -43,15 +43,15 @@ Gemini should not be the primary owner for:
 - Codex defines or approves backend contracts before Gemini builds UI against them.
 - Gemini should prefer presentational React changes that preserve existing logic boundaries.
 - If a React task mixes UI and logic, Codex owns the logic layer and Gemini owns the presentational layer.
-- Shared decisions, blockers, and handoffs should be written in the `handoff/` folder.
+- Shared decisions, blockers, plans, and handoffs should be written in the `handoff/` folder.
 
 ## Files To Review First
 
 - `AGENTS.md`
 - `GEMINI.md`
 - `handoff/README.md`
-- `handoff/current_plan.md`
-- `application_repair_plan.md`
+- `handoff/plans/current_plan.md`
+- `handoff/plans/repair_plan.md`
 
 ## Working Agreement
 

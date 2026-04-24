@@ -10,6 +10,8 @@ import {
   Activity, GitCommit, Play, Sparkles
 } from 'lucide-react'
 
+const API_BASE_URL = 'http://127.0.0.1:8010'
+
 function App() {
   const [history, setHistory] = useState([
     { type: 'system', content: 'NeuroCLI v2.0.0 - Web Integrated Environment initialized...' },
@@ -59,7 +61,7 @@ function App() {
     setIsStreaming(true)
 
     try {
-      const eventSource = new EventSource(`http://localhost:8000/stream?command=${encodeURIComponent(userCmd)}`)
+      const eventSource = new EventSource(`${API_BASE_URL}/stream?command=${encodeURIComponent(userCmd)}`)
 
       eventSource.onmessage = (event) => {
         const newData = JSON.parse(event.data)
@@ -111,7 +113,7 @@ function App() {
     setShowApplyBtn(false)
 
     try {
-      const res = await fetch(`http://localhost:8000/api/file?path=${encodeURIComponent(path)}`)
+      const res = await fetch(`${API_BASE_URL}/api/file?path=${encodeURIComponent(path)}`)
       const data = await res.json()
 
       if (data.error) throw new Error(data.error)
@@ -134,7 +136,7 @@ function App() {
     setHistory(prev => [...prev, { type: 'system', content: `Formatting ${targetFile}...` }])
 
     try {
-      const res = await fetch('http://localhost:8000/api/format', {
+      const res = await fetch(`${API_BASE_URL}/api/format`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: targetFile })
@@ -161,7 +163,7 @@ function App() {
     if (!targetFile || !proposedContent) return
 
     try {
-      const res = await fetch('http://localhost:8000/api/apply', {
+      const res = await fetch(`${API_BASE_URL}/api/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: targetFile, content: proposedContent })
