@@ -1,12 +1,12 @@
 # NeuroCLI Repair Plan
 
 ## Goal
-Keep both versions of NeuroCLI working:
+Keep NeuroCLI working as one shared backend product with two supported frontends:
 
 - the Python Textual app in `neurocli_app`
 - the React web app in `web_client`
 
-Both versions should use the same real AI workflow from `neurocli_core`.
+Both frontends should use the same real AI workflow from `neurocli_core`. The Textual app calls that backend directly. The React app reaches it through the FastAPI bridge in `api`.
 
 ## Current State
 
@@ -67,7 +67,7 @@ What Phase 3 should look like when closed:
 - local browser verification is complete against the running backend
 
 ### Phase 4: Preserve and Align the Python App
-This phase is now active in code.
+This phase is implemented in code and waiting on final runtime smoke verification.
 
 What we need to do:
 
@@ -100,7 +100,11 @@ Remaining Phase 4 gaps:
 ## Later Work
 
 ### Phase 5
-Clean up startup docs, dependency setup, and local run instructions.
+Polish both frontends and iron out feature parity while preserving the one-backend architecture.
+
+Phase 5 should focus on making NeuroCLI feel like a state-of-the-art terminal-first developer tool. The Textual app should be treated as a first-class flagship terminal interface, and the React frontend should preserve the same workflow model through the FastAPI bridge.
+
+The working direction for Phase 5 lives in `handoff/plans/phase_5_direction.md`.
 
 ### Phase 6
 Expand tests and do full end-to-end verification for both app versions.

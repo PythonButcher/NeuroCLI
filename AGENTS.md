@@ -7,8 +7,9 @@ This repository supports parallel work between Codex and Gemini. Read this file 
 ## Source of Truth
 
 - `neurocli_core` is the shared backend and main AI workflow source of truth.
-- `neurocli_app` is the Python-only Textual client.
-- `api` is the backend for the React web client.
+- NeuroCLI now has one shared backend contract with two supported frontends.
+- `neurocli_app` is the full Python Textual frontend. It calls `neurocli_core` directly.
+- `api` is the FastAPI bridge that exposes `neurocli_core` to the React frontend.
 - `web_client` is the React frontend.
 
 ## Codex Ownership
@@ -56,6 +57,8 @@ Gemini should not be the primary owner for:
 ## Working Agreement
 
 - Do not duplicate backend logic in the React app.
+- Do not duplicate backend workflow logic in the Textual app.
 - Keep business logic in Python where practical, inside `neurocli_core`.
-- Keep the Python-only app functional while building the web version.
+- Keep the Python Textual app and React frontend as feature-aligned as practical.
+- If a feature cannot be identical across both frontends, document the reason and preserve the same backend contract.
 - Prefer additive collaboration notes in `handoff/` over rewriting another agent's instructions.

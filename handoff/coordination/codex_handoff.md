@@ -13,7 +13,8 @@ Codex owns backend and integration work across this repo.
 ## Current Notes
 
 - `neurocli_core` is the shared backend source of truth.
-- The web backend in `api` now uses the real AI workflow service.
+- NeuroCLI now has one shared backend workflow with two frontend surfaces.
+- The FastAPI layer in `api` is a bridge from React to `neurocli_core`, not a separate business backend.
 - The React frontend Phase 3 logic has been rewired to the real API contract.
 - The Textual app Phase 4 contract alignment is now wired in code.
 
@@ -30,6 +31,7 @@ Codex owns backend and integration work across this repo.
 - `neurocli_app/workflow_adapter.py` now builds the same request fields for the Textual app and validates raw JSON `model_options`.
 - `neurocli_app/main.py` now streams through `stream_ai_workflow` and applies the final normalized workflow response through one shared handler.
 - `neurocli_app/model_modal.py` is the Textual entry point for `model` and `model_options`.
+- Phase 5 should improve both frontends while preserving shared behavior: prompt runs, file-targeted updates, context attachments, model settings, streaming, formatting, apply, radar, and git workflows.
 
 ## Coordination Rule
 If frontend work needs a backend contract change, record it in `handoff/coordination/shared_decisions.md`.

@@ -2,10 +2,12 @@
 
 ## Architecture
 
-- `neurocli_core` is the shared backend source of truth
-- `neurocli_app` is the Python-only app
-- `api` is the backend for the React app
-- `web_client` is the React frontend
+- NeuroCLI has one shared backend contract and two supported frontends.
+- `neurocli_core` is the backend source of truth for workflow and business behavior.
+- `neurocli_app` is the full Python Textual frontend and should call `neurocli_core` directly.
+- `api` is a FastAPI bridge that exposes the shared backend contract to the React frontend.
+- `web_client` is the React frontend.
+- Feature work should preserve parity between the Textual and React frontends whenever the shared backend supports the same behavior.
 
 ## Ownership
 
@@ -88,4 +90,5 @@ Stream event semantics:
 - Phase 3 still needs a final live browser smoke test against the local backend and real model runtime
 - Phase 4 still needs a manual Textual smoke test against a real model runtime
 - local API verification is currently blocked because the environment is missing `fastapi`
+- Phase 5 should focus on frontend quality, feature parity, and a terminal-first experience that still uses the shared backend contract
 - frontend cleanup should not change backend rules without updating this file
