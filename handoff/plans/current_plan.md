@@ -27,7 +27,7 @@ Radar is aligned at the service level: Textual calls `neurocli_core.radar_engine
 
 ## Phase 5 Textual Slice
 
-The Textual app now has a visible command-center status strip showing workflow state, target file, context count, model state, and apply readiness. It also has keyboard bindings for run, format, apply, model, context, radar, git, reset, and quit. The reset and clear controls now clear transient prompt/diff/stream state and refocus the prompt input. Worker state handling no longer hides the loading indicator on non-terminal worker transitions.
+The Textual app now has a visible command-center status strip showing workflow state, target file, context count, model state, and apply readiness. It also has a top command icon that opens a git-window-style command reference modal listing run, format, apply, model, context, radar, review, git, reset, commands, and quit. The bottom action rail now includes a `Review` action between Radar and Commit. Review opens an editable git-themed proposal window so users can revise generated or formatted content before keeping the draft or applying it through the existing backup path. The reset and clear controls now clear transient prompt/diff/stream state and refocus the prompt input. Worker state handling no longer hides the loading indicator on non-terminal worker transitions.
 
 ## Next Work
 
@@ -35,7 +35,7 @@ The Textual app now has a visible command-center status strip showing workflow s
 2. Define a shared generated-file proposal contract so React can review formatted diffs before apply, matching the Textual flow.
 3. Decide whether AI commit-message generation should become a shared backend/API contract or stay Textual-only for now.
 4. Run the pending live browser smoke test against the local FastAPI backend and real model runtime.
-5. Continue Textual flagship polish: focus order, command palette candidate, diff readability, radar access, and git action clarity.
+5. Continue Textual flagship polish: focus order, command palette candidate, diff readability, review editor upgrades, radar access, and git action clarity.
 
 ## Main Files For The Next Step
 

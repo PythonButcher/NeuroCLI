@@ -34,7 +34,9 @@ Codex owns backend and integration work across this repo.
 - `neurocli_app/model_modal.py` is the Textual entry point for `model` and `model_options`.
 - Phase 5 should improve both frontends while preserving shared behavior: prompt runs, file-targeted updates, context attachments, model settings, streaming, formatting, apply, radar, and git workflows.
 - `neurocli_app/main.py` now exposes visible terminal state for workflow status, target, context count, model state, and apply readiness.
-- Textual keyboard bindings now cover run, format, apply, model, context, radar, git, reset, and quit.
+- Textual keyboard bindings now cover run, format, apply, model, context, radar, review, git, commands, reset, and quit.
+- `neurocli_app/command_modal.py` provides the discoverable command reference window opened by the top `⌨ Commands` control or Ctrl+K.
+- `neurocli_app/review_modal.py` provides the Textual Review Editor opened by `🧭 Review` or Ctrl+E. It edits the current proposed content, can keep the edited draft, and can apply edited content through the existing backup/write path in `neurocli_app/main.py`.
 - Do not consider React generated-file parity complete until it has a shared formatted diff/proposal path for AI `file_update` responses.
 
 ## Coordination Rule
@@ -47,4 +49,5 @@ If frontend work needs a backend contract change, record it in `handoff/coordina
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\model_modal.py neurocli_app\\workflow_adapter.py neurocli_core\\workflow_service.py neurocli_core\\git_engine.py neurocli_core\\radar_engine.py api\\main.py` passes locally
 - `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_ai_services tests.test_textual_workflow_adapter tests.test_api_main` passes locally
 - `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -c "import neurocli_app.main; import neurocli_app.workflow_adapter; import api.main; import neurocli_core.workflow_service; print('imports ok')"` passes locally after restoring Textual dependencies into `.codex_tmp_py/site-packages`
+- `python -m py_compile neurocli_app\\main.py neurocli_app\\review_modal.py neurocli_app\\command_modal.py` passes locally
 - Default `python -m unittest tests.test_api_main` still fails without `PYTHONPATH` because the sandbox Python path does not include local target-installed dependencies

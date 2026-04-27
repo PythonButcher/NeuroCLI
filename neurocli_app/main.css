@@ -67,14 +67,35 @@ Screen {
     padding: 2 4;
 }
 
-#workspace_header {
+#workspace_topbar {
     width: 100%;
+    height: 2;
+    background: transparent;
+}
+
+#workspace_header {
+    width: 1fr;
     height: 2;
     content-align: left middle;
     color: $foreground;
     text-style: bold dim;
     padding-bottom: 1;
     background: transparent;
+}
+
+#btn_commands {
+    width: 18;
+    height: 1;
+    background: transparent;
+    border: none;
+    color: $accent;
+    text-style: bold;
+    content-align: right middle;
+    padding: 0 1;
+}
+
+#btn_commands:hover {
+    color: $primary;
 }
 
 #workspace_status {
@@ -206,13 +227,14 @@ Input>.input--placeholder {
     width: 100%;
     margin-top: 1;
     padding-top: 1;
-    border-top: dashed $secondary;
+    border-top: none;
+    align: left middle;
 }
 
 #toolbox {
-    width: 1fr;
+    width: auto;
     align: left middle;
-    height: auto;
+    height: 1;
 }
 
 .tool_btn {
@@ -222,7 +244,7 @@ Input>.input--placeholder {
     border: none;
     background: transparent;
     color: $secondary;
-    margin-right: 1;
+    margin-right: 2;
     padding: 0 1;
 }
 
@@ -233,19 +255,20 @@ Input>.input--placeholder {
 
 #run_row {
     width: auto;
-    align: right middle;
+    align: left middle;
     height: 1;
 }
 
 .run_btn {
     width: auto;
-    margin-left: 2;
+    margin-left: 0;
+    margin-right: 2;
     background: transparent;
     color: $accent;
     text-style: bold;
     border: none;
     height: 1;
-    padding: 0;
+    padding: 0 1;
 }
 
 .run_btn:hover {
@@ -258,11 +281,27 @@ Input>.input--placeholder {
     color: $secondary;
     border: none;
     height: 1;
-    padding: 0;
+    margin-right: 2;
+    padding: 0 1;
 }
 
 #format_button:hover {
     color: $foreground;
+    text-style: bold;
+}
+
+#run_button {
+    width: auto;
+    background: transparent;
+    color: $accent;
+    border: none;
+    height: 1;
+    margin-right: 0;
+    padding: 0 1;
+}
+
+#run_button:hover {
+    color: $primary;
     text-style: bold;
 }
 
@@ -547,6 +586,182 @@ GitModal {
 }
 
 #btn_commit_push:hover {
+    background: $background;
+    color: $success;
+    text-style: bold;
+}
+
+/* --- Command Modal Styling --- */
+CommandModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#command_dialog {
+    width: 80;
+    height: 30;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#command_header {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $secondary;
+}
+
+#command_main_area {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+#command_table {
+    height: 100%;
+    background: $background;
+    border: ascii $secondary;
+}
+
+#command_action_row {
+    height: 3;
+    align: right middle;
+    border-top: solid $secondary;
+    padding-top: 1;
+}
+
+#btn_close_commands {
+    margin-right: 2;
+    background: transparent;
+    color: $error;
+    border: none;
+}
+
+#btn_close_commands:hover {
+    background: $error;
+    color: $background;
+}
+
+/* --- Review Editor Modal Styling --- */
+ReviewModal {
+    align: center middle;
+    background: $background 80%;
+}
+
+#review_dialog {
+    width: 120;
+    height: 44;
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#review_header {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    border-bottom: solid $secondary;
+}
+
+#review_meta_row {
+    height: 2;
+    margin-bottom: 1;
+}
+
+#review_target_label {
+    width: 1fr;
+    color: $foreground;
+    text-style: bold;
+}
+
+#review_ready_label {
+    width: 1fr;
+    color: $secondary;
+    content-align: right middle;
+}
+
+#review_future_row {
+    height: 3;
+    margin-bottom: 1;
+    border-bottom: dashed $secondary;
+}
+
+.review_future_btn {
+    width: auto;
+    margin-right: 2;
+    background: transparent;
+    border: none;
+    color: $secondary;
+    text-style: dim;
+}
+
+#review_main_area {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+#review_text_area {
+    width: 1fr;
+    height: 1fr;
+    border: ascii $secondary;
+    background: $background;
+}
+
+#review_action_row {
+    height: 3;
+    align: right middle;
+    border-top: solid $secondary;
+    padding-top: 1;
+}
+
+#btn_cancel_review {
+    margin-right: 2;
+    background: transparent;
+    color: $error;
+    border: none;
+}
+
+#btn_cancel_review:hover {
+    background: $error;
+    color: $background;
+}
+
+#btn_reset_review {
+    margin-right: 2;
+    background: transparent;
+    color: $warning;
+    border: none;
+}
+
+#btn_reset_review:hover {
+    background: $warning;
+    color: $background;
+}
+
+#btn_keep_review {
+    margin-right: 2;
+    background: transparent;
+    color: $accent;
+    border: none;
+}
+
+#btn_keep_review:hover {
+    background: $accent;
+    color: $background;
+}
+
+#btn_apply_review {
+    background: $success;
+    color: $background;
+    text-style: bold;
+    border: none;
+}
+
+#btn_apply_review:hover {
     background: $background;
     color: $success;
     text-style: bold;

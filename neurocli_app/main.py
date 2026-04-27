@@ -7,10 +7,12 @@ from textual.widgets import Button, DirectoryTree, Input, LoadingIndicator, Mark
 from textual.worker import Worker
 from textual_fspicker import FileOpen
 
+from neurocli_app.command_modal import CommandModal
 from neurocli_app.context_modal import ContextModal
 from neurocli_app.git_modal import GitModal
 from neurocli_app.model_modal import ModelModal
 from neurocli_app.radar_modal import RadarModal
+from neurocli_app.review_modal import ReviewModal
 from neurocli_app.theme import arctic_theme, fleet_dark, modern_theme, solid_modern
 from neurocli_app.workflow_adapter import (
     build_textual_workflow_request,
@@ -33,7 +35,9 @@ class NeuroApp(App):
         ("ctrl+m", "open_model", "Model"),
         ("ctrl+o", "open_context", "Context"),
         ("ctrl+d", "open_radar", "Radar"),
+        ("ctrl+e", "open_review", "Review"),
         ("ctrl+g", "open_git", "Git"),
+        ("ctrl+k", "open_commands", "Commands"),
         ("ctrl+l", "reset_workspace", "Reset"),
     ]
     CSS_PATH = "main.css"
@@ -41,6 +45,7 @@ class NeuroApp(App):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._proposed_content: str = ""
+        self._proposal_baseline_content: str = ""
         self._streamed_output: str = ""
         self._workflow_state: str = "Idle"
         self.context_paths: set[str] = set()
@@ -57,7 +62,9 @@ class NeuroApp(App):
                 yield Button("Reset", id="reset_screen")
 
             with Container(id="workspace"):
-                yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                with Horizontal(id="workspace_topbar"):
+                    yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                    yield Button("⌨   Commands", id="btn_commands", classes="top_icon_btn")
                 yield Static("", id="workspace_status")
                 with Container(id="workspace_panel"):
                     # Output/History Section
@@ -85,9 +92,10 @@ class NeuroApp(App):
                                 yield Button("📊 Radar", id="btn_radar", classes="tool_btn")
 
                             with Horizontal(id="run_row"):
+                                yield Button("🧭 Review", id="btn_review", classes="run_btn")
                                 yield Button("Commit 🐙", id="btn_commit", classes="run_btn")
-                                yield Button("Format", id="format_button")
-                                yield Button("Run", id="run_button")
+                                yield Button("Format", id="format_button", classes="run_btn")
+                                yield Button("Run", id="run_button", classes="run_btn")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
@@ -120,6 +128,7 @@ class NeuroApp(App):
 
         # Clear proposed content and hide apply button as we are viewing a new file
         self._proposed_content = ""
+        self._proposal_baseline_content = ""
         self.query_one("#apply_button").styles.display = "none"
         self._workflow_state = "Viewing file"
         self._refresh_workspace_status()
@@ -168,6 +177,7 @@ class NeuroApp(App):
         
         self._streamed_output = ""
         self._proposed_content = ""
+        self._proposal_baseline_content = ""
         self._workflow_state = "Streaming"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#loading_indicator").styles.display = "block"
@@ -208,11 +218,13 @@ class NeuroApp(App):
                 self.query_one("#response_display", Markdown).update("No formatting needed.")
                 self.query_one("#apply_button").styles.display = "none"
                 self._proposed_content = ""
+                self._proposal_baseline_content = ""
                 self._workflow_state = "Format clean"
             else:
                 diff = generate_diff(original_content, formatted_content)
                 self.query_one("#response_display", Markdown).update(diff)
                 self._proposed_content = formatted_content
+                self._proposal_baseline_content = original_content
                 self.query_one("#apply_button").styles.display = "block"
                 self._workflow_state = "Format review ready"
         except RuntimeError as e:
@@ -241,8 +253,12 @@ class NeuroApp(App):
             self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
         elif event.button.id == "btn_radar":
             self.action_open_radar()
+        elif event.button.id == "btn_review":
+            self.action_open_review()
         elif event.button.id == "btn_commit":
             self.action_open_git()
+        elif event.button.id == "btn_commands":
+            self.action_open_commands()
         elif event.button.id == "btn_clear":
             self.action_reset_workspace()
         elif event.button.id == "reset_screen":
@@ -324,6 +340,7 @@ class NeuroApp(App):
                 f"Changes applied to {file_path} successfully."
             )
             self._proposed_content = ""
+            self._proposal_baseline_content = ""
             self.query_one("#apply_button").styles.display = "none"
             self._workflow_state = "Applied with backup"
         except Exception as error:
@@ -338,6 +355,7 @@ class NeuroApp(App):
         """Reset transient prompt, stream, diff, and apply state without changing files."""
 
         self._proposed_content = ""
+        self._proposal_baseline_content = ""
         self._streamed_output = ""
         self._workflow_state = "Reset"
         self.query_one("#prompt_input", Input).value = ""
@@ -443,6 +461,7 @@ class NeuroApp(App):
 
         if not response.ok:
             self._proposed_content = ""
+            self._proposal_baseline_content = ""
             markdown_display.update(response.error or "Unknown AI workflow error.")
             self.query_one("#apply_button").styles.display = "none"
             self._workflow_state = "Workflow error"
@@ -458,10 +477,12 @@ class NeuroApp(App):
                 diff = generate_diff(response.original_content, formatted_content)
                 markdown_display.update(diff)
                 self._proposed_content = formatted_content
+                self._proposal_baseline_content = response.original_content
                 self.query_one("#apply_button").styles.display = "block"
                 self._workflow_state = "Diff review ready"
             except RuntimeError as error:
                 self._proposed_content = ""
+                self._proposal_baseline_content = ""
                 markdown_display.update(f"### Formatter Error\n\n{error}")
                 self.query_one("#apply_button").styles.display = "none"
                 self._workflow_state = "Formatter error"
@@ -470,6 +491,7 @@ class NeuroApp(App):
             return
 
         self._proposed_content = ""
+        self._proposal_baseline_content = ""
         markdown_display.update(response.output_text)
         self.query_one("#apply_button").styles.display = "none"
         self._workflow_state = "Completed"
@@ -508,15 +530,62 @@ class NeuroApp(App):
 
         self.push_screen(RadarModal())
 
+    def action_open_review(self) -> None:
+        """Open the editable proposal review lane."""
+
+        self.push_screen(
+            ReviewModal(
+                target_file=self.query_one("#file_path_input", Input).value,
+                proposed_content=self._proposed_content,
+                baseline_content=self._proposal_baseline_content,
+            ),
+            self._on_review_modal_dismissed,
+        )
+
     def action_open_git(self) -> None:
         """Open the git action lane backed by neurocli_core git services."""
 
         self.push_screen(GitModal())
 
+    def action_open_commands(self) -> None:
+        """Open the visible command reference window."""
+
+        self.push_screen(CommandModal())
+
     def action_reset_workspace(self) -> None:
         """Keyboard action for clearing transient terminal state."""
 
         self._reset_workspace_view()
+
+    def _on_review_modal_dismissed(self, payload: dict[str, str] | None) -> None:
+        """Receive edited review content and either keep it staged or apply it."""
+
+        if payload is None:
+            return
+
+        edited_content = payload.get("content", "")
+        if not edited_content:
+            self._workflow_state = "Review empty"
+            self._refresh_workspace_status()
+            return
+
+        self._proposed_content = edited_content
+        self.query_one("#apply_button").styles.display = "block"
+
+        if payload.get("action") == "apply":
+            self._apply_changes()
+            return
+
+        self._workflow_state = "Review draft kept"
+        if self._proposal_baseline_content:
+            self.query_one("#response_display", Markdown).update(
+                generate_diff(self._proposal_baseline_content, edited_content)
+            )
+        else:
+            self.query_one("#response_display", Markdown).update(
+                "Review draft updated. Apply is ready when you are."
+            )
+        self._refresh_workspace_status()
 
 
 def main():
