@@ -89,6 +89,22 @@ Stream event semantics:
 
 - Phase 3 still needs a final live browser smoke test against the local backend and real model runtime
 - Phase 4 still needs a manual Textual smoke test against a real model runtime
-- local API verification is currently blocked because the environment is missing `fastapi`
+- local API verification can pass when `.codex_tmp_py/site-packages` is added to `PYTHONPATH`; the default Python path still does not see those local dependencies
 - Phase 5 should focus on frontend quality, feature parity, and a terminal-first experience that still uses the shared backend contract
 - frontend cleanup should not change backend rules without updating this file
+
+## Phase 5 Parity Audit
+
+The shared prompt contract is aligned for both frontends: `prompt`, optional `target_file`, optional `context_paths`, optional `model`, and optional `model_options` flow through `neurocli_core`. Streaming is also aligned through structured `start`, `delta`, `complete`, and `error` events.
+
+The main parity gap is generated file review. Textual formats a generated `file_update`, builds a diff with `neurocli_core.diff_generator`, and applies only after backup creation. React receives the same final workflow response but currently treats `output_text` as directly applyable proposed content, so it lacks the same formatted generated diff before apply. Fix this with a shared proposal/diff contract before treating the React UI as feature-complete.
+
+Formatting existing files is aligned in behavior but not contract shape: Textual calls `format_code` and `generate_diff` directly; React uses `/api/format`, which mirrors that behavior through the API bridge. Apply-with-backup is also aligned in behavior: Textual calls `create_backup` and writes locally; React uses `/api/apply`.
+
+Radar is aligned by service ownership. Textual calls `scan_workspace_health`, `scan_technical_debt`, and `scan_recent_edits`; React gets the same data through `/api/radar`.
+
+Git is intentionally inconsistent today. React uses `/api/git/status`, `/api/git/diff`, and `/api/git/commit` with a manually entered commit message. Textual still generates an AI commit message through `neurocli_core.git_engine.generate_commit_message` and commits/pushes from the modal. Do not add AI commit-message UX to React unless Codex first exposes it as a shared backend/API contract.
+
+## Phase 5 Textual UI Decision
+
+The Textual app is the flagship terminal experience. It now exposes a compact status strip with workflow state, active target file, context count, model state, and apply readiness. Keyboard bindings are part of the product contract for the terminal surface: Ctrl+R run, Ctrl+F format, Ctrl+A apply, Ctrl+M model, Ctrl+O context, Ctrl+D radar, Ctrl+G git, Ctrl+L reset, and Ctrl+Q quit.

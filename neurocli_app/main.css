@@ -77,6 +77,18 @@ Screen {
     background: transparent;
 }
 
+#workspace_status {
+    width: 100%;
+    height: 1;
+    content-align: left middle;
+    color: $secondary;
+    text-style: dim;
+    padding: 0 1;
+    margin-bottom: 1;
+    background: $surface;
+    border-left: thick $accent;
+}
+
 #workspace_panel {
     height: 1fr;
     padding: 0;

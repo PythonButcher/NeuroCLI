@@ -4,7 +4,7 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, VerticalScroll
 from textual.widgets import Button, DirectoryTree, Input, LoadingIndicator, Markdown, Static
-from textual.worker import Worker, WorkerState
+from textual.worker import Worker
 from textual_fspicker import FileOpen
 
 from neurocli_app.context_modal import ContextModal
@@ -25,14 +25,27 @@ from neurocli_core.workflow_service import AIWorkflowRequest, AIWorkflowResponse
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
-    BINDINGS = [("ctrl+q", "quit", "Quit")]
+    BINDINGS = [
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+r", "run_prompt", "Run"),
+        ("ctrl+f", "format_file", "Format"),
+        ("ctrl+a", "apply_changes", "Apply"),
+        ("ctrl+m", "open_model", "Model"),
+        ("ctrl+o", "open_context", "Context"),
+        ("ctrl+d", "open_radar", "Radar"),
+        ("ctrl+g", "open_git", "Git"),
+        ("ctrl+l", "reset_workspace", "Reset"),
+    ]
     CSS_PATH = "main.css"
 
-    _proposed_content: str = ""
-    _streamed_output: str = ""
-    context_paths: set[str] = set()
-    selected_model: str = ""
-    model_options_text: str = ""
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._proposed_content: str = ""
+        self._streamed_output: str = ""
+        self._workflow_state: str = "Idle"
+        self.context_paths: set[str] = set()
+        self.selected_model: str = ""
+        self.model_options_text: str = ""
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -45,6 +58,7 @@ class NeuroApp(App):
 
             with Container(id="workspace"):
                 yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                yield Static("", id="workspace_status")
                 with Container(id="workspace_panel"):
                     # Output/History Section
                     yield Markdown("AI response will appear here...", id="response_display")
@@ -86,6 +100,8 @@ class NeuroApp(App):
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self._refresh_model_button()
+        self._refresh_workspace_status()
+        self.query_one("#prompt_input", Input).focus()
 
     def on_directory_tree_file_selected(
         self, event: DirectoryTree.FileSelected
@@ -105,6 +121,8 @@ class NeuroApp(App):
         # Clear proposed content and hide apply button as we are viewing a new file
         self._proposed_content = ""
         self.query_one("#apply_button").styles.display = "none"
+        self._workflow_state = "Viewing file"
+        self._refresh_workspace_status()
 
         try:
             # Determine extension for syntax highlighting
@@ -123,6 +141,8 @@ class NeuroApp(App):
             self.query_one("#response_display", Markdown).update(
                 f"### Error\n\nFailed to read file: {e}"
             )
+            self._workflow_state = "File read error"
+            self._refresh_workspace_status()
 
     def _run_prompt(self) -> None:
         """Run the AI request using the shared streaming workflow contract."""
@@ -142,12 +162,16 @@ class NeuroApp(App):
             )
         except ValueError as error:
             self.query_one("#response_display", Markdown).update(f"### Request Error\n\n{error}")
+            self._workflow_state = "Request error"
+            self._refresh_workspace_status()
             return
         
         self._streamed_output = ""
         self._proposed_content = ""
+        self._workflow_state = "Streaming"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#loading_indicator").styles.display = "block"
+        self._refresh_workspace_status()
         self.query_one("#response_display", Markdown).update(
             self._render_stream_output(request)
         )
@@ -170,6 +194,8 @@ class NeuroApp(App):
         file_path = self.query_one("#file_path_input", Input).value
         if not file_path or not os.path.exists(file_path):
             self.query_one("#response_display", Markdown).update("Please select a valid file to format.")
+            self._workflow_state = "Format needs target"
+            self._refresh_workspace_status()
             return
 
         try:
@@ -182,15 +208,21 @@ class NeuroApp(App):
                 self.query_one("#response_display", Markdown).update("No formatting needed.")
                 self.query_one("#apply_button").styles.display = "none"
                 self._proposed_content = ""
+                self._workflow_state = "Format clean"
             else:
                 diff = generate_diff(original_content, formatted_content)
                 self.query_one("#response_display", Markdown).update(diff)
                 self._proposed_content = formatted_content
                 self.query_one("#apply_button").styles.display = "block"
+                self._workflow_state = "Format review ready"
         except RuntimeError as e:
             self.query_one("#response_display", Markdown).update(f"### Formatter Error\n\n{e}")
+            self._workflow_state = "Formatter error"
         except Exception as e:
             self.query_one("#response_display", Markdown).update(f"Error formatting file: {e}")
+            self._workflow_state = "Format error"
+        finally:
+            self._refresh_workspace_status()
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button actions while keeping existing wiring intact."""
@@ -208,28 +240,15 @@ class NeuroApp(App):
         elif event.button.id == "btn_context":
             self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
         elif event.button.id == "btn_radar":
-            self.push_screen(RadarModal())
+            self.action_open_radar()
         elif event.button.id == "btn_commit":
-            self.push_screen(GitModal())
+            self.action_open_git()
+        elif event.button.id == "btn_clear":
+            self.action_reset_workspace()
+        elif event.button.id == "reset_screen":
+            self.action_reset_workspace()
         elif event.button.id == "apply_button":
-            file_path = self.query_one("#file_path_input", Input).value
-            if file_path and self._proposed_content:
-                try:
-                    backup_dir = os.path.join(os.path.dirname(file_path), "backups")
-                    create_backup(file_path, backup_dir)
-
-                    with open(file_path, "w", encoding="utf-8") as file:
-                        file.write(self._proposed_content)
-
-                    self.query_one("#response_display").update(
-                        f"Changes applied to {file_path} successfully."
-                    )
-                    self._proposed_content = ""
-                    self.query_one("#apply_button").styles.display = "none"
-                except Exception as error:
-                    self.query_one("#response_display").update(
-                        f"Error applying changes: {error}"
-                    )
+            self.action_apply_changes()
 
     def _on_context_modal_dismissed(self, selected_paths: set[str] | None) -> None:
         """Callback for when ContextModal finishes."""
@@ -243,6 +262,8 @@ class NeuroApp(App):
             else:
                 btn.label = "📎 Context"
                 btn.variant = "default"
+            self._workflow_state = "Context updated"
+            self._refresh_workspace_status()
 
     def _on_model_modal_dismissed(self, payload: dict[str, str] | None) -> None:
         """Persist model overrides only when the modal explicitly saves them."""
@@ -253,6 +274,8 @@ class NeuroApp(App):
         self.selected_model = payload.get("model", "").strip()
         self.model_options_text = payload.get("model_options_text", "")
         self._refresh_model_button()
+        self._workflow_state = "Model updated"
+        self._refresh_workspace_status()
 
     def _refresh_model_button(self) -> None:
         """Reflect whether this run will use backend defaults or overrides."""
@@ -261,6 +284,68 @@ class NeuroApp(App):
         has_overrides = bool(self.selected_model or self.model_options_text.strip())
         button.label = "🤖 Model*" if has_overrides else "🤖 Model"
         button.variant = "primary" if has_overrides else "default"
+
+    def _refresh_workspace_status(self) -> None:
+        """Keep the terminal command-center strip aligned with active workflow state."""
+
+        target_file = self.query_one("#file_path_input", Input).value.strip()
+        target_label = Path(target_file).name if target_file else "none"
+        model_label = self.selected_model or "backend default"
+        if self.model_options_text.strip():
+            model_label = f"{model_label} + options"
+
+        apply_label = "ready" if self._proposed_content else "idle"
+        status_text = (
+            f"State: {self._workflow_state} | "
+            f"Target: {target_label} | "
+            f"Context: {len(self.context_paths)} | "
+            f"Model: {model_label} | "
+            f"Apply: {apply_label}"
+        )
+        self.query_one("#workspace_status", Static).update(status_text)
+
+    def _apply_changes(self) -> None:
+        """Apply the currently reviewed proposal after creating a local backup."""
+
+        file_path = self.query_one("#file_path_input", Input).value
+        if not file_path or not self._proposed_content:
+            self._workflow_state = "Nothing to apply"
+            self._refresh_workspace_status()
+            return
+
+        try:
+            backup_dir = os.path.join(os.path.dirname(file_path), "backups")
+            create_backup(file_path, backup_dir)
+
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(self._proposed_content)
+
+            self.query_one("#response_display").update(
+                f"Changes applied to {file_path} successfully."
+            )
+            self._proposed_content = ""
+            self.query_one("#apply_button").styles.display = "none"
+            self._workflow_state = "Applied with backup"
+        except Exception as error:
+            self.query_one("#response_display").update(
+                f"Error applying changes: {error}"
+            )
+            self._workflow_state = "Apply error"
+        finally:
+            self._refresh_workspace_status()
+
+    def _reset_workspace_view(self) -> None:
+        """Reset transient prompt, stream, diff, and apply state without changing files."""
+
+        self._proposed_content = ""
+        self._streamed_output = ""
+        self._workflow_state = "Reset"
+        self.query_one("#prompt_input", Input).value = ""
+        self.query_one("#response_display", Markdown).update("AI response will appear here...")
+        self.query_one("#loading_indicator").styles.display = "none"
+        self.query_one("#apply_button").styles.display = "none"
+        self._refresh_workspace_status()
+        self.query_one("#prompt_input", Input).focus()
 
     def on_file_open_selected(self, path: str) -> None:
         """Callback for when a file is selected from the dialog."""
@@ -279,12 +364,22 @@ class NeuroApp(App):
         if event.worker.name != "run_ai_workflow":
             return
 
+        state_name = getattr(event.state, "name", str(event.state))
+        if state_name not in {"SUCCESS", "ERROR", "CANCELLED"}:
+            return
+
         loading_indicator = self.query_one("#loading_indicator")
         markdown_display = self.query_one("#response_display", Markdown)
 
-        if event.state == WorkerState.ERROR:
+        if state_name == "ERROR":
             error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
             markdown_display.update(error_message)
+            self._workflow_state = "Worker error"
+            self._refresh_workspace_status()
+
+        if state_name == "CANCELLED":
+            self._workflow_state = "Cancelled"
+            self._refresh_workspace_status()
 
         loading_indicator.styles.display = "none"
 
@@ -299,11 +394,15 @@ class NeuroApp(App):
 
         if event.event == "start":
             self._streamed_output = ""
+            self._workflow_state = "Streaming started"
+            self._refresh_workspace_status()
             markdown_display.update(self._render_stream_output(request))
             return
 
         if event.event == "delta":
             self._streamed_output += event.delta
+            self._workflow_state = "Streaming output"
+            self._refresh_workspace_status()
             markdown_display.update(self._render_stream_output(request))
             return
 
@@ -346,6 +445,8 @@ class NeuroApp(App):
             self._proposed_content = ""
             markdown_display.update(response.error or "Unknown AI workflow error.")
             self.query_one("#apply_button").styles.display = "none"
+            self._workflow_state = "Workflow error"
+            self._refresh_workspace_status()
             return
 
         if response.response_kind == "file_update":
@@ -358,15 +459,64 @@ class NeuroApp(App):
                 markdown_display.update(diff)
                 self._proposed_content = formatted_content
                 self.query_one("#apply_button").styles.display = "block"
+                self._workflow_state = "Diff review ready"
             except RuntimeError as error:
                 self._proposed_content = ""
                 markdown_display.update(f"### Formatter Error\n\n{error}")
                 self.query_one("#apply_button").styles.display = "none"
+                self._workflow_state = "Formatter error"
+            finally:
+                self._refresh_workspace_status()
             return
 
         self._proposed_content = ""
         markdown_display.update(response.output_text)
         self.query_one("#apply_button").styles.display = "none"
+        self._workflow_state = "Completed"
+        self._refresh_workspace_status()
+
+    def action_run_prompt(self) -> None:
+        """Keyboard action for the shared AI workflow."""
+
+        self._run_prompt()
+
+    def action_format_file(self) -> None:
+        """Keyboard action for formatting the active target file."""
+
+        self._format_file()
+
+    def action_apply_changes(self) -> None:
+        """Keyboard action for the reviewed apply-with-backup path."""
+
+        self._apply_changes()
+
+    def action_open_model(self) -> None:
+        """Open model overrides without introducing app-specific fields."""
+
+        self.push_screen(
+            ModelModal(self.selected_model, self.model_options_text),
+            self._on_model_modal_dismissed,
+        )
+
+    def action_open_context(self) -> None:
+        """Open the context stack manager."""
+
+        self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
+
+    def action_open_radar(self) -> None:
+        """Open workspace radar backed by neurocli_core services."""
+
+        self.push_screen(RadarModal())
+
+    def action_open_git(self) -> None:
+        """Open the git action lane backed by neurocli_core git services."""
+
+        self.push_screen(GitModal())
+
+    def action_reset_workspace(self) -> None:
+        """Keyboard action for clearing transient terminal state."""
+
+        self._reset_workspace_view()
 
 
 def main():

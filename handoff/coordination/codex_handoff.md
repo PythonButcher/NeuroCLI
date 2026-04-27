@@ -17,6 +17,7 @@ Codex owns backend and integration work across this repo.
 - The FastAPI layer in `api` is a bridge from React to `neurocli_core`, not a separate business backend.
 - The React frontend Phase 3 logic has been rewired to the real API contract.
 - The Textual app Phase 4 contract alignment is now wired in code.
+- Phase 5 has started with a parity audit and a focused Textual command-center state polish.
 
 ## Active Contract Notes
 
@@ -32,6 +33,9 @@ Codex owns backend and integration work across this repo.
 - `neurocli_app/main.py` now streams through `stream_ai_workflow` and applies the final normalized workflow response through one shared handler.
 - `neurocli_app/model_modal.py` is the Textual entry point for `model` and `model_options`.
 - Phase 5 should improve both frontends while preserving shared behavior: prompt runs, file-targeted updates, context attachments, model settings, streaming, formatting, apply, radar, and git workflows.
+- `neurocli_app/main.py` now exposes visible terminal state for workflow status, target, context count, model state, and apply readiness.
+- Textual keyboard bindings now cover run, format, apply, model, context, radar, git, reset, and quit.
+- Do not consider React generated-file parity complete until it has a shared formatted diff/proposal path for AI `file_update` responses.
 
 ## Coordination Rule
 If frontend work needs a backend contract change, record it in `handoff/coordination/shared_decisions.md`.
@@ -40,4 +44,7 @@ If frontend work needs a backend contract change, record it in `handoff/coordina
 
 - `python -m unittest tests.test_ai_services tests.test_textual_workflow_adapter` passes locally
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\model_modal.py neurocli_app\\workflow_adapter.py neurocli_core\\workflow_service.py` passes locally
-- `python -m unittest tests.test_api_main` could not run here because `fastapi` is not installed in the current environment
+- `python -m py_compile neurocli_app\\main.py neurocli_app\\model_modal.py neurocli_app\\workflow_adapter.py neurocli_core\\workflow_service.py neurocli_core\\git_engine.py neurocli_core\\radar_engine.py api\\main.py` passes locally
+- `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_ai_services tests.test_textual_workflow_adapter tests.test_api_main` passes locally
+- `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -c "import neurocli_app.main; import neurocli_app.workflow_adapter; import api.main; import neurocli_core.workflow_service; print('imports ok')"` passes locally after restoring Textual dependencies into `.codex_tmp_py/site-packages`
+- Default `python -m unittest tests.test_api_main` still fails without `PYTHONPATH` because the sandbox Python path does not include local target-installed dependencies
