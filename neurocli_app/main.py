@@ -92,10 +92,10 @@ class NeuroApp(App):
                                 yield Button("📊 Radar", id="btn_radar", classes="tool_btn")
 
                             with Horizontal(id="run_row"):
+                                yield Button("Run", id="run_button", classes="run_btn")
+                                yield Button("Format", id="format_button", classes="run_btn")
                                 yield Button("🧭 Review", id="btn_review", classes="run_btn")
                                 yield Button("Commit 🐙", id="btn_commit", classes="run_btn")
-                                yield Button("Format", id="format_button", classes="run_btn")
-                                yield Button("Run", id="run_button", classes="run_btn")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""

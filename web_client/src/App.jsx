@@ -6,6 +6,8 @@ import GitModal from './components/GitModal'
 import SettingsModal from './components/SettingsModal'
 import ModelModal from './components/ModelModal'
 import TargetFileModal from './components/TargetFileModal'
+import ReviewModal from './components/ReviewModal'
+import CommandModal from './components/CommandModal'
 import { fetchJson, postJson, streamJsonEvents } from './lib/api'
 import {
   RefreshCcw,
@@ -16,6 +18,8 @@ import {
   GitCommit,
   Play,
   X,
+  Compass,
+  Keyboard,
 } from 'lucide-react'
 
 const INITIAL_HISTORY = [
@@ -37,6 +41,8 @@ function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isModelModalOpen, setIsModelModalOpen] = useState(false)
   const [isTargetFileModalOpen, setIsTargetFileModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [isCommandModalOpen, setIsCommandModalOpen] = useState(false)
   const [selectedModel, setSelectedModel] = useState('')
   const [modelOptionsText, setModelOptionsText] = useState('')
   const bottomRef = useRef(null)
@@ -109,15 +115,16 @@ function App() {
     }
   }
 
-  const handleApply = async () => {
-    if (!targetFile || !proposedContent) {
+  const handleApply = async (contentOverride = null) => {
+    const finalContent = contentOverride !== null ? contentOverride : proposedContent
+    if (!targetFile || !finalContent) {
       return
     }
 
     try {
       const data = await postJson('/api/apply', {
         file_path: targetFile,
-        content: proposedContent,
+        content: finalContent,
       })
 
       if (data.error) {
@@ -395,14 +402,24 @@ function App() {
             NeuroCLI / Terminal Workspace
           </div>
 
-          {showApplyBtn && (
+          <div className="flex items-center gap-4">
             <button
-              onClick={handleApply}
-              className="rounded bg-[#238636] px-3 py-1 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#2ea043]"
+              onClick={() => setIsCommandModalOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-[#58a6ff] transition-colors hover:text-[#79c0ff]"
             >
-              Apply Changes
+              <Keyboard size={16} />
+              ⌨ Commands
             </button>
-          )}
+
+            {showApplyBtn && (
+              <button
+                onClick={() => handleApply()}
+                className="rounded bg-[#238636] px-3 py-1 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#2ea043]"
+              >
+                Apply Changes
+              </button>
+            )}
+          </div>
         </header>
 
         <div className="flex flex-1 flex-col space-y-2 overflow-y-auto p-4 whitespace-pre-wrap sm:p-6">
@@ -489,8 +506,13 @@ function App() {
               </button>
 
               <button
-                onClick={handleClearContext}
-                title="Clear Context"
+                onClick={() => {
+                  setInput('')
+                  setProposedContent('')
+                  setShowApplyBtn(false)
+                  setHistory([{ id: 'clear-1', type: 'system', content: 'Console cleared.' }])
+                }}
+                title="Clear Console"
                 className="p-1 transition-colors hover:text-white"
               >
                 <Trash2 size={16} />
@@ -531,18 +553,6 @@ function App() {
                 <span>Radar</span>
               </button>
 
-              <button
-                onClick={() => setIsGitModalOpen(true)}
-                className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-[#58a6ff]"
-              >
-                <span className="text-[#58a6ff]">Commit</span>
-                <GitCommit size={14} className="text-[#f85149]" />
-              </button>
-
-              <button onClick={handleFormat} className="px-2 py-1 transition-colors hover:text-white">
-                Format
-              </button>
-
               {isStreaming ? (
                 <button
                   type="button"
@@ -562,6 +572,26 @@ function App() {
                   Run
                 </button>
               )}
+
+              <button onClick={handleFormat} className="px-2 py-1 transition-colors hover:text-white">
+                Format
+              </button>
+
+              <button
+                onClick={() => setIsReviewModalOpen(true)}
+                className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-white"
+              >
+                <Compass size={14} className="text-[#58a6ff]" />
+                <span>Review</span>
+              </button>
+
+              <button
+                onClick={() => setIsGitModalOpen(true)}
+                className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-[#58a6ff]"
+              >
+                <span className="text-[#58a6ff]">Commit</span>
+                <GitCommit size={14} className="text-[#f85149]" />
+              </button>
             </div>
           </div>
         </div>
@@ -597,6 +627,20 @@ function App() {
           setSelectedModel(model)
           setModelOptionsText(modelOptionsText)
         }}
+      />
+
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        targetFile={targetFile}
+        proposedContent={proposedContent}
+        setProposedContent={setProposedContent}
+        onApply={handleApply}
+      />
+
+      <CommandModal
+        isOpen={isCommandModalOpen}
+        onClose={() => setIsCommandModalOpen(false)}
       />
     </div>
   )
