@@ -1,38 +1,90 @@
-import { X, Bot } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Bot, X } from 'lucide-react'
 
-export default function ModelModal({ isOpen, onClose }) {
-    if (!isOpen) return null
+export default function ModelModal({ isOpen, onClose, model, modelOptionsText, onSave }) {
+  const [draftModel, setDraftModel] = useState(model)
+  const [draftModelOptionsText, setDraftModelOptionsText] = useState(modelOptionsText)
 
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
-            <div
-                className="bg-[#0d1117] border border-[#30363d] rounded-lg shadow-2xl w-full max-w-sm flex flex-col overflow-hidden"
-                onClick={e => e.stopPropagation()}
-            >
-                <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
-                    <h2 className="text-[#c9d1d9] font-bold text-lg flex items-center gap-2">
-                        <Bot size={20} className="text-[#f85149]" /> AI Engine
-                    </h2>
-                    <button onClick={onClose} className="text-[#8b949e] hover:text-white transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
 
-                <div className="p-6 space-y-4">
-                    <p className="text-sm text-[#8b949e] leading-relaxed">
-                        Support for selecting between Gemini Pro, Claude, and internal OpenAI models will be implemented in the next major patch.
-                    </p>
-                    <div className="text-xs text-[#58a6ff] bg-[#58a6ff]/10 border border-[#58a6ff]/20 p-2 rounded text-center font-mono">
-                        Currently Routing to Default Model
-                    </div>
-                </div>
+    setDraftModel(model)
+    setDraftModelOptionsText(modelOptionsText)
+  }, [isOpen, model, modelOptionsText])
 
-                <div className="p-4 border-t border-[#30363d] bg-[#161b22] flex justify-end">
-                    <button onClick={onClose} className="px-4 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-white text-sm font-semibold rounded border border-[#30363d] transition-colors">
-                        Got it
-                    </button>
-                </div>
-            </div>
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
+      <div
+        className="flex w-full max-w-lg flex-col overflow-hidden rounded-lg border border-[#30363d] bg-[#0d1117] shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#30363d] bg-[#161b22] p-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#c9d1d9]">
+            <Bot size={20} className="text-[#f85149]" />
+            AI Engine
+          </h2>
+          <button onClick={onClose} className="text-[#8b949e] transition-colors hover:text-white">
+            <X size={20} />
+          </button>
         </div>
-    )
+
+        <div className="space-y-4 p-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[#c9d1d9]">Model Override</label>
+            <input
+              type="text"
+              value={draftModel}
+              onChange={(event) => setDraftModel(event.target.value)}
+              placeholder="Leave blank to use the backend default model"
+              className="w-full rounded border border-[#30363d] bg-[#010409] px-3 py-2 font-mono text-sm text-[#c9d1d9] outline-none transition-colors focus:border-[#58a6ff]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[#c9d1d9]">Model Options JSON</label>
+            <textarea
+              value={draftModelOptionsText}
+              onChange={(event) => setDraftModelOptionsText(event.target.value)}
+              placeholder='Example: {"temperature": 0.2}'
+              rows={8}
+              className="w-full rounded border border-[#30363d] bg-[#010409] px-3 py-2 font-mono text-sm text-[#c9d1d9] outline-none transition-colors focus:border-[#58a6ff]"
+            />
+            <p className="text-xs text-[#8b949e]">
+              These fields are sent directly to the backend as <span className="font-mono text-[#c9d1d9]">model</span> and <span className="font-mono text-[#c9d1d9]">model_options</span>. Leave them empty to let the backend choose defaults.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#30363d] bg-[#161b22] p-4">
+          <button
+            onClick={() => {
+              setDraftModel('')
+              setDraftModelOptionsText('')
+            }}
+            className="rounded border border-[#30363d] bg-[#21262d] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#30363d]"
+          >
+            Clear
+          </button>
+          <button
+            onClick={() => {
+              onSave({
+                model: draftModel.trim(),
+                modelOptionsText: draftModelOptionsText,
+              })
+              onClose()
+            }}
+            className="rounded border border-[#30363d] bg-[#238636] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#2ea043]"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }

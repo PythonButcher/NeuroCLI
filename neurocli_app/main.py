@@ -1,30 +1,56 @@
-from textual.app import App, ComposeResult
-from textual.containers import VerticalScroll, Horizontal, Container
-from textual.widgets import Input, Button, Markdown, LoadingIndicator, Static, DirectoryTree
-from textual.worker import Worker, WorkerState
-from textual_fspicker import FileOpen
-from neurocli_app.theme import arctic_theme, modern_theme, solid_modern, fleet_dark
-from neurocli_app.art import BACKGROUND_ART
-from neurocli_app.context_modal import ContextModal
-from neurocli_app.radar_modal import RadarModal
-from neurocli_app.git_modal import GitModal
-
-from neurocli_core.engine import build_ai_workflow_request, execute_ai_workflow
-from neurocli_core.diff_generator import generate_diff
-from neurocli_core.code_formatter import format_code
-
 import os
+from pathlib import Path
+
+from textual.app import App, ComposeResult
+from textual.containers import Container, Horizontal, VerticalScroll
+from textual.widgets import Button, DirectoryTree, Input, LoadingIndicator, Markdown, Static
+from textual.worker import Worker
+from textual_fspicker import FileOpen
+
+from neurocli_app.command_modal import CommandModal
+from neurocli_app.context_modal import ContextModal
+from neurocli_app.git_modal import GitModal
+from neurocli_app.model_modal import ModelModal
+from neurocli_app.radar_modal import RadarModal
+from neurocli_app.review_modal import ReviewModal
+from neurocli_app.theme import arctic_theme, fleet_dark, modern_theme, solid_modern
+from neurocli_app.workflow_adapter import (
+    build_textual_workflow_request,
+    run_textual_stream_workflow,
+)
+from neurocli_core.code_formatter import format_code
+from neurocli_core.diff_generator import generate_diff
 from neurocli_core.file_handler import create_backup
+from neurocli_core.workflow_service import AIWorkflowRequest, AIWorkflowResponse, AIWorkflowStreamEvent
 
 
 class NeuroApp(App):
     """The main application for NeuroCLI."""
 
-    BINDINGS = [("ctrl+q", "quit", "Quit")]
+    BINDINGS = [
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+r", "run_prompt", "Run"),
+        ("ctrl+f", "format_file", "Format"),
+        ("ctrl+a", "apply_changes", "Apply"),
+        ("ctrl+m", "open_model", "Model"),
+        ("ctrl+o", "open_context", "Context"),
+        ("ctrl+d", "open_radar", "Radar"),
+        ("ctrl+e", "open_review", "Review"),
+        ("ctrl+g", "open_git", "Git"),
+        ("ctrl+k", "open_commands", "Commands"),
+        ("ctrl+l", "reset_workspace", "Reset"),
+    ]
     CSS_PATH = "main.css"
 
-    _proposed_content: str = ""
-    context_paths: set[str] = set()
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._proposed_content: str = ""
+        self._proposal_baseline_content: str = ""
+        self._streamed_output: str = ""
+        self._workflow_state: str = "Idle"
+        self.context_paths: set[str] = set()
+        self.selected_model: str = ""
+        self.model_options_text: str = ""
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -36,7 +62,10 @@ class NeuroApp(App):
                 yield Button("Reset", id="reset_screen")
 
             with Container(id="workspace"):
-                yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                with Horizontal(id="workspace_topbar"):
+                    yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
+                    yield Button("⌨   Commands", id="btn_commands", classes="top_icon_btn")
+                yield Static("", id="workspace_status")
                 with Container(id="workspace_panel"):
                     # Output/History Section
                     yield Markdown("AI response will appear here...", id="response_display")
@@ -63,9 +92,10 @@ class NeuroApp(App):
                                 yield Button("📊 Radar", id="btn_radar", classes="tool_btn")
 
                             with Horizontal(id="run_row"):
+                                yield Button("Run", id="run_button", classes="run_btn")
+                                yield Button("Format", id="format_button", classes="run_btn")
+                                yield Button("🧭 Review", id="btn_review", classes="run_btn")
                                 yield Button("Commit 🐙", id="btn_commit", classes="run_btn")
-                                yield Button("Format", id="format_button")
-                                yield Button("Run", id="run_button")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
@@ -77,6 +107,9 @@ class NeuroApp(App):
         self.theme = "fleet_dark"
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
+        self._refresh_model_button()
+        self._refresh_workspace_status()
+        self.query_one("#prompt_input", Input).focus()
 
     def on_directory_tree_file_selected(
         self, event: DirectoryTree.FileSelected
@@ -86,8 +119,7 @@ class NeuroApp(App):
 
     def _display_file_content(self, path_str: str) -> None:
         """Helper to read and display file content in the Markdown widget."""
-        import pathlib
-        path = pathlib.Path(path_str)
+        path = Path(path_str)
         
         if not path.exists() or not path.is_file():
             return
@@ -96,7 +128,10 @@ class NeuroApp(App):
 
         # Clear proposed content and hide apply button as we are viewing a new file
         self._proposed_content = ""
+        self._proposal_baseline_content = ""
         self.query_one("#apply_button").styles.display = "none"
+        self._workflow_state = "Viewing file"
+        self._refresh_workspace_status()
 
         try:
             # Determine extension for syntax highlighting
@@ -115,24 +150,53 @@ class NeuroApp(App):
             self.query_one("#response_display", Markdown).update(
                 f"### Error\n\nFailed to read file: {e}"
             )
+            self._workflow_state = "File read error"
+            self._refresh_workspace_status()
 
     def _run_prompt(self) -> None:
-        """Run the AI request using values from existing inputs."""
+        """Run the AI request using the shared streaming workflow contract."""
+
         prompt_input = self.query_one("#prompt_input", Input)
         prompt = prompt_input.value
         if not prompt.strip():
             return
 
-        file_path = self.query_one("#file_path_input", Input).value
-        context_files = list(self.context_paths) if self.context_paths else None
+        try:
+            request = build_textual_workflow_request(
+                prompt,
+                target_file=self.query_one("#file_path_input", Input).value,
+                context_paths=self.context_paths,
+                model=self.selected_model,
+                model_options_text=self.model_options_text,
+            )
+        except ValueError as error:
+            self.query_one("#response_display", Markdown).update(f"### Request Error\n\n{error}")
+            self._workflow_state = "Request error"
+            self._refresh_workspace_status()
+            return
         
+        self._streamed_output = ""
+        self._proposed_content = ""
+        self._proposal_baseline_content = ""
+        self._workflow_state = "Streaming"
+        self.query_one("#apply_button").styles.display = "none"
         self.query_one("#loading_indicator").styles.display = "block"
-        request = build_ai_workflow_request(
-            prompt,
-            target_file=file_path,
-            context_paths=context_files,
+        self._refresh_workspace_status()
+        self.query_one("#response_display", Markdown).update(
+            self._render_stream_output(request)
         )
-        self.run_worker(lambda: execute_ai_workflow(request), thread=True)
+        self.run_worker(
+            lambda: run_textual_stream_workflow(
+                request,
+                lambda event: self.call_from_thread(
+                    self._handle_stream_event,
+                    request,
+                    event,
+                ),
+            ),
+            thread=True,
+            name="run_ai_workflow",
+        )
         prompt_input.value = ""
 
     def _format_file(self) -> None:
@@ -140,6 +204,8 @@ class NeuroApp(App):
         file_path = self.query_one("#file_path_input", Input).value
         if not file_path or not os.path.exists(file_path):
             self.query_one("#response_display", Markdown).update("Please select a valid file to format.")
+            self._workflow_state = "Format needs target"
+            self._refresh_workspace_status()
             return
 
         try:
@@ -152,15 +218,23 @@ class NeuroApp(App):
                 self.query_one("#response_display", Markdown).update("No formatting needed.")
                 self.query_one("#apply_button").styles.display = "none"
                 self._proposed_content = ""
+                self._proposal_baseline_content = ""
+                self._workflow_state = "Format clean"
             else:
                 diff = generate_diff(original_content, formatted_content)
                 self.query_one("#response_display", Markdown).update(diff)
                 self._proposed_content = formatted_content
+                self._proposal_baseline_content = original_content
                 self.query_one("#apply_button").styles.display = "block"
+                self._workflow_state = "Format review ready"
         except RuntimeError as e:
             self.query_one("#response_display", Markdown).update(f"### Formatter Error\n\n{e}")
+            self._workflow_state = "Formatter error"
         except Exception as e:
             self.query_one("#response_display", Markdown).update(f"Error formatting file: {e}")
+            self._workflow_state = "Format error"
+        finally:
+            self._refresh_workspace_status()
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button actions while keeping existing wiring intact."""
@@ -170,31 +244,27 @@ class NeuroApp(App):
             self._run_prompt()
         elif event.button.id == "format_button":
             self._format_file()
+        elif event.button.id == "btn_model":
+            self.push_screen(
+                ModelModal(self.selected_model, self.model_options_text),
+                self._on_model_modal_dismissed,
+            )
         elif event.button.id == "btn_context":
             self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
         elif event.button.id == "btn_radar":
-            self.push_screen(RadarModal())
+            self.action_open_radar()
+        elif event.button.id == "btn_review":
+            self.action_open_review()
         elif event.button.id == "btn_commit":
-            self.push_screen(GitModal())
+            self.action_open_git()
+        elif event.button.id == "btn_commands":
+            self.action_open_commands()
+        elif event.button.id == "btn_clear":
+            self.action_reset_workspace()
+        elif event.button.id == "reset_screen":
+            self.action_reset_workspace()
         elif event.button.id == "apply_button":
-            file_path = self.query_one("#file_path_input", Input).value
-            if file_path and self._proposed_content:
-                try:
-                    backup_dir = os.path.join(os.path.dirname(file_path), "backups")
-                    create_backup(file_path, backup_dir)
-
-                    with open(file_path, "w", encoding="utf-8") as file:
-                        file.write(self._proposed_content)
-
-                    self.query_one("#response_display").update(
-                        f"Changes applied to {file_path} successfully."
-                    )
-                    self._proposed_content = ""
-                    self.query_one("#apply_button").styles.display = "none"
-                except Exception as error:
-                    self.query_one("#response_display").update(
-                        f"Error applying changes: {error}"
-                    )
+            self.action_apply_changes()
 
     def _on_context_modal_dismissed(self, selected_paths: set[str] | None) -> None:
         """Callback for when ContextModal finishes."""
@@ -208,6 +278,92 @@ class NeuroApp(App):
             else:
                 btn.label = "📎 Context"
                 btn.variant = "default"
+            self._workflow_state = "Context updated"
+            self._refresh_workspace_status()
+
+    def _on_model_modal_dismissed(self, payload: dict[str, str] | None) -> None:
+        """Persist model overrides only when the modal explicitly saves them."""
+
+        if payload is None:
+            return
+
+        self.selected_model = payload.get("model", "").strip()
+        self.model_options_text = payload.get("model_options_text", "")
+        self._refresh_model_button()
+        self._workflow_state = "Model updated"
+        self._refresh_workspace_status()
+
+    def _refresh_model_button(self) -> None:
+        """Reflect whether this run will use backend defaults or overrides."""
+
+        button = self.query_one("#btn_model", Button)
+        has_overrides = bool(self.selected_model or self.model_options_text.strip())
+        button.label = "🤖 Model*" if has_overrides else "🤖 Model"
+        button.variant = "primary" if has_overrides else "default"
+
+    def _refresh_workspace_status(self) -> None:
+        """Keep the terminal command-center strip aligned with active workflow state."""
+
+        target_file = self.query_one("#file_path_input", Input).value.strip()
+        target_label = Path(target_file).name if target_file else "none"
+        model_label = self.selected_model or "backend default"
+        if self.model_options_text.strip():
+            model_label = f"{model_label} + options"
+
+        apply_label = "ready" if self._proposed_content else "idle"
+        status_text = (
+            f"State: {self._workflow_state} | "
+            f"Target: {target_label} | "
+            f"Context: {len(self.context_paths)} | "
+            f"Model: {model_label} | "
+            f"Apply: {apply_label}"
+        )
+        self.query_one("#workspace_status", Static).update(status_text)
+
+    def _apply_changes(self) -> None:
+        """Apply the currently reviewed proposal after creating a local backup."""
+
+        file_path = self.query_one("#file_path_input", Input).value
+        if not file_path or not self._proposed_content:
+            self._workflow_state = "Nothing to apply"
+            self._refresh_workspace_status()
+            return
+
+        try:
+            backup_dir = os.path.join(os.path.dirname(file_path), "backups")
+            create_backup(file_path, backup_dir)
+
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(self._proposed_content)
+
+            self.query_one("#response_display").update(
+                f"Changes applied to {file_path} successfully."
+            )
+            self._proposed_content = ""
+            self._proposal_baseline_content = ""
+            self.query_one("#apply_button").styles.display = "none"
+            self._workflow_state = "Applied with backup"
+        except Exception as error:
+            self.query_one("#response_display").update(
+                f"Error applying changes: {error}"
+            )
+            self._workflow_state = "Apply error"
+        finally:
+            self._refresh_workspace_status()
+
+    def _reset_workspace_view(self) -> None:
+        """Reset transient prompt, stream, diff, and apply state without changing files."""
+
+        self._proposed_content = ""
+        self._proposal_baseline_content = ""
+        self._streamed_output = ""
+        self._workflow_state = "Reset"
+        self.query_one("#prompt_input", Input).value = ""
+        self.query_one("#response_display", Markdown).update("AI response will appear here...")
+        self.query_one("#loading_indicator").styles.display = "none"
+        self.query_one("#apply_button").styles.display = "none"
+        self._refresh_workspace_status()
+        self.query_one("#prompt_input", Input).focus()
 
     def on_file_open_selected(self, path: str) -> None:
         """Callback for when a file is selected from the dialog."""
@@ -223,39 +379,213 @@ class NeuroApp(App):
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
+        if event.worker.name != "run_ai_workflow":
+            return
+
+        state_name = getattr(event.state, "name", str(event.state))
+        if state_name not in {"SUCCESS", "ERROR", "CANCELLED"}:
+            return
+
         loading_indicator = self.query_one("#loading_indicator")
         markdown_display = self.query_one("#response_display", Markdown)
 
-        if event.state == WorkerState.SUCCESS:
-            response = event.worker.result
-            if not response.ok:
-                self._proposed_content = ""
-                markdown_display.update(response.error or "Unknown AI workflow error.")
-                self.query_one("#apply_button").styles.display = "none"
-            elif response.response_kind == "file_update":
-                file_path = response.target_file or self.query_one("#file_path_input", Input).value
-                try:
-                    # The formatter runs after generation so both UIs can share one
-                    # backend contract while still presenting a clean diff locally.
-                    formatted_content = format_code(response.output_text, file_path)
-                    diff = generate_diff(response.original_content, formatted_content)
-                    markdown_display.update(diff)
-                    self._proposed_content = formatted_content
-                    self.query_one("#apply_button").styles.display = "block"
-                except RuntimeError as error:
-                    self._proposed_content = ""
-                    markdown_display.update(f"### Formatter Error\n\n{error}")
-                    self.query_one("#apply_button").styles.display = "none"
-            else:
-                self._proposed_content = ""
-                markdown_display.update(response.output_text)
-                self.query_one("#apply_button").styles.display = "none"
-
-        elif event.state == WorkerState.ERROR:
+        if state_name == "ERROR":
             error_message = f"### Worker Error\n\n```\n{event.worker.error}\n```"
             markdown_display.update(error_message)
+            self._workflow_state = "Worker error"
+            self._refresh_workspace_status()
+
+        if state_name == "CANCELLED":
+            self._workflow_state = "Cancelled"
+            self._refresh_workspace_status()
 
         loading_indicator.styles.display = "none"
+
+    def _handle_stream_event(
+        self,
+        request: AIWorkflowRequest,
+        event: AIWorkflowStreamEvent,
+    ) -> None:
+        """Render incremental stream output and then apply the final response shape."""
+
+        markdown_display = self.query_one("#response_display", Markdown)
+
+        if event.event == "start":
+            self._streamed_output = ""
+            self._workflow_state = "Streaming started"
+            self._refresh_workspace_status()
+            markdown_display.update(self._render_stream_output(request))
+            return
+
+        if event.event == "delta":
+            self._streamed_output += event.delta
+            self._workflow_state = "Streaming output"
+            self._refresh_workspace_status()
+            markdown_display.update(self._render_stream_output(request))
+            return
+
+        if event.response is not None:
+            self._handle_workflow_response(event.response)
+        self.query_one("#loading_indicator").styles.display = "none"
+
+    def _render_stream_output(self, request: AIWorkflowRequest) -> str:
+        """Render a readable live preview while the shared workflow is streaming."""
+
+        if self._request_targets_file(request):
+            file_name = Path(request.target_file or "").name or "selected file"
+            language = Path(request.target_file or "").suffix.lower().lstrip(".") or "text"
+            generated_text = self._streamed_output or "# Generating file update..."
+            return f"### Generating update for {file_name}\n\n```{language}\n{generated_text}\n```"
+
+        return self._streamed_output or "Generating response..."
+
+    def _request_targets_file(self, request: AIWorkflowRequest) -> bool:
+        """Treat existing files as full-file update requests for stream preview purposes."""
+
+        if not request.target_file:
+            return False
+
+        try:
+            return Path(request.target_file).is_file()
+        except OSError:
+            return False
+
+    def _handle_workflow_response(self, response: AIWorkflowResponse) -> None:
+        """Apply the normalized response shape shared by sync and streaming callers."""
+
+        markdown_display = self.query_one("#response_display", Markdown)
+        file_path_input = self.query_one("#file_path_input", Input)
+
+        if response.target_file:
+            file_path_input.value = response.target_file
+
+        if not response.ok:
+            self._proposed_content = ""
+            self._proposal_baseline_content = ""
+            markdown_display.update(response.error or "Unknown AI workflow error.")
+            self.query_one("#apply_button").styles.display = "none"
+            self._workflow_state = "Workflow error"
+            self._refresh_workspace_status()
+            return
+
+        if response.response_kind == "file_update":
+            file_path = response.target_file or file_path_input.value
+            try:
+                # The formatter runs after generation so both UIs can share one
+                # backend contract while the Textual app still presents a reviewable diff.
+                formatted_content = format_code(response.output_text, file_path)
+                diff = generate_diff(response.original_content, formatted_content)
+                markdown_display.update(diff)
+                self._proposed_content = formatted_content
+                self._proposal_baseline_content = response.original_content
+                self.query_one("#apply_button").styles.display = "block"
+                self._workflow_state = "Diff review ready"
+            except RuntimeError as error:
+                self._proposed_content = ""
+                self._proposal_baseline_content = ""
+                markdown_display.update(f"### Formatter Error\n\n{error}")
+                self.query_one("#apply_button").styles.display = "none"
+                self._workflow_state = "Formatter error"
+            finally:
+                self._refresh_workspace_status()
+            return
+
+        self._proposed_content = ""
+        self._proposal_baseline_content = ""
+        markdown_display.update(response.output_text)
+        self.query_one("#apply_button").styles.display = "none"
+        self._workflow_state = "Completed"
+        self._refresh_workspace_status()
+
+    def action_run_prompt(self) -> None:
+        """Keyboard action for the shared AI workflow."""
+
+        self._run_prompt()
+
+    def action_format_file(self) -> None:
+        """Keyboard action for formatting the active target file."""
+
+        self._format_file()
+
+    def action_apply_changes(self) -> None:
+        """Keyboard action for the reviewed apply-with-backup path."""
+
+        self._apply_changes()
+
+    def action_open_model(self) -> None:
+        """Open model overrides without introducing app-specific fields."""
+
+        self.push_screen(
+            ModelModal(self.selected_model, self.model_options_text),
+            self._on_model_modal_dismissed,
+        )
+
+    def action_open_context(self) -> None:
+        """Open the context stack manager."""
+
+        self.push_screen(ContextModal(self.context_paths), self._on_context_modal_dismissed)
+
+    def action_open_radar(self) -> None:
+        """Open workspace radar backed by neurocli_core services."""
+
+        self.push_screen(RadarModal())
+
+    def action_open_review(self) -> None:
+        """Open the editable proposal review lane."""
+
+        self.push_screen(
+            ReviewModal(
+                target_file=self.query_one("#file_path_input", Input).value,
+                proposed_content=self._proposed_content,
+                baseline_content=self._proposal_baseline_content,
+            ),
+            self._on_review_modal_dismissed,
+        )
+
+    def action_open_git(self) -> None:
+        """Open the git action lane backed by neurocli_core git services."""
+
+        self.push_screen(GitModal())
+
+    def action_open_commands(self) -> None:
+        """Open the visible command reference window."""
+
+        self.push_screen(CommandModal())
+
+    def action_reset_workspace(self) -> None:
+        """Keyboard action for clearing transient terminal state."""
+
+        self._reset_workspace_view()
+
+    def _on_review_modal_dismissed(self, payload: dict[str, str] | None) -> None:
+        """Receive edited review content and either keep it staged or apply it."""
+
+        if payload is None:
+            return
+
+        edited_content = payload.get("content", "")
+        if not edited_content:
+            self._workflow_state = "Review empty"
+            self._refresh_workspace_status()
+            return
+
+        self._proposed_content = edited_content
+        self.query_one("#apply_button").styles.display = "block"
+
+        if payload.get("action") == "apply":
+            self._apply_changes()
+            return
+
+        self._workflow_state = "Review draft kept"
+        if self._proposal_baseline_content:
+            self.query_one("#response_display", Markdown).update(
+                generate_diff(self._proposal_baseline_content, edited_content)
+            )
+        else:
+            self.query_one("#response_display", Markdown).update(
+                "Review draft updated. Apply is ready when you are."
+            )
+        self._refresh_workspace_status()
 
 
 def main():
