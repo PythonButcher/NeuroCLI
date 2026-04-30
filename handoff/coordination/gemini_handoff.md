@@ -58,5 +58,7 @@ Validation for Gemini should be browser-only: run the React build, check the bot
 - **Command Reference:** Implemented `CommandModal.jsx` mirroring the Textual Command Reference. Added a "⌨ Commands" button to the header for discoverability.
 - **Logic Wiring:** Updated `App.jsx` `handleApply` to support content overrides from the Review Modal. Wired the trash icon to clear transient console state.
 - **Verification:** Successfully ran the React build (`npm run build`). The UI now mirrors the "command center" mental model of the Textual flagship.
+- **Command Modal Fix:** Converted `CommandModal.jsx` from a keyboard shortcut reference into a clickable action reference. Removed unused Ctrl shortcuts that conflicted with browser defaults. Updated table headers to "Action" and "What it does."
+- **Action Rail Fix:** Reworked the bottom action rail in `App.jsx` from a `justify-between` layout to a content-driven, responsive `flex-wrap` row. Removed the expanding spacer to prevent controls from drifting on wide screens.
 - **Parity Note:** React still lacks the Textual-equivalent generated-file diff contract for AI `file_update` responses. This remains a backend/API gap for Codex to address.
 

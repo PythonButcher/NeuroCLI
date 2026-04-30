@@ -499,7 +499,7 @@ function App() {
             {contextPaths.size > 0 ? ` | Context files: ${contextPaths.size}` : ' | Context files: none'}
           </div>
 
-          <div className="flex items-center justify-between pl-2">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pl-2">
             <div className="flex items-center gap-4 text-xs font-semibold text-[#8b949e]">
               <button onClick={() => setIsSettingsModalOpen(true)} title="Settings" className="p-1 transition-colors hover:text-white">
                 <Settings size={16} />
@@ -540,7 +540,7 @@ function App() {
               </button>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-semibold text-[#8b949e]">
+            <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-[#8b949e]">
               <button
                 onClick={() => setIsRadarModalOpen(true)}
                 className="flex items-center gap-1.5 rounded px-2 py-1 transition-colors hover:text-white"

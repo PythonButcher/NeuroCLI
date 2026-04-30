@@ -1,17 +1,15 @@
 import { X, Keyboard } from 'lucide-react'
 
-const COMMANDS = [
-  { key: 'Ctrl+R', action: 'Run prompt', result: 'Send the current prompt through the shared workflow.' },
-  { key: 'Ctrl+F', action: 'Format file', result: 'Format the active target file and show a review diff.' },
-  { key: 'Ctrl+A', action: 'Apply changes', result: 'Apply the reviewed proposal after creating a backup.' },
-  { key: 'Ctrl+M', action: 'Model settings', result: 'Set model override and raw model options JSON.' },
-  { key: 'Ctrl+O', action: 'Context manager', result: 'Attach or remove files from the prompt context stack.' },
-  { key: 'Ctrl+D', action: 'Workspace radar', result: 'Open repository health, debt, and recent edit signals.' },
-  { key: 'Ctrl+E', action: 'Review editor', result: 'Edit the current proposal before keeping or applying it.' },
-  { key: 'Ctrl+G', action: 'Git review', result: 'Open the git status, diff, and commit workflow.' },
-  { key: 'Ctrl+L', action: 'Reset view', result: 'Clear transient prompt, stream, diff, and apply state.' },
-  { key: 'Ctrl+K', action: 'Commands', result: 'Open this command reference window.' },
-  { key: 'Ctrl+Q', action: 'Quit', result: 'Exit NeuroCLI.' },
+const ACTIONS = [
+  { label: 'Run', description: 'Send the current prompt through the shared workflow.' },
+  { label: 'Format', description: 'Format the active target file and show a review diff.' },
+  { label: 'Review', description: 'Edit the current proposal before keeping or applying it.' },
+  { label: 'Commit', description: 'Open the git status, diff, and commit workflow.' },
+  { label: 'Radar', description: 'Open repository health, debt, and recent edit signals.' },
+  { label: 'Model', description: 'Set model override and raw model options JSON.' },
+  { label: 'Context', description: 'Attach or remove files from the prompt context stack.' },
+  { label: 'Clear', description: 'Clear transient prompt, stream, diff, and apply state.' },
+  { label: 'Commands', description: 'Open this action reference window.' },
 ]
 
 export default function CommandModal({ isOpen, onClose }) {
@@ -26,7 +24,7 @@ export default function CommandModal({ isOpen, onClose }) {
         <div className="flex items-center justify-between border-b border-[#30363d] bg-[#161b22] p-4">
           <h2 className="flex items-center gap-2 text-lg font-bold text-[#c9d1d9]">
             <Keyboard className="text-[#58a6ff]" size={20} />
-            Command Reference
+            Action Reference
           </h2>
           <button onClick={onClose} className="text-[#8b949e] transition-colors hover:text-white">
             <X size={20} />
@@ -37,17 +35,15 @@ export default function CommandModal({ isOpen, onClose }) {
           <table className="w-full border-collapse font-mono text-sm text-[#c9d1d9]">
             <thead>
               <tr className="border-b border-[#30363d] text-left text-xs uppercase text-[#8b949e]">
-                <th className="pb-2 pr-4">Key</th>
                 <th className="pb-2 pr-4">Action</th>
-                <th className="pb-2">Result</th>
+                <th className="pb-2">What it does</th>
               </tr>
             </thead>
             <tbody>
-              {COMMANDS.map((cmd, index) => (
+              {ACTIONS.map((action, index) => (
                 <tr key={index} className="border-b border-[#30363d]/50 hover:bg-[#161b22]">
-                  <td className="py-2 pr-4 font-bold text-[#58a6ff]">{cmd.key}</td>
-                  <td className="py-2 pr-4 text-[#c9d1d9]">{cmd.action}</td>
-                  <td className="py-2 text-[#8b949e]">{cmd.result}</td>
+                  <td className="py-2 pr-4 font-bold text-[#58a6ff] whitespace-nowrap">{action.label}</td>
+                  <td className="py-2 text-[#8b949e]">{action.description}</td>
                 </tr>
               ))}
             </tbody>
