@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Activity, Code, Clock, AlertTriangle } from 'lucide-react'
+import { fetchJson } from '../lib/api'
 
 export default function RadarModal({ isOpen, onClose }) {
     const [data, setData] = useState(null)
@@ -9,8 +10,8 @@ export default function RadarModal({ isOpen, onClose }) {
     useEffect(() => {
         if (isOpen) {
             setLoading(true)
-            fetch('http://localhost:8000/api/radar')
-                .then(res => res.json())
+            setError(null)
+            fetchJson('/api/radar')
                 .then(data => {
                     if (data.error) throw new Error(data.error)
                     setData(data)

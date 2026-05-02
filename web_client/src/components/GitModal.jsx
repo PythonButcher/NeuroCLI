@@ -1,209 +1,207 @@
-import { useState, useEffect } from 'react'
-import { X, GitCommit, FileText, CheckCircle2, AlertCircle, Play } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { AlertCircle, CheckCircle2, FileText, GitCommit, X } from 'lucide-react'
+import { fetchJson, postJson } from '../lib/api'
 
 export default function GitModal({ isOpen, onClose }) {
-    const [status, setStatus] = useState(null)
-    const [diffs, setDiffs] = useState('')
-    const [loading, setLoading] = useState(true)
-    const [commitMessage, setCommitMessage] = useState('')
-    const [committing, setCommitting] = useState(false)
-    const [error, setError] = useState(null)
+  const [status, setStatus] = useState(null)
+  const [diffs, setDiffs] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [commitMessage, setCommitMessage] = useState('')
+  const [committing, setCommitting] = useState(false)
+  const [error, setError] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
 
-    const fetchGitData = async () => {
-        setLoading(true)
-        setError(null)
-        try {
-            const statusRes = await fetch('http://localhost:8000/api/git/status')
-            const statusData = await statusRes.json()
+  const fetchGitData = async () => {
+    setLoading(true)
+    setError(null)
 
-            const diffRes = await fetch('http://localhost:8000/api/git/diff')
-            const diffData = await diffRes.json()
+    try {
+      const [statusData, diffData] = await Promise.all([
+        fetchJson('/api/git/status'),
+        fetchJson('/api/git/diff'),
+      ])
 
-            setStatus(statusData)
-            setDiffs(diffData.diffs)
-        } catch (err) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
-        }
+      setStatus(statusData)
+      setDiffs(diffData.diffs || '')
+    } catch (fetchError) {
+      setError(fetchError.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
     }
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchGitData()
-            setCommitMessage('')
-        }
-    }, [isOpen])
+    setCommitMessage('')
+    setSuccessMessage('')
+    fetchGitData()
+  }, [isOpen])
 
-    const handleCommit = async () => {
-        if (!commitMessage.trim() || committing) return
-
-        setCommitting(true)
-        setError(null)
-
-        try {
-            const res = await fetch('http://localhost:8000/api/git/commit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: commitMessage })
-            })
-            const data = await res.json()
-
-            if (!data.success) {
-                throw new Error(data.message)
-            }
-
-            // Success!
-            setCommitMessage('')
-            fetchGitData() // Refresh status
-
-            // Could optionally close here, but user might want to see the success state
-            // onClose()
-        } catch (err) {
-            setError(err.message)
-        } finally {
-            setCommitting(false)
-        }
+  const handleCommit = async () => {
+    if (!commitMessage.trim() || committing) {
+      return
     }
 
-    const handleGenerateMsg = async () => {
-        // Porting the 'Generate AI Message' feature would interact with the SSE stream 
-        // or a new dedicated endpoint. For now, we'll placeholder it as it requires
-        // calling the AI engine directly with the diff.
-        setCommitMessage("feat: updated files based on current workspace diff")
+    setCommitting(true)
+    setError(null)
+    setSuccessMessage('')
+
+    try {
+      const data = await postJson('/api/git/commit', { message: commitMessage })
+      if (!data.success) {
+        throw new Error(data.message)
+      }
+
+      setSuccessMessage(data.message)
+      setCommitMessage('')
+      await fetchGitData()
+    } catch (commitError) {
+      setError(commitError.message)
+    } finally {
+      setCommitting(false)
     }
+  }
 
-    if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 transition-opacity">
-            <div
-                className="bg-[#0d1117] border border-[#30363d] rounded-lg shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden max-h-full h-[85vh]"
-                onClick={e => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
-                    <h2 className="text-[#c9d1d9] font-bold text-lg flex items-center gap-2">
-                        <GitCommit className="text-[#f85149]" size={20} /> Version Control
-                    </h2>
-                    <button onClick={onClose} className="text-[#8b949e] hover:text-white transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
+  const hasChanges = Boolean(status?.unsaved_files?.length)
 
-                {/* Body Matrix */}
-                <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-
-                    {/* Left Panel: Status & Files */}
-                    <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-[#30363d] bg-[#010409] flex flex-col overflow-hidden">
-                        <div className="p-3 border-b border-[#30363d] bg-[#161b22] text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
-                            Working Directory
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                            {loading ? (
-                                <div className="text-[#8b949e] text-sm animate-pulse">Running git status...</div>
-                            ) : error ? (
-                                <div className="text-[#f85149] text-sm flex items-start gap-2">
-                                    <AlertCircle size={16} className="mt-0.5" />
-                                    <span>{error}</span>
-                                </div>
-                            ) : (
-                                <div className="space-y-4 font-mono text-sm">
-                                    <div>
-                                        <span className="text-[#c9d1d9] block mb-2">{status?.status_message || "Up to date."}</span>
-                                    </div>
-
-                                    {status?.unsaved_files && status.unsaved_files.length > 0 && (
-                                        <div className="space-y-1">
-                                            <div className="text-xs text-[#8b949e] mb-2 border-b border-[#30363d] pb-1">Uncommitted Changes:</div>
-                                            {status.unsaved_files.map((file, idx) => (
-                                                <div key={idx} className="flex items-center gap-2 text-[#e3b341] truncate">
-                                                    <FileText size={14} className="flex-shrink-0" />
-                                                    <span className="truncate">{file}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {(!status?.unsaved_files || status.unsaved_files.length === 0) && (
-                                        <div className="flex items-center gap-2 text-[#3fb950] mt-4">
-                                            <CheckCircle2 size={16} />
-                                            <span>Nothing to commit, working tree clean</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Right Panel: Diff View & Commit Input */}
-                    <div className="flex-1 flex flex-col overflow-hidden bg-[#0d1117]">
-                        {/* Diff Viewer */}
-                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#010409]">
-                            {loading ? (
-                                <div className="text-[#8b949e] text-sm font-mono h-full flex flex-col justify-end p-4 pb-0">
-                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-[#58a6ff]/50 to-transparent animate-pulse mb-2"></div>
-                                    Generating diff...
-                                </div>
-                            ) : diffs ? (
-                                <pre className="text-xs font-mono text-[#c9d1d9] whitespace-pre-wrap">
-                                    {diffs.split('\n').map((line, i) => {
-                                        let colorClass = 'text-[#c9d1d9]'
-                                        if (line.startsWith('+') && !line.startsWith('+++')) colorClass = 'text-[#3fb950] bg-[#3fb950]/10'
-                                        else if (line.startsWith('-') && !line.startsWith('---')) colorClass = 'text-[#f85149] bg-[#f85149]/10'
-                                        else if (line.startsWith('@@')) colorClass = 'text-[#58a6ff]'
-
-                                        return (
-                                            <div key={i} className={`${colorClass} px-2`}>{line}</div>
-                                        )
-                                    })}
-                                </pre>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-[#8b949e] italic text-sm">
-                                    No changes detected in working directory.
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Commit Form */}
-                        <div className="p-4 border-t border-[#30363d] bg-[#161b22] shrink-0">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={commitMessage}
-                                    onChange={(e) => setCommitMessage(e.target.value)}
-                                    placeholder="Enter commit message..."
-                                    className="flex-1 bg-[#010409] border border-[#30363d] rounded px-3 py-2 text-sm text-[#c9d1d9] outline-none focus:border-[#58a6ff] transition-colors font-mono"
-                                    disabled={committing || (!status?.unsaved_files || status.unsaved_files.length === 0)}
-                                />
-                                <button
-                                    onClick={handleGenerateMsg}
-                                    disabled={committing || (!status?.unsaved_files || status.unsaved_files.length === 0)}
-                                    className="px-3 py-2 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] text-sm font-semibold rounded border border-[#30363d] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Generate structured commit message with AI"
-                                >
-                                    <Sparkles size={16} /> Auto
-                                </button>
-                            </div>
-
-                            <div className="mt-3 flex justify-between items-center">
-                                <div className="text-xs text-[#8b949e]">
-                                    {committing ? "Committing changes..." : "Press Commit to save current snapshot."}
-                                </div>
-                                <button
-                                    onClick={handleCommit}
-                                    disabled={!commitMessage.trim() || committing || (!status?.unsaved_files || status.unsaved_files.length === 0)}
-                                    className="px-6 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-sm font-semibold rounded shadow-sm transition-colors flex items-center gap-1.5 disabled:bg-[#21262d] disabled:text-[#8b949e] disabled:cursor-not-allowed"
-                                >
-                                    <CheckCircle2 size={14} /> Commit
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity sm:p-6">
+      <div
+        className="flex h-[85vh] max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-[#30363d] bg-[#0d1117] shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#30363d] bg-[#161b22] p-4">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#c9d1d9]">
+            <GitCommit className="text-[#f85149]" size={20} />
+            Version Control
+          </h2>
+          <button onClick={onClose} className="text-[#8b949e] transition-colors hover:text-white">
+            <X size={20} />
+          </button>
         </div>
-    )
+
+        <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+          <div className="flex w-full flex-col overflow-hidden border-b border-[#30363d] bg-[#010409] md:w-1/3 md:border-b-0 md:border-r">
+            <div className="border-b border-[#30363d] bg-[#161b22] p-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">
+              Working Directory
+            </div>
+
+            <div className="custom-scrollbar flex-1 overflow-y-auto p-4">
+              {loading ? (
+                <div className="text-sm text-[#8b949e] animate-pulse">Running git status...</div>
+              ) : error ? (
+                <div className="flex items-start gap-2 text-sm text-[#f85149]">
+                  <AlertCircle size={16} className="mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              ) : (
+                <div className="space-y-4 font-mono text-sm">
+                  <div>
+                    <span className="mb-2 block text-[#c9d1d9]">{status?.status_message || 'Up to date.'}</span>
+                  </div>
+
+                  {successMessage && (
+                    <div className="rounded border border-[#3fb950]/30 bg-[#3fb950]/10 p-2 text-[#3fb950]">
+                      {successMessage}
+                    </div>
+                  )}
+
+                  {hasChanges ? (
+                    <div className="space-y-1">
+                      <div className="mb-2 border-b border-[#30363d] pb-1 text-xs text-[#8b949e]">
+                        Uncommitted Changes:
+                      </div>
+                      {status.unsaved_files.map((file, index) => (
+                        <div key={index} className="flex items-center gap-2 truncate text-[#e3b341]">
+                          <FileText size={14} className="flex-shrink-0" />
+                          <span className="truncate">{file}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex items-center gap-2 text-[#3fb950]">
+                      <CheckCircle2 size={16} />
+                      <span>Nothing to commit, working tree clean</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col overflow-hidden bg-[#0d1117]">
+            <div className="custom-scrollbar flex-1 overflow-y-auto bg-[#010409] p-4">
+              {loading ? (
+                <div className="flex h-full flex-col justify-end p-4 pb-0 font-mono text-sm text-[#8b949e]">
+                  <div className="mb-2 h-px w-full animate-pulse bg-gradient-to-r from-transparent via-[#58a6ff]/50 to-transparent"></div>
+                  Generating diff...
+                </div>
+              ) : diffs ? (
+                <pre className="whitespace-pre-wrap text-xs font-mono text-[#c9d1d9]">
+                  {diffs.split('\n').map((line, index) => {
+                    let colorClass = 'text-[#c9d1d9]'
+                    if (line.startsWith('+') && !line.startsWith('+++')) {
+                      colorClass = 'bg-[#3fb950]/10 text-[#3fb950]'
+                    } else if (line.startsWith('-') && !line.startsWith('---')) {
+                      colorClass = 'bg-[#f85149]/10 text-[#f85149]'
+                    } else if (line.startsWith('@@')) {
+                      colorClass = 'text-[#58a6ff]'
+                    }
+
+                    return (
+                      <div key={index} className={`${colorClass} px-2`}>
+                        {line}
+                      </div>
+                    )
+                  })}
+                </pre>
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm italic text-[#8b949e]">
+                  No changes detected in working directory.
+                </div>
+              )}
+            </div>
+
+            <div className="shrink-0 border-t border-[#30363d] bg-[#161b22] p-4">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={commitMessage}
+                  onChange={(event) => setCommitMessage(event.target.value)}
+                  placeholder="Enter commit message..."
+                  className="w-full rounded border border-[#30363d] bg-[#010409] px-3 py-2 font-mono text-sm text-[#c9d1d9] outline-none transition-colors focus:border-[#58a6ff]"
+                  disabled={committing || !hasChanges}
+                />
+
+                <div className="text-xs text-[#8b949e]">
+                  The web client uses the backend git endpoints directly. AI-generated commit messages are not part of the current backend contract.
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between">
+                <div className="text-xs text-[#8b949e]">
+                  {committing ? 'Committing changes...' : 'Press Commit to save the current snapshot.'}
+                </div>
+                <button
+                  onClick={handleCommit}
+                  disabled={!commitMessage.trim() || committing || !hasChanges}
+                  className="flex items-center gap-1.5 rounded bg-[#238636] px-6 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#2ea043] disabled:cursor-not-allowed disabled:bg-[#21262d] disabled:text-[#8b949e]"
+                >
+                  <CheckCircle2 size={14} />
+                  Commit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

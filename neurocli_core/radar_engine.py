@@ -3,8 +3,20 @@ import re
 from typing import Dict, List, Any
 from datetime import datetime
 
-# Exclude standard problematic folders
-EXCLUDED_DIRS = {'.git', '.venv', '__pycache__', 'node_modules', '.idea', '.vscode', 'build', 'dist', 'neurocli.egg-info'}
+# Exclude generated, dependency, cache, and tool-runtime folders from workspace
+# health scans so Radar reports project-owned source instead of environment noise.
+EXCLUDED_DIRS = {
+    '.git',
+    '.venv',
+    '.codex_tmp_py',
+    '__pycache__',
+    'node_modules',
+    '.idea',
+    '.vscode',
+    'build',
+    'dist',
+    'neurocli.egg-info',
+}
 
 # Mapping of file extensions to languages
 LANGUAGE_MAP = {

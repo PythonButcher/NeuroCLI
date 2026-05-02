@@ -1,12 +1,12 @@
 # NeuroCLI Repair Plan
 
 ## Goal
-Keep both versions of NeuroCLI working:
+Keep NeuroCLI working as one shared backend product with two supported frontends:
 
 - the Python Textual app in `neurocli_app`
 - the React web app in `web_client`
 
-Both versions should use the same real AI workflow from `neurocli_core`.
+Both frontends should use the same real AI workflow from `neurocli_core`. The Textual app calls that backend directly. The React app reaches it through the FastAPI bridge in `api`.
 
 ## Current State
 
@@ -40,28 +40,34 @@ The API now has:
 ## Next Work
 
 ### Phase 3: Wire the React App to the Real Backend
-This is the next active phase.
+This is the current active phase.
 
 What we need to do:
 
-1. Update `web_client/src/App.jsx` to use the real API routes.
-2. Stop using the old fake stream flow.
-3. Parse the real streaming event format from the backend.
-4. Send `target_file` and `context_paths` in the request body.
-5. Make the context picker actually control what gets sent to the backend.
-6. Fix the `GitModal.jsx` runtime issue and remove placeholder-only git behavior that has no real backend support.
-7. Move the API base URL into a cleaner frontend config path such as environment variables or a Vite proxy.
+1. Run a final live browser smoke test against the local backend with the real model runtime available.
+2. Confirm no contract drift remains between the React app and `api/main.py`.
 
-What Phase 3 should look like when done:
+What is already done in Phase 3:
+
+1. `web_client/src/App.jsx` now sends the real request body to `POST /api/ai/stream` and falls back to `POST /api/ai/prompt` when streaming is unavailable.
+2. The web app now parses the structured stream events from the backend instead of assuming plain-text SSE chunks.
+3. `target_file`, `context_paths`, `model`, and `model_options` are now wired into the React request payload.
+4. The file tree now controls `target_file` selection and lets users toggle prompt context files directly.
+5. The context modal now reflects the real `context_paths` payload instead of placeholder-only behavior.
+6. `GitModal.jsx` no longer crashes at runtime and now uses only the backend git endpoints that actually exist.
+7. The frontend API base URL now comes from `VITE_API_BASE_URL`, defaulting to `http://127.0.0.1:8010`, through a shared client module.
+
+What Phase 3 should look like when closed:
 
 - a web user can send a prompt and get a real backend response
 - a web user can target a file
 - a web user can attach context files
 - the web app can handle backend errors without breaking
 - the web app is no longer using the old fake AI flow
+- local browser verification is complete against the running backend
 
 ### Phase 4: Preserve and Align the Python App
-This phase comes right after Phase 3.
+This phase is implemented in code and waiting on final runtime smoke verification.
 
 What we need to do:
 
@@ -76,10 +82,29 @@ What Phase 4 should look like when done:
 - the Python app and web backend use the same workflow rules
 - there is no drift between the Python path and the web path for the main AI flow
 
+What is already done in Phase 4:
+
+1. `neurocli_app/main.py` now builds the same normalized workflow request fields used by the web path: `prompt`, optional `target_file`, optional `context_paths`, optional `model`, and optional `model_options`.
+2. The Textual app now uses `stream_ai_workflow` through `neurocli_app/workflow_adapter.py` and applies the same final normalized response shape used by sync and streaming callers.
+3. The Textual app now has a model settings modal so users can set `model` and raw JSON `model_options` without introducing app-specific request fields.
+4. File updates still go through the existing local review flow: the normalized workflow response is formatted, diffed, and then applied with backup creation.
+5. Radar and git flows remain on the existing `neurocli_core` services instead of duplicating backend logic in the app.
+6. Added adapter-level tests to pin the Phase 4 request mapping and streaming contract.
+
+Remaining Phase 4 gaps:
+
+- manual end-to-end Textual verification with a real model runtime still needs to be run
+- API/browser verification is blocked in this environment until `fastapi` is installed again
+- larger end-to-end test expansion is still deferred to the later test phase
+
 ## Later Work
 
 ### Phase 5
-Clean up startup docs, dependency setup, and local run instructions.
+Polish both frontends and iron out feature parity while preserving the one-backend architecture.
+
+Phase 5 should focus on making NeuroCLI feel like a state-of-the-art terminal-first developer tool. The Textual app should be treated as a first-class flagship terminal interface, and the React frontend should preserve the same workflow model through the FastAPI bridge.
+
+The working direction for Phase 5 lives in `handoff/plans/phase_5_direction.md`.
 
 ### Phase 6
 Expand tests and do full end-to-end verification for both app versions.

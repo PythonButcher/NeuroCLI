@@ -7,7 +7,7 @@ Read this file first for Gemini work in this repository.
 ## Project Overview
 
 - **Name:** NeuroCLI
-- **Goal:** Maintain two supported product surfaces:
+- **Goal:** Maintain one shared Python backend contract with two supported product surfaces:
   - the Python-only Textual app
   - the React web frontend
 - **Shared architecture:** `neurocli_core` remains the reusable backend source of truth.
@@ -36,12 +36,13 @@ Gemini is responsible for React frontend UI work only.
 
 Keep business logic separate from presentation:
 
-- **`neurocli_core`:** backend engine and shared logic
-- **`neurocli_app`:** Python Textual interface
-- **`api`:** FastAPI backend for the React app
+- **`neurocli_core`:** backend engine, shared workflow, and business logic
+- **`neurocli_app`:** full Python Textual frontend that calls the shared backend directly
+- **`api`:** FastAPI bridge that exposes the shared backend to the React app
 - **`web_client`:** React frontend
 
 The React frontend should not become the place where backend logic lives.
+The Textual app should also stay aligned with `neurocli_core` instead of carrying a separate workflow.
 
 ## Collaboration With Codex
 
@@ -60,6 +61,7 @@ The React frontend should not become the place where backend logic lives.
 - Prefer presentational improvements over logic rewrites.
 - Do not move stateful backend behavior into JSX components.
 - Keep components ready to consume backend data from Codex-defined contracts.
+- During Phase 5, aim for feature parity with the Textual app where the backend supports the same behavior.
 
 ## Safety
 

@@ -15,6 +15,7 @@ Everything that is not a root-level `README.md`, `AGENTS.md`, or `GEMINI.md` sho
 - `plans/`
   - `current_plan.md`: short status and next-step file
   - `repair_plan.md`: main repair roadmap
+  - `phase_5_direction.md`: frontend polish, feature parity, and product direction for the next phase
 - `coordination/`
   - `codex_handoff.md`: backend and integration notes
   - `gemini_handoff.md`: frontend UI-only notes
@@ -38,3 +39,4 @@ Everything that is not a root-level `README.md`, `AGENTS.md`, or `GEMINI.md` sho
 - do not keep planning files in the repo root
 - add handoff context here when one agent's work changes expectations for the other
 - prefer updating an existing doc over creating a new duplicate doc
+- preserve the one-backend/two-frontends architecture in all future plans
