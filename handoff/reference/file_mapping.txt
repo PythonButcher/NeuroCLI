@@ -10,13 +10,39 @@ README.md – High-level overview and basic setup notes.
 
 handoff/plans/current_plan.md – Short status file that shows what the team should do next.
 
-handoff/plans/repair_plan.md – Main repair roadmap for the project.
+handoff/plans/roadmap.md – Active phased roadmap based on current project state and Agent Council outputs.
+
+handoff/archive/repair_plan.md – Historical repair roadmap for earlier phases.
+
+handoff/archive/phase_5_direction.md – Historical Phase 5 direction, superseded by the active roadmap.
 
 handoff/coordination/codex_handoff.md – Codex-owned backend and integration notes.
 
 handoff/coordination/gemini_handoff.md – Gemini-owned frontend presentation notes.
 
 handoff/coordination/shared_decisions.md – Shared rules and API contract notes.
+
+handoff/agent_council/README.md – Usage guide for the reusable Agent Council planning workflow.
+
+handoff/agent_council/roles.md – Council role definitions tailored to NeuroCLI.
+
+handoff/agent_council/master_prompt.md – Reusable prompt for running a structured council topic.
+
+handoff/agent_council/council_output_schema.json – Strict JSON Schema for council outputs.
+
+handoff/agent_council/sample_output.json – Example-only council output reflecting the current project state.
+
+handoff/agent_council/validate_council_output.py – Standard-library validator for council JSON artifacts.
+
+handoff/agent_council/runs/2026-05-03-project-direction/README.md – Human-readable summary of the project-direction council output.
+
+handoff/agent_council/runs/2026-05-03-project-direction/output.json – Structured project-direction council output.
+
+handoff/agent_council/runs/2026-05-03-practical-state-of-art-features/README.md – Human-readable summary of the practical feature council output.
+
+handoff/agent_council/runs/2026-05-03-practical-state-of-art-features/output.json – Structured practical feature council output.
+
+handoff/archive/agent_council_setup_request.md – Original Agent Council setup request, now archived.
 
 neurocli_app/main.py – Textual app entry point.
 

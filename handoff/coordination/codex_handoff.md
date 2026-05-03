@@ -17,7 +17,8 @@ Codex owns backend and integration work across this repo.
 - The FastAPI layer in `api` is a bridge from React to `neurocli_core`, not a separate business backend.
 - The React frontend Phase 3 logic has been rewired to the real API contract.
 - The Textual app Phase 4 contract alignment is now wired in code.
-- Phase 5 has started with a parity audit and a focused Textual command-center state polish.
+- Phase 5 produced useful Textual and React polish, but the active roadmap has now been consolidated in `handoff/plans/roadmap.md`.
+- The next Codex-owned implementation slice is the shared generated-file proposal/diff artifact.
 
 ## Active Contract Notes
 
@@ -32,15 +33,22 @@ Codex owns backend and integration work across this repo.
 - `neurocli_app/workflow_adapter.py` now builds the same request fields for the Textual app and validates raw JSON `model_options`.
 - `neurocli_app/main.py` now streams through `stream_ai_workflow` and applies the final normalized workflow response through one shared handler.
 - `neurocli_app/model_modal.py` is the Textual entry point for `model` and `model_options`.
-- Phase 5 should improve both frontends while preserving shared behavior: prompt runs, file-targeted updates, context attachments, model settings, streaming, formatting, apply, radar, and git workflows.
+- Future roadmap work should improve both frontends while preserving shared behavior: prompt runs, file-targeted updates, context attachments, model settings, streaming, formatting, apply, radar, git workflows, proposal/diff artifacts, validation results, and workflow timeline events.
 - `neurocli_app/main.py` now exposes visible terminal state for workflow status, target, context count, model state, and apply readiness.
 - Textual keyboard bindings now cover run, format, apply, model, context, radar, review, git, commands, reset, and quit.
 - `neurocli_app/command_modal.py` provides the discoverable command reference window opened by the top `⌨ Commands` control or Ctrl+K.
 - `neurocli_app/review_modal.py` provides the Textual Review Editor opened by `🧭 Review` or Ctrl+E. It edits the current proposed content, can keep the edited draft, and can apply edited content through the existing backup/write path in `neurocli_app/main.py`.
 - Do not consider React generated-file parity complete until it has a shared formatted diff/proposal path for AI `file_update` responses.
+- Do not start validation artifacts, workflow timeline, model profiles, MCP-style connectors, background task lanes, or productized council sessions before the proposal/diff artifact is designed and tested.
 
 ## Coordination Rule
 If frontend work needs a backend contract change, record it in `handoff/coordination/shared_decisions.md`.
+
+## Active Roadmap
+
+Read `handoff/plans/current_plan.md`, then `handoff/plans/roadmap.md`. The council-backed direction is terminal-first core-loop reliability, then shared capability parity, then structured orchestration later.
+
+The immediate slice should define and test a shared proposal/diff artifact in `neurocli_core`, expose it through `api`, and wire React integration to consume it. Textual should keep its current review/apply path unless consuming the shared artifact is clearly safe.
 
 ## Verification Notes
 

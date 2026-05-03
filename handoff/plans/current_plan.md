@@ -1,55 +1,66 @@
 # Current Plan
 
-## Goal
-Keep NeuroCLI moving as one shared backend product with two supported frontends:
+## Current Direction
 
-- the Python Textual app in `neurocli_app`
-- the React web app in `web_client`
+NeuroCLI should move forward as a terminal-first AI development environment with one shared Python capability engine and two supported frontend surfaces.
 
-`neurocli_core` is the backend source of truth. The Textual app calls it directly, and the React app reaches it through the FastAPI bridge in `api`.
+`neurocli_core` remains the backend source of truth. The Textual app in `neurocli_app` is the flagship terminal surface and calls `neurocli_core` directly. The React frontend in `web_client` is a supported companion surface and reaches the same backend behavior through the FastAPI bridge in `api`.
 
-## Status
+The Agent Council runs on May 3, 2026 clarified the next direction: do not chase autonomous orchestration first, and do not turn React into a separate product center. Build a reliable repo-aware loop first: understand context, target files, generate proposals, review diffs, validate results, and prepare commits with human approval.
 
-- Phase 1 is done.
-- Phase 2 is done.
-- Phase 3 code wiring is done, but the final live browser smoke test is still pending.
-- Phase 4 contract alignment work is in place for `neurocli_app`; the remaining work is runtime smoke testing.
-- Phase 5 has started with a frontend and feature-parity audit plus a focused Textual-first polish slice.
-- The current architecture is one shared Python backend workflow with two frontends, not two separate backend implementations.
+## Active Roadmap
 
-## Phase 5 Audit Snapshot
+The active phased roadmap lives in `handoff/plans/roadmap.md`.
 
-Prompt runs, streaming output, file targeting, context attachments, model override, and model options are wired through the shared workflow contract for both frontends. The Textual app calls `neurocli_core` through `neurocli_app/workflow_adapter.py`; the React app calls the same contract through `api/main.py`.
+The next implementation slice should be Phase 1 from that roadmap: define a shared generated-file proposal and diff artifact in `neurocli_core`, expose it through `api`, and make React consume that artifact instead of treating raw `output_text` as directly applyable proposed content.
 
-Formatting, diff review, and apply-with-backup are strongest in the Textual app. Textual formats generated file updates, shows a diff, and only then exposes apply. The API has separate `/api/format` and `/api/apply` endpoints for React, but React AI file-update responses currently set `proposedContent` directly from `output_text` and do not receive a generated formatted diff from the backend contract. That parity gap should be fixed by defining a shared proposal/diff contract in `neurocli_core` or the API bridge before Gemini polishes the React presentation.
+## Current Status
 
-Radar is aligned at the service level: Textual calls `neurocli_core.radar_engine` directly and React consumes `/api/radar`. Git is partially aligned: React uses status, diff, and manual commit endpoints; Textual still uses `neurocli_core.git_engine` to generate an AI commit message and commit/push from the modal. The current backend contract does not expose AI commit-message generation to React, so this remains a documented parity difference rather than a frontend-only feature for Gemini to invent.
+Phases 1 and 2 of the earlier repair work are complete: the shared AI workflow service exists in `neurocli_core`, and the FastAPI bridge calls the real workflow instead of a fake stream.
 
-## Phase 5 Textual Slice
+The Phase 3 React wiring is implemented but still needs final live browser smoke verification against the local backend and real model runtime.
 
-The Textual app now has a visible command-center status strip showing workflow state, target file, context count, model state, and apply readiness. It also has a top command icon that opens a git-window-style command reference modal listing run, format, apply, model, context, radar, review, git, reset, commands, and quit. The bottom action rail is ordered as setup/context/intel, then Run, Format, Review, and Commit. Review opens an editable git-themed proposal window so users can revise generated or formatted content before keeping the draft or applying it through the existing backup path. The reset and clear controls now clear transient prompt/diff/stream state and refocus the prompt input. Worker state handling no longer hides the loading indicator on non-terminal worker transitions.
+The Phase 4 Textual alignment is implemented but still needs manual runtime smoke verification against the real model runtime.
 
-## Next Work
+Phase 5 produced useful Textual and React polish, including command/reference modals, review editors, action-rail alignment, model settings, context selection, and backend-bound prompt fields. The remaining critical gap is shared generated-file review: Textual can format, diff, review, and apply with backup; React still lacks a shared backend proposal/diff artifact for AI `file_update` responses.
 
-1. Run a manual Textual app smoke test against the real model runtime with `PYTHONPATH=.codex_tmp_py/site-packages` or an equivalent installed environment.
-2. Define a shared generated-file proposal contract so React can review formatted diffs before apply, matching the Textual flow.
-3. Decide whether AI commit-message generation should become a shared backend/API contract or stay Textual-only for now.
-4. Run the pending live browser smoke test against the local FastAPI backend and real model runtime.
-5. Continue Textual flagship polish: focus order, command palette candidate, diff readability, review editor upgrades, radar access, and git action clarity.
-6. Gemini should use `handoff/coordination/gemini_handoff.md` for the web-only React implementation plan for the same Review and action-rail model.
+## Immediate Next Work
 
-## Main Files For The Next Step
+1. Confirm the local verification baseline: document exactly how to run the Textual smoke test, the FastAPI backend, and the React browser smoke test with the available dependency setup.
+2. Define the shared generated-file proposal/diff artifact in `neurocli_core`.
+3. Add focused tests for proposal creation, malformed model output, format/diff failure, non-file chat responses, and workspace path safety.
+4. Expose the proposal/diff artifact through `api`.
+5. Update React integration so generated-file review consumes backend proposal data instead of raw `output_text` alone.
+6. Update Textual only where it can safely consume the shared artifact without weakening its current review/apply path.
+7. Record the new contract in `handoff/coordination/shared_decisions.md` and update Codex/Gemini handoff notes before Gemini does any presentation-only React polish.
 
-- `neurocli_app/main.py`
-- `neurocli_app/model_modal.py`
-- `neurocli_app/workflow_adapter.py`
+## Main Files For The Next Slice
+
 - `neurocli_core/workflow_service.py`
-- `tests/test_textual_workflow_adapter.py`
+- `neurocli_core/diff_generator.py`
+- `neurocli_core/formatter.py`
 - `api/main.py`
+- `neurocli_app/main.py`
+- `neurocli_app/workflow_adapter.py`
 - `web_client/src/App.jsx`
 - `web_client/src/lib/api.js`
+- `tests/test_ai_services.py`
+- `tests/test_api_main.py`
+- `tests/test_textual_workflow_adapter.py`
+- `handoff/plans/roadmap.md`
 - `handoff/coordination/shared_decisions.md`
-- `handoff/plans/phase_5_direction.md`
+- `handoff/coordination/codex_handoff.md`
+- `handoff/coordination/gemini_handoff.md`
 
-## Reference
-See `handoff/plans/repair_plan.md` for the full roadmap.
+## Current Council Inputs
+
+The active roadmap is based on these council runs:
+
+- `handoff/agent_council/runs/2026-05-03-project-direction/`
+- `handoff/agent_council/runs/2026-05-03-practical-state-of-art-features/`
+
+Each real council run must include both `output.json` and a companion `README.md`.
+
+## Archived Context
+
+Older phase plans and idea documents are in `handoff/archive/`. They are useful history, not the active roadmap. In particular, `handoff/archive/repair_plan.md` and `handoff/archive/phase_5_direction.md` have been superseded by this current plan and `handoff/plans/roadmap.md`.

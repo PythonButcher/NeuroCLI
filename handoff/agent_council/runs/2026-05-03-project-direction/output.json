@@ -1,0 +1,751 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "agent_council_output",
+  "is_sample": false,
+  "topic": {
+    "title": "NeuroCLI project direction over the next three phases",
+    "prompt": "What should NeuroCLI become over the next three phases: a terminal-first AI development environment, a dual-surface AI coding platform, or a structured agent orchestration system for planning, editing, reviewing, and shipping code?",
+    "requested_by": "user",
+    "created_at": "2026-05-03",
+    "status": "completed"
+  },
+  "project_context": {
+    "project_name": "NeuroCLI",
+    "overview": "NeuroCLI is a repo-aware AI developer tool with one shared Python backend workflow in neurocli_core, a Python Textual frontend in neurocli_app, a FastAPI bridge in api, and a React frontend in web_client.",
+    "current_phase": "Phase 5 has started after shared backend alignment work. Prompt runs, streaming, file targeting, context attachments, model override, and model options are aligned across both frontends. Remaining active concerns include runtime smoke testing, generated-file review parity, AI commit-message parity, Textual flagship polish, and React presentation parity.",
+    "architectural_constraints": [
+      "neurocli_core remains the source of truth for workflow and business behavior.",
+      "api remains a FastAPI bridge to neurocli_core rather than a second backend.",
+      "neurocli_app calls neurocli_core directly and should remain the flagship terminal surface.",
+      "web_client consumes the shared backend through api and should not duplicate backend workflow logic.",
+      "Codex owns backend, Python, API, shared contracts, and React integration logic.",
+      "Gemini owns React UI and presentation work only after Codex-defined contracts are available.",
+      "Agent Council artifacts are planning and handoff outputs only; they do not change runtime behavior by themselves."
+    ]
+  },
+  "files_or_sources_reviewed": [
+    {
+      "path": "AGENTS.md",
+      "source_type": "doc",
+      "relevance": "Defines the one-backend/two-frontends architecture and Codex/Gemini ownership boundaries."
+    },
+    {
+      "path": "GEMINI.md",
+      "source_type": "doc",
+      "relevance": "Clarifies that Gemini owns React presentation and must not redefine backend contracts."
+    },
+    {
+      "path": "handoff/README.md",
+      "source_type": "doc",
+      "relevance": "Defines the handoff folder as the shared planning and decision space."
+    },
+    {
+      "path": "handoff/plans/current_plan.md",
+      "source_type": "plan",
+      "relevance": "Describes the current Phase 5 state, parity gaps, pending smoke tests, and next work."
+    },
+    {
+      "path": "handoff/plans/repair_plan.md",
+      "source_type": "plan",
+      "relevance": "Documents completed backend/API alignment phases and remaining verification work."
+    },
+    {
+      "path": "handoff/plans/phase_5_direction.md",
+      "source_type": "plan",
+      "relevance": "States the existing direction: terminal-first product identity, Textual flagship, React companion surface, and shared backend behavior."
+    },
+    {
+      "path": "handoff/coordination/shared_decisions.md",
+      "source_type": "coordination",
+      "relevance": "Records shared workflow contracts, API rules, parity gaps, and the Agent Council run-folder rule."
+    },
+    {
+      "path": "handoff/coordination/codex_handoff.md",
+      "source_type": "coordination",
+      "relevance": "Lists Codex-owned backend and integration notes, including current contract and verification status."
+    },
+    {
+      "path": "handoff/coordination/gemini_handoff.md",
+      "source_type": "coordination",
+      "relevance": "Lists React presentation guardrails and documents the current generated-file review limitation."
+    },
+    {
+      "path": "handoff/agent_council/roles.md",
+      "source_type": "doc",
+      "relevance": "Defines the council roles used for this four-round discussion."
+    }
+  ],
+  "participating_agents": [
+    {
+      "id": "architecture_guardian",
+      "role_name": "Architecture Guardian",
+      "perspective": "Protect the shared backend contract, the one-backend/two-frontends architecture, and long-term maintainability.",
+      "responsibilities": [
+        "Challenge any direction that duplicates workflow behavior outside neurocli_core.",
+        "Protect api as a bridge and prevent frontend-only business rules.",
+        "Assess whether the proposed three-phase direction can scale without architectural drift."
+      ],
+      "non_goals": [
+        "Choose visual presentation details.",
+        "Treat strategic planning as an immediate runtime contract change."
+      ]
+    },
+    {
+      "id": "product_ux_strategist",
+      "role_name": "Product/UX Strategist",
+      "perspective": "Define a coherent product identity that gives users a clear reason to use NeuroCLI instead of a generic chatbot plus terminal.",
+      "responsibilities": [
+        "Evaluate user value across Textual and React surfaces.",
+        "Protect the core workflow from becoming a loose set of disconnected tools.",
+        "Clarify which user and workflow should drive roadmap tradeoffs."
+      ],
+      "non_goals": [
+        "Override backend ownership boundaries.",
+        "Prioritize breadth over a coherent primary product loop."
+      ]
+    },
+    {
+      "id": "ai_workflow_steward",
+      "role_name": "AI Workflow Steward",
+      "perspective": "Ensure AI behavior remains structured, auditable, context-aware, and safe enough for real file changes.",
+      "responsibilities": [
+        "Assess whether planning, editing, review, and shipping workflows need structured AI artifacts.",
+        "Protect prompt, context, model option, stream, proposal, and review semantics.",
+        "Challenge vague autonomy that bypasses human review."
+      ],
+      "non_goals": [
+        "Make model output the only source of truth for deterministic tasks.",
+        "Promote autonomous changes without review, validation, and rollback paths."
+      ]
+    },
+    {
+      "id": "skeptic_qa_reviewer",
+      "role_name": "Skeptic/QA Reviewer",
+      "perspective": "Challenge strategic overreach, unverified claims, missing tests, and fragile implementation sequences.",
+      "responsibilities": [
+        "Identify risks in each proposed product identity.",
+        "Demand smoke tests and contract tests before declaring parity or maturity.",
+        "Surface failure modes that would make the strategy misleading."
+      ],
+      "non_goals": [
+        "Accept roadmap claims without verification criteria.",
+        "Conflate documentation decisions with completed product work."
+      ]
+    },
+    {
+      "id": "implementation_planner",
+      "role_name": "Implementation Planner",
+      "perspective": "Translate strategy into three practical phases with clear owners, dependencies, and exit criteria.",
+      "responsibilities": [
+        "Sequence work so runtime reliability and shared contracts precede product expansion.",
+        "Separate Codex-owned contracts and integration from Gemini-owned presentation.",
+        "Keep phases small enough to verify without losing the strategic direction."
+      ],
+      "non_goals": [
+        "Bundle unrelated large initiatives into one phase.",
+        "Begin with UI polish before backend data paths are real."
+      ]
+    },
+    {
+      "id": "frontend_parity_advocate",
+      "role_name": "Frontend Parity Advocate",
+      "perspective": "Define what parity should mean when Textual is the flagship surface and React is still a supported product surface.",
+      "responsibilities": [
+        "Protect equivalent user-facing capabilities across frontends where the backend supports them.",
+        "Avoid forcing identical UI where surface-specific ergonomics are better.",
+        "Prevent React from becoming either neglected or a separate product with duplicated logic."
+      ],
+      "non_goals": [
+        "Make React and Textual visually identical.",
+        "Let presentation parity hide backend contract gaps."
+      ]
+    }
+  ],
+  "conversation_rounds": [
+    {
+      "round_number": 1,
+      "name": "Independent Proposal",
+      "summary": "Each role evaluated the three possible identities. The strongest initial pattern was not to choose a pure dual-surface platform or pure orchestration product. Most roles favored a terminal-first AI development environment as the product center, with structured orchestration treated as an increasingly important capability and React treated as a supported companion surface over the same backend.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "Add a formal product principle that Textual is the flagship terminal environment, improve shared contracts before surface expansion, remove any ambition to make api or React a second behavior layer, reconsider equal dual-surface strategy until smoke tests and parity gaps are closed, and protect neurocli_core as the permanent behavior source.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position is architecture-first and favors terminal-first with shared backend discipline."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "Add a clear product thesis around repo-aware change review, improve the end-to-end loop from understanding the repo to reviewed changes and commit, remove generic chatbot framing, reconsider whether React should be equal strategy or companion access, and protect the user promise that AI output becomes inspectable engineering work.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position prioritizes the product loop over surface count."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Add structured AI artifacts for planning, proposals, risks, validation, and handoff over time, improve context and proposal semantics first, remove raw text as the only representation for file-changing work, reconsider autonomy until review and validation paths mature, and protect human-reviewed apply with deterministic backups and diffs.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position supports orchestration as a capability but not as the immediate primary identity."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Add explicit readiness gates for each phase, improve smoke-test reliability before expanding the product story, remove claims of parity that are not backed by tests, reconsider any third-phase orchestration plan that lacks failure-mode coverage, and protect the distinction between planning artifacts and implemented behavior.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position makes reliability a prerequisite for strategy."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Add a three-phase roadmap: stabilize the terminal-first core loop, formalize shared review and workspace intelligence contracts, then introduce structured orchestration as a productized planning layer; improve sequencing around Codex and Gemini ownership; remove large simultaneous rewrites; reconsider equal React investment until core contracts are stable; protect small verifiable increments.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position converts strategy into staged execution."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "Add a parity definition that means shared capabilities and safety guarantees, improve React as a companion surface that faithfully exposes shared behavior, remove any assumption that parity means identical screens, reconsider calling NeuroCLI a dual-surface platform until React has generated-file review parity, and protect the supported status of both frontends.",
+          "challenges_received": [],
+          "changes_after_challenge": "No changes yet; the initial position balances Textual flagship status with React support."
+        }
+      ],
+      "decisions": []
+    },
+    {
+      "round_number": 2,
+      "name": "Critique and Challenge",
+      "summary": "The council challenged all three identity options. A pure terminal-first direction risks underinvesting in React and structured planning. A pure dual-surface platform risks diluting the terminal identity and increasing parity cost before reliability is proven. A pure agent orchestration system risks overreach before deterministic review, tests, and contracts are mature.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "The dual-surface platform option is too expensive unless contracts become stronger and tests catch drift. The orchestration-system option is viable only if orchestration outputs are stored as structured artifacts over neurocli_core rather than invented independently in each frontend.",
+          "challenges_received": [
+            "Product/UX Strategist argued that too much architecture caution could reduce the project to internal plumbing.",
+            "Frontend Parity Advocate warned that calling React only a companion could create neglect and user-visible inconsistency."
+          ],
+          "changes_after_challenge": "The Architecture Guardian accepted that React should remain a supported surface with parity for shared capabilities, but rejected equal product primacy until the core workflow is reliable."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "Terminal-first identity is strongest only if it is framed as a complete development environment, not a prettier terminal prompt. The product should be about turning repo context into reviewed, validated, shippable changes.",
+          "challenges_received": [
+            "Skeptic/QA Reviewer challenged the phrase shippable because current smoke tests and generated-file review parity are incomplete.",
+            "AI Workflow Steward argued that planning and risk artifacts must be more structured before the product can promise end-to-end shipping confidence."
+          ],
+          "changes_after_challenge": "The Product/UX Strategist narrowed the promise to reviewed and validation-ready changes for the next phases, not fully autonomous shipping."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Structured orchestration should become a visible capability, but only after the file proposal, review, risk, and validation artifacts are explicit enough for both humans and downstream agents to inspect.",
+          "challenges_received": [
+            "Implementation Planner challenged whether orchestration belongs in the next three phases or should be deferred.",
+            "Architecture Guardian warned that orchestration could create a new contract surface that needs careful ownership."
+          ],
+          "changes_after_challenge": "The AI Workflow Steward accepted a phased approach: first structure generated file review and workflow state, then elevate planning and council artifacts into optional product capabilities."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "The current project is not ready to claim a broad platform identity because live Textual and browser smoke tests are pending, dependencies are locally fragile, and React generated-file review is still incomplete.",
+          "challenges_received": [
+            "Product/UX Strategist argued that strategy can guide work before every gap is closed.",
+            "Implementation Planner asked for concrete gates rather than a general block on ambition."
+          ],
+          "changes_after_challenge": "The Skeptic/QA Reviewer allowed a broad strategy if every phase has exit criteria and if marketing-level claims are not written into active docs until behavior is verified."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "The next three phases should not be three separate identities. They should be a staged progression: terminal-first core loop, shared capability parity, then structured orchestration on top of proven review and validation flows.",
+          "challenges_received": [
+            "Frontend Parity Advocate challenged whether React presentation work would be delayed too long.",
+            "Product/UX Strategist asked whether the phases tell a coherent user story rather than just engineering cleanup."
+          ],
+          "changes_after_challenge": "The Implementation Planner added user-facing exit criteria to each phase, including review confidence, workspace intelligence, and structured planning artifacts."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "The React surface should not be demoted to an afterthought. The correct hierarchy is Textual as flagship workflow surface, React as supported companion surface, and both consuming the same capability contracts.",
+          "challenges_received": [
+            "Architecture Guardian challenged the cost of keeping React aligned while contracts are still changing.",
+            "Skeptic/QA Reviewer questioned whether React can be considered supported while generated-file review parity is incomplete."
+          ],
+          "changes_after_challenge": "The Frontend Parity Advocate accepted that React parity must be capability-based and staged, with the generated-file proposal contract as a near-term gate."
+        }
+      ],
+      "decisions": [
+        "Do not define NeuroCLI as a pure dual-surface platform over the next three phases.",
+        "Do not define NeuroCLI as a pure structured orchestration system before review and validation flows are mature.",
+        "Use terminal-first AI development environment as the primary identity, with structured orchestration as a planned capability and React as a supported companion surface."
+      ]
+    },
+    {
+      "round_number": 3,
+      "name": "Reconciliation and Prioritization",
+      "summary": "The council reconciled the three options into a layered direction. NeuroCLI should become a terminal-first AI development environment whose signature loop is repo understanding, targeted generation, reviewable proposals, validation, and commit. React should remain supported through shared contracts. Structured agent orchestration should emerge as a higher-level planning and handoff layer after the core review loop is reliable.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "The reconciled direction must explicitly preserve one backend source of truth. New orchestration artifacts, workflow-state events, review proposals, model profiles, radar summaries, and git intelligence should be represented through neurocli_core or documented shared contracts before either frontend presents them.",
+          "challenges_received": [
+            "Implementation Planner asked which architectural commitments belong in the next three phases.",
+            "Product/UX Strategist requested language that is understandable as product direction, not only architecture policy."
+          ],
+          "changes_after_challenge": "The Architecture Guardian reframed the commitment as one capability engine with two surfaces, rather than one backend with two technical clients."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "The prioritized product story should be: NeuroCLI helps developers understand a repo, ask for targeted changes, inspect AI output, validate the result, and commit with confidence. The terminal is the flagship because this loop belongs close to the repo and the keyboard.",
+          "challenges_received": [
+            "Skeptic/QA Reviewer pushed back on commit with confidence until tests are integrated into the loop.",
+            "AI Workflow Steward asked that planning artifacts be included as part of understanding and risk analysis."
+          ],
+          "changes_after_challenge": "The Product/UX Strategist changed the phrase to commit-ready confidence and included planning/risk artifacts as part of the long-term product story."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "The AI strategy should move from unstructured responses to durable artifacts: context packs, proposal objects, diffs, risk notes, validation results, commit summaries, and council outputs. These artifacts can later power agent orchestration without making the app autonomous too early.",
+          "challenges_received": [
+            "Architecture Guardian asked that each artifact have an owner and contract boundary.",
+            "Skeptic/QA Reviewer asked for validation checks around generated artifacts."
+          ],
+          "changes_after_challenge": "The AI Workflow Steward agreed that artifact introduction should follow contract and test readiness, beginning with generated-file proposal and diff data."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "The roadmap must start with verification debt: live Textual smoke test, live browser smoke test, generated-file review parity tests, and dependency/run documentation. Without this, the strategy creates more surface area over uncertain behavior.",
+          "challenges_received": [
+            "Product/UX Strategist challenged whether verification should consume the whole next phase.",
+            "Implementation Planner argued that verification can be blended with core-loop hardening."
+          ],
+          "changes_after_challenge": "The Skeptic/QA Reviewer accepted a blended first phase if every visible product improvement includes concrete exit tests."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "The next three phases should be named Core Loop Reliability, Shared Capability Parity, and Structured Orchestration Layer. Each phase should produce a user-visible outcome and a verification outcome.",
+          "challenges_received": [
+            "Frontend Parity Advocate asked that React not wait until the last phase.",
+            "Architecture Guardian asked that contract work precede presentation in each phase."
+          ],
+          "changes_after_challenge": "The Implementation Planner moved React parity work into Phase Two and made contract-first sequencing explicit inside every phase."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "Parity should mean same backend capability, same safety guarantee, and same user-visible confidence, not identical layout. Textual can lead with dense keyboard workflows; React can follow with browser-native presentation once contracts are real.",
+          "challenges_received": [
+            "Product/UX Strategist asked whether this creates a two-tier product.",
+            "Skeptic/QA Reviewer asked for a clear definition of when React is behind versus intentionally different."
+          ],
+          "changes_after_challenge": "The Frontend Parity Advocate proposed a parity rule: if the backend supports a safety-critical workflow, both frontends should expose it or document why one surface does not."
+        }
+      ],
+      "decisions": [
+        "Adopt terminal-first AI development environment as the primary next-three-phase identity.",
+        "Treat React as a supported companion surface over the same capability engine, not a separate equal product strategy and not an abandoned secondary surface.",
+        "Treat structured agent orchestration as an emerging layer built from durable planning, proposal, risk, validation, and handoff artifacts.",
+        "Use verification and shared contracts as gates before claiming product maturity."
+      ]
+    },
+    {
+      "round_number": 4,
+      "name": "Final Synthesis",
+      "summary": "The final synthesis selects a layered strategy. NeuroCLI should become a terminal-first AI development environment over the next three phases. The terminal surface should remain the flagship because the product's strongest loop is repo-local, keyboard-driven, file-targeted, review-heavy, and close to git. React should remain a supported companion surface that exposes the same shared capabilities where appropriate. Structured agent orchestration should become a product layer only after the core workflow produces durable, testable artifacts.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "Final position: choose terminal-first as the identity and one capability engine as the architecture. Any future orchestration or React parity work must be backed by neurocli_core or a Codex-approved API contract.",
+          "challenges_received": [
+            "Product/UX Strategist asked for a product-facing description.",
+            "Frontend Parity Advocate asked that React remain supported."
+          ],
+          "changes_after_challenge": "The final synthesis describes one capability engine with flagship Textual and companion React surfaces."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "Final position: NeuroCLI's product promise should be turning repo context into reviewable, validation-ready, commit-ready changes, with structured planning becoming a visible advantage over generic chat tools.",
+          "challenges_received": [
+            "Skeptic/QA Reviewer asked that claims stay tied to implemented behavior.",
+            "AI Workflow Steward asked that structured artifacts become part of the promise."
+          ],
+          "changes_after_challenge": "The final synthesis says commit-ready rather than autonomous shipping and identifies artifacts as the path toward orchestration."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Final position: orchestration should not start as autonomous execution. It should start as structured artifacts that make AI planning, editing, review, and handoff inspectable.",
+          "challenges_received": [
+            "Implementation Planner asked where this belongs in the phases.",
+            "Architecture Guardian asked how to avoid contract sprawl."
+          ],
+          "changes_after_challenge": "The final synthesis introduces orchestration in Phase Three after core proposal, diff, radar, git, and validation flows mature."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Final position: the strategy is acceptable only with hard gates for runtime smoke tests, contract tests, frontend build checks, and validation of council JSON artifacts.",
+          "challenges_received": [
+            "Product/UX Strategist asked that verification not erase user-facing goals.",
+            "Implementation Planner asked for phase-level exit criteria."
+          ],
+          "changes_after_challenge": "The final synthesis pairs each phase with both user-facing and verification exit criteria."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Final position: the next three phases should be Core Loop Reliability, Shared Capability Parity, and Structured Orchestration Layer, with Codex owning contracts/integration and Gemini polishing React presentation after contracts exist.",
+          "challenges_received": [
+            "Frontend Parity Advocate asked to include React earlier than Phase Three.",
+            "Architecture Guardian asked to keep shared contracts first."
+          ],
+          "changes_after_challenge": "The final phases include React parity in Phase Two and contract-first sequencing throughout."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "Final position: React should remain strategically supported but not define the product center. Parity means equivalent shared capabilities and safety, while each surface can optimize presentation for its medium.",
+          "challenges_received": [
+            "Skeptic/QA Reviewer asked for a way to detect accidental neglect.",
+            "Product/UX Strategist asked how to explain this to users."
+          ],
+          "changes_after_challenge": "The final synthesis defines React as a companion surface, not a lesser code path, with documented exceptions for any unsupported shared workflow."
+        }
+      ],
+      "decisions": [
+        "NeuroCLI should become a terminal-first AI development environment over the next three phases.",
+        "The product should not position itself as a full dual-surface platform until parity, testing, and shared contracts are stronger.",
+        "The product should not position itself as an autonomous orchestration system yet; structured orchestration should emerge from durable, reviewed artifacts.",
+        "The next three phases should be Core Loop Reliability, Shared Capability Parity, and Structured Orchestration Layer."
+      ]
+    }
+  ],
+  "major_disagreements": [
+    {
+      "id": "disagreement_001",
+      "topic": "Whether NeuroCLI should be terminal-first or dual-surface equal over the next three phases.",
+      "positions": [
+        {
+          "agent_id": "architecture_guardian",
+          "claim": "The project should remain terminal-first because the current architecture, docs, and product direction already make Textual the flagship and keeping two equal surfaces would increase contract drift risk.",
+          "rationale": "The backend contract, pending smoke tests, and React generated-file review gap show that equal surface strategy is premature."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "claim": "React must remain a supported companion surface and cannot be treated as optional afterthought.",
+          "rationale": "The repo already commits to two supported frontends, and user-facing safety workflows should not exist only in Textual without a documented reason."
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "id": "disagreement_002",
+      "topic": "Whether structured agent orchestration should become the primary identity immediately.",
+      "positions": [
+        {
+          "agent_id": "ai_workflow_steward",
+          "claim": "Structured artifacts and council outputs are strategically important and can differentiate NeuroCLI from generic AI assistants.",
+          "rationale": "Planning, risk, proposal, diff, validation, and handoff artifacts make AI work auditable and reusable."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "claim": "A primary orchestration identity is premature before review, smoke tests, and contract validation are mature.",
+          "rationale": "The current project still has pending live tests and known parity gaps; orchestration would multiply failure modes."
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "id": "disagreement_003",
+      "topic": "How ambitious the next-three-phase roadmap should be.",
+      "positions": [
+        {
+          "agent_id": "product_ux_strategist",
+          "claim": "The roadmap needs a strong user-facing story, not only stabilization work.",
+          "rationale": "Without a product thesis, the app risks becoming a collection of backend endpoints and modals."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "claim": "The roadmap must stay staged and verifiable, with runtime reliability and shared contracts ahead of broader product expansion.",
+          "rationale": "Large simultaneous identity shifts would be hard to verify and easy to split across Codex and Gemini ownership boundaries."
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "id": "disagreement_004",
+      "topic": "Whether the product can promise shipping code.",
+      "positions": [
+        {
+          "agent_id": "product_ux_strategist",
+          "claim": "The most compelling loop includes planning, editing, reviewing, validating, and shipping code.",
+          "rationale": "The product needs a complete workflow story to stand apart from generic chat-based coding."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "claim": "The current safe promise is commit-ready or validation-ready changes, not autonomous shipping.",
+          "rationale": "Shipping implies stronger test integration, error recovery, and possibly CI awareness than the current docs establish."
+        }
+      ],
+      "status": "resolved"
+    }
+  ],
+  "resolved_recommendations": [
+    {
+      "id": "recommendation_001",
+      "title": "Adopt a terminal-first AI development environment identity",
+      "decision": "Use terminal-first AI development environment as the primary next-three-phase direction, with Textual as the flagship surface.",
+      "rationale": "This matches the current project docs, the repo-local nature of the workflow, the strongest existing Textual review path, and the product opportunity to feel like a developer instrument panel rather than a generic chat UI.",
+      "owner_role": "Codex for docs and architecture; Gemini for React presentation alignment after Codex handoff",
+      "implementation_priority": "high",
+      "impacted_areas": [
+        "handoff/plans/current_plan.md",
+        "handoff/plans/phase_5_direction.md",
+        "neurocli_app",
+        "web_client"
+      ],
+      "dependencies": [
+        "Agreement that React remains a supported companion surface",
+        "Verification that Textual and React core flows can be smoke-tested"
+      ]
+    },
+    {
+      "id": "recommendation_002",
+      "title": "Define NeuroCLI's signature workflow as repo context to reviewed change",
+      "decision": "Make the core product loop: understand repo state, select target and context, generate a proposal, review a diff, validate the change, and prepare a commit.",
+      "rationale": "This unifies prompt runs, file targeting, context attachments, generated proposals, review, radar, git, and future validation into one coherent user story.",
+      "owner_role": "Product/UX Strategist with Codex-owned contract follow-through",
+      "implementation_priority": "high",
+      "impacted_areas": [
+        "neurocli_core",
+        "api",
+        "neurocli_app",
+        "web_client",
+        "handoff/coordination/shared_decisions.md"
+      ],
+      "dependencies": [
+        "Generated-file proposal and diff contract",
+        "Runtime smoke tests",
+        "Documentation of validation and commit boundaries"
+      ]
+    },
+    {
+      "id": "recommendation_003",
+      "title": "Treat React as a supported companion surface, not a separate product center",
+      "decision": "Keep React aligned with shared backend capabilities and safety guarantees, but do not force identical presentation or let React drive backend behavior.",
+      "rationale": "This respects the existing two-frontend commitment while avoiding the cost and drift of two equal product centers before core reliability is mature.",
+      "owner_role": "Codex for React integration contracts; Gemini for React presentation",
+      "implementation_priority": "high",
+      "impacted_areas": [
+        "api",
+        "web_client",
+        "handoff/coordination/gemini_handoff.md",
+        "handoff/coordination/shared_decisions.md"
+      ],
+      "dependencies": [
+        "Codex-defined API contracts for any shared capability",
+        "Documented exceptions when React cannot match a Textual capability"
+      ]
+    },
+    {
+      "id": "recommendation_004",
+      "title": "Build structured orchestration as a later layer over durable artifacts",
+      "decision": "Do not make autonomous orchestration the immediate product identity. Instead, introduce structured artifacts for planning, proposals, risks, validation, and handoff so orchestration can mature safely in the third phase.",
+      "rationale": "Structured artifacts create long-term differentiation without bypassing human review or overloading current contracts.",
+      "owner_role": "AI Workflow Steward with Codex-owned implementation",
+      "implementation_priority": "medium",
+      "impacted_areas": [
+        "handoff/agent_council",
+        "neurocli_core",
+        "api",
+        "neurocli_app",
+        "web_client"
+      ],
+      "dependencies": [
+        "Proposal/diff artifacts",
+        "Risk and validation artifact design",
+        "Clear rule that council artifacts remain planning-only until explicitly productized"
+      ]
+    },
+    {
+      "id": "recommendation_005",
+      "title": "Gate strategy with verification",
+      "decision": "Do not claim platform maturity, parity, or orchestration readiness until matching smoke tests, contract tests, and artifact validation are in place.",
+      "rationale": "The current docs still list live browser and Textual smoke testing as pending, and React generated-file review remains a documented parity gap.",
+      "owner_role": "Skeptic/QA Reviewer and Implementation Planner",
+      "implementation_priority": "high",
+      "impacted_areas": [
+        "tests",
+        "handoff/plans/current_plan.md",
+        "handoff/coordination/codex_handoff.md",
+        "handoff/coordination/shared_decisions.md"
+      ],
+      "dependencies": [
+        "Local dependency setup clarity",
+        "Textual smoke test",
+        "FastAPI and React browser smoke test",
+        "Council output validation"
+      ]
+    }
+  ],
+  "unresolved_questions": [
+    {
+      "id": "question_001",
+      "question": "How much of the future validation loop should NeuroCLI own directly versus delegating to existing project test commands and CI?",
+      "why_it_matters": "The answer determines whether validation is a lightweight command runner, a first-class backend contract, or a broader release-readiness system.",
+      "proposed_owner_role": "Architecture Guardian",
+      "blocking": false
+    },
+    {
+      "id": "question_002",
+      "question": "Should structured Agent Council runs eventually become visible inside the Textual and React apps, or remain handoff-only documentation artifacts?",
+      "why_it_matters": "This determines whether orchestration becomes a product feature or stays a planning workflow for agents working in the repo.",
+      "proposed_owner_role": "Product/UX Strategist",
+      "blocking": false
+    },
+    {
+      "id": "question_003",
+      "question": "What exact parity contract should define when React is intentionally different from Textual versus behind Textual?",
+      "why_it_matters": "Without a durable parity rule, future UI and contract decisions can drift or create avoidable conflict between Codex and Gemini ownership.",
+      "proposed_owner_role": "Frontend Parity Advocate",
+      "blocking": true
+    },
+    {
+      "id": "question_004",
+      "question": "Which deterministic services should be promoted into first-class workflow artifacts first: proposal diff, radar intelligence, git summary, validation result, or risk assessment?",
+      "why_it_matters": "The order affects backend contract scope, UI complexity, and how quickly structured orchestration can become real.",
+      "proposed_owner_role": "Implementation Planner",
+      "blocking": false
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk_001",
+      "risk": "The project claims a broad platform or orchestration identity before core smoke tests and parity gaps are closed.",
+      "impact": "high",
+      "likelihood": "medium",
+      "mitigation": "Tie every phase to explicit runtime and contract verification gates before updating product claims.",
+      "detection_signal": "Docs describe platform maturity while current_plan still lists pending Textual/browser smoke tests or generated-file review parity gaps."
+    },
+    {
+      "id": "risk_002",
+      "risk": "React becomes either a neglected secondary surface or a separate frontend with duplicated workflow behavior.",
+      "impact": "high",
+      "likelihood": "medium",
+      "mitigation": "Define parity as shared backend capability and safety guarantees; document any intentional surface differences.",
+      "detection_signal": "web_client implements business rules without matching neurocli_core or api support, or React lacks a supported workflow without a documented exception."
+    },
+    {
+      "id": "risk_003",
+      "risk": "Structured orchestration adds complexity without enough durable artifacts to support safe downstream action.",
+      "impact": "medium",
+      "likelihood": "medium",
+      "mitigation": "Introduce orchestration through explicit artifacts such as proposals, diffs, risk notes, validation results, and council outputs.",
+      "detection_signal": "New agent workflows depend on free-form text summaries instead of validated JSON or shared backend data."
+    },
+    {
+      "id": "risk_004",
+      "risk": "Terminal-first identity becomes too narrow and misses users who prefer browser workflows.",
+      "impact": "medium",
+      "likelihood": "medium",
+      "mitigation": "Keep React as a supported companion surface with shared safety-critical capabilities and browser-native presentation.",
+      "detection_signal": "Gemini handoff docs stop receiving updates for shared capabilities or React cannot exercise backend-supported workflows."
+    },
+    {
+      "id": "risk_005",
+      "risk": "The roadmap turns into disconnected feature work instead of a coherent product loop.",
+      "impact": "medium",
+      "likelihood": "high",
+      "mitigation": "Evaluate future work against the repo-context to reviewed-change loop and reject features that do not strengthen it.",
+      "detection_signal": "Plans list independent modals, endpoints, and UI controls without describing how they connect to review, validation, and commit readiness."
+    }
+  ],
+  "impacted_areas": {
+    "codebase": [
+      "neurocli_core",
+      "api",
+      "neurocli_app",
+      "web_client",
+      "tests"
+    ],
+    "documentation": [
+      "handoff/plans/current_plan.md",
+      "handoff/plans/phase_5_direction.md",
+      "handoff/plans/repair_plan.md",
+      "handoff/coordination/shared_decisions.md",
+      "handoff/coordination/codex_handoff.md",
+      "handoff/coordination/gemini_handoff.md",
+      "handoff/agent_council/runs/2026-05-03-project-direction/output.json",
+      "handoff/agent_council/runs/2026-05-03-project-direction/README.md"
+    ],
+    "runtime_behavior_changed": false,
+    "frontend_implications": [
+      "Textual should remain the flagship surface for the dense repo-local workflow, with keyboard-first review, command access, diff confidence, radar, and git flow.",
+      "React should remain a supported companion surface that consumes Codex-defined backend capabilities through api and presents them in browser-native ways.",
+      "Frontend parity should mean equivalent shared capabilities and safety guarantees, not identical visual layout.",
+      "Gemini presentation work should proceed only after Codex-defined contracts and React integration state exist for any new shared capability."
+    ],
+    "backend_implications": [
+      "neurocli_core should continue consolidating workflow, proposal, diff, radar, git, and future validation semantics as shared capabilities.",
+      "api should remain a bridge that exposes shared semantics to React rather than interpreting AI workflow behavior independently.",
+      "Future orchestration should depend on structured artifacts and deterministic services before adding autonomous behavior.",
+      "Any productized council or planning workflow would need explicit backend ownership and validation rather than using documentation artifacts as runtime state."
+    ]
+  },
+  "contract_considerations": {
+    "changes_required": true,
+    "details": "This planning artifact changes no runtime contract by itself. The recommended direction would require future Codex-defined contracts for generated-file proposals, validation results, richer workflow state, possible model profiles, risk summaries, and any productized agent orchestration artifacts.",
+    "approval_owner": "Codex"
+  },
+  "testing_considerations": [
+    {
+      "area": "Textual runtime",
+      "recommendation": "Run the pending manual Textual smoke test against the real model runtime before claiming the terminal-first core loop is reliable.",
+      "required_before_implementation": true
+    },
+    {
+      "area": "FastAPI and React runtime",
+      "recommendation": "Run the pending live browser smoke test against the local FastAPI backend and real model runtime before claiming dual-surface reliability.",
+      "required_before_implementation": true
+    },
+    {
+      "area": "Shared backend contracts",
+      "recommendation": "Add or extend unit tests for generated-file proposal/diff behavior, workflow response shapes, and any future validation or risk artifacts.",
+      "required_before_implementation": true
+    },
+    {
+      "area": "Frontend parity",
+      "recommendation": "Use browser checks and Textual smoke checks to verify equivalent capability and safety for target file, context, model settings, streaming, review, apply, radar, and git workflows.",
+      "required_before_implementation": false
+    },
+    {
+      "area": "Agent Council artifacts",
+      "recommendation": "Validate every real council subject with `python -B handoff/agent_council/validate_council_output.py <subject-folder>/output.json`.",
+      "required_before_implementation": true
+    }
+  ],
+  "implementation_priority": "high",
+  "suggested_implementation_phases": [
+    {
+      "phase": "Phase 6: Core Loop Reliability",
+      "goal": "Make the terminal-first core loop reliable and verifiable: target file, context, model settings, streaming, generated proposal, diff review, apply with backup, radar, and git readiness.",
+      "owner": "Codex",
+      "exit_criteria": [
+        "Manual Textual smoke test passes with the real model runtime.",
+        "FastAPI and React browser smoke test passes with the real model runtime.",
+        "Generated-file proposal and diff contract is defined or explicitly scoped as the next blocker.",
+        "Current run documentation explains dependencies, local URLs, and PYTHONPATH expectations."
+      ]
+    },
+    {
+      "phase": "Phase 7: Shared Capability Parity",
+      "goal": "Convert the strongest workflows into shared capabilities with equivalent safety guarantees across Textual and React, while preserving surface-specific presentation.",
+      "owner": "Codex for backend/API/React integration; Gemini for React presentation after handoff",
+      "exit_criteria": [
+        "React generated-file review uses backend proposal/diff data rather than raw output_text alone.",
+        "AI commit-message generation is either shared through a Codex-approved contract or explicitly documented as Textual-only.",
+        "A parity rule is recorded in shared_decisions.md.",
+        "Both frontends expose or intentionally document each safety-critical shared workflow."
+      ]
+    },
+    {
+      "phase": "Phase 8: Structured Orchestration Layer",
+      "goal": "Introduce structured planning, risk, validation, and handoff artifacts as an orchestration layer over the reliable core loop without bypassing human review.",
+      "owner": "Codex for artifact contracts and deterministic services; Gemini for any React presentation after contracts exist",
+      "exit_criteria": [
+        "Planning artifacts, proposal artifacts, risk notes, validation results, and commit summaries have clear ownership and validation rules.",
+        "Agent Council outputs remain stored per subject folder and validate against schema.",
+        "Any app-visible orchestration feature is backed by shared backend contracts and does not rely on frontend-only behavior.",
+        "Autonomous execution, if considered, remains gated by review, tests, backups, and explicit user approval."
+      ]
+    }
+  ],
+  "final_synthesis_summary": "The council recommends a layered direction: NeuroCLI should become a terminal-first AI development environment over the next three phases, not a fully equal dual-surface platform and not an autonomous orchestration system yet. Textual should remain the flagship surface because the strongest product loop is repo-local, keyboard-driven, file-targeted, review-heavy, and close to git. React should remain a supported companion surface over the same shared capability engine, with parity defined as equivalent shared capabilities and safety guarantees rather than identical UI. Structured agent orchestration should emerge later from durable artifacts such as proposals, diffs, risk notes, validation results, commit summaries, and council outputs. The next three phases should therefore focus on Core Loop Reliability, Shared Capability Parity, and a Structured Orchestration Layer, all gated by smoke tests, contract tests, and clear Codex/Gemini ownership boundaries."
+}

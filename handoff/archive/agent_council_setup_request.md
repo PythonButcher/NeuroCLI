@@ -1,4 +1,8 @@
-# Agent Council Workflow Setup
+# Archived Agent Council Workflow Setup Request
+
+This document is the original setup request for the Agent Council workflow. The implemented workflow now lives in `handoff/agent_council/`, and real council runs live under `handoff/agent_council/runs/`.
+
+Do not treat this file as the active council instructions.
 
 This document outlines the process for setting up an Agent Council workflow for this project. The workflow should be adapted to the project's existing architecture, development process, and documentation style, rather than assuming a direct fit from another project.
 
