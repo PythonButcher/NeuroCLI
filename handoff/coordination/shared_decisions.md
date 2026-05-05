@@ -9,8 +9,16 @@
 - `web_client` is the React frontend.
 - Feature work should preserve parity between the Textual and React frontends whenever the shared backend supports the same behavior.
 - The active roadmap is `handoff/plans/roadmap.md`.
-- The next implementation slice is the shared generated-file proposal/diff artifact.
+- The current implementation slice is Phase 3 workflow timeline.
 - Older phase plans live in `handoff/archive/` and are historical reference only.
+
+## Compound Checkpoints
+
+A compound checkpoint is required for every phase and implementation slice. It answers, in one practical statement, what a user can do after the work that they could not do before.
+
+Each checkpoint must name the available surface: Textual app, React app, API, or backend only. Because Textual is the flagship app, backend-only or React-only work must document the missing Textual checkpoint and should not be described as product-complete.
+
+Completed Phase 2 checkpoint: approved validation is usable in both app surfaces through the shared `ValidationResult` artifact. Users can run the safe `python_unittest` label and see pass, fail, timeout, skipped, or policy rejection details.
 
 ## Ownership
 
@@ -23,6 +31,13 @@
 - `handoff/plans/current_plan.md`
 - `handoff/plans/roadmap.md`
 - `handoff/coordination/shared_decisions.md`
+- `handoff/coordination/frontend_parity.md`
+
+## Frontend Differences
+
+Textual and React may intentionally differ. The canonical record of those differences is `handoff/coordination/frontend_parity.md`.
+
+If one surface gains a feature the other does not have, update `frontend_parity.md` in the same slice. The difference should be marked as temporary, intentional, or a blocked parity gap.
 
 ## Shared AI Contract
 
@@ -49,6 +64,7 @@ Sync response fields:
 - `model`
 - `error`
 - optional `proposal`
+- optional `validation_result`
 
 ## Generated File Proposal Contract
 
@@ -75,7 +91,43 @@ Proposal status values:
 
 The artifact currently stores `original_content` directly because the existing workflow response already returns the original target content. A later persistence layer may replace this with a durable content reference, but frontends should not invent that reference.
 
-Textual keeps its existing review/apply path for now. It may consume the shared proposal later only if that preserves the current format, diff, editable review, backup, and explicit apply behavior.
+Textual keeps its existing review/apply path for generated-file proposals. It may consume the shared proposal later only if that preserves the current format, diff, editable review, backup, and explicit apply behavior.
+
+## Validation Result Contract
+
+Workflow responses now include a shared validation artifact at `response.validation_result`. The workflow currently reports validation as skipped by default; validation is not run automatically during prompt, stream, or apply.
+
+The validation artifact is created in `neurocli_core/validation_result.py` and can also be returned by `POST /api/validate`. Validation execution is selected only by a stable `command_label`; neither model output nor frontend text can provide a raw shell command.
+
+Validation fields:
+
+- `status`
+- `command_label`
+- `duration_seconds`
+- `exit_code`
+- `skipped`
+- `output_excerpt`
+- `error_details`
+
+Validation status values:
+
+- `passed`: the approved command exited with code 0.
+- `failed`: the approved command ran and exited non-zero, or the executable failed to start.
+- `timeout`: the approved command exceeded its configured timeout.
+- `skipped`: validation was not requested for the current workflow response.
+- `rejected`: a requested label was not present in the active command policy and no process was started.
+
+Command policy rules:
+
+- Validation uses `ValidationCommandPolicy`, an explicit allowlist keyed by `command_label`.
+- Built-in labels currently include `python_unittest` and `react_build`.
+- A workspace may add labels through `neurocli_validation.json` with `commands.<label>.argv` as a string array and optional `timeout_seconds`.
+- Commands run with `shell=False`; raw command strings are not accepted by the shared validation runner.
+- Model output must never be treated as a validation command label or argv source.
+
+React consumes `response.validation_result` in the status strip and can run the approved `python_unittest` label through `/api/validate`.
+
+Textual can run the approved `python_unittest` label through the Validate action or Ctrl+T and displays the shared artifact. Neither app accepts raw validation command text.
 
 Stream event fields:
 
@@ -93,6 +145,7 @@ Stream event semantics:
 ## API Rules
 
 - the main API routes are `POST /api/ai/prompt` and `POST /api/ai/stream`
+- validation is exposed through `POST /api/validate` with a policy-approved `command_label`
 - the API resolves file paths inside the workspace before calling `neurocli_core`
 - file endpoints reject reads and writes outside the workspace
 - local backend startup should use `http://127.0.0.1:8010`
@@ -127,7 +180,7 @@ Each council subject must have its own folder under `handoff/agent_council/runs/
 
 Every real council subject folder must also include a companion `README.md` created at the same time as `output.json`. That README must discuss the JSON output in human-readable terms, including what the council decided, how future agents should use the JSON, what the output does not authorize, and how to validate the run.
 
-The recommended first council topic is the current generated-file review parity gap: define a shared generated-file proposal and diff contract so React can review AI file updates before apply while preserving the Textual review flow.
+The first council-backed implementation topic was the generated-file review parity gap: define a shared generated-file proposal and diff contract so React can review AI file updates before apply while preserving the Textual review flow. That is now historical context; the active checkpoint is Textual validation.
 
 Completed real council runs:
 
@@ -140,10 +193,9 @@ These runs support the current direction: terminal-first AI development environm
 
 - Confirm the local Textual smoke-test path against the real model runtime.
 - Confirm the local FastAPI and React browser smoke-test path against the real model runtime.
-- Define the shared generated-file proposal/diff artifact in `neurocli_core`.
-- Expose the proposal/diff artifact through `api` for React.
-- Update React integration so AI file updates review backend proposal/diff data rather than raw `output_text` alone.
-- Keep React apply disabled when a `file_update` response lacks a proposal or returns a proposal status other than `ready`.
+- Add a shared workflow timeline artifact and event contract.
+- Run live smoke verification for shared proposal, validation, and timeline display against Textual, the local FastAPI backend, and React once model credentials/runtime are available.
+- Keep timeline content redacted by default and avoid storing full source files, secrets, raw model prompts, or long outputs.
 - Keep frontend cleanup from changing backend rules without updating this file.
 
 ## Historical Phase 5 Parity Audit
@@ -166,12 +218,12 @@ The Textual app is the flagship terminal experience. It now exposes a compact st
 
 The active roadmap phases are:
 
-1. Baseline and documentation.
-2. Shared proposal and diff artifact.
-3. Validation result artifact.
-4. Workflow timeline.
-5. Terminal-first experience.
-6. Shared intelligence and React parity.
-7. State-of-the-art layer.
+0. Baseline and documentation.
+1. Shared proposal and diff artifact.
+2. Validation result artifact and safe validation.
+3. Workflow timeline.
+4. Terminal-first experience.
+5. Shared intelligence and React parity.
+6. State-of-the-art layer.
 
-Do not start MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only diff logic before the shared proposal/diff artifact and verification baseline are in place.
+Do not start MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only orchestration controls before the Phase 3 workflow timeline checkpoint is complete.

@@ -17,6 +17,13 @@ from neurocli_core.radar_engine import (
     scan_technical_debt,
     scan_workspace_health,
 )
+from neurocli_core.validation_result import (
+    ValidationCommand,
+    ValidationCommandPolicy,
+    build_default_validation_policy,
+    build_skipped_validation_result,
+    run_validation_command,
+)
 from neurocli_core.workflow_service import (
     AIWorkflowRequest,
     AIWorkflowResponse,
@@ -75,6 +82,11 @@ class CommitRequest(BaseModel):
     message: str
 
 
+class ValidationRequest(BaseModel):
+    command_label: str | None = None
+    target_file: str | None = None
+
+
 def _is_within_workspace(path: Path) -> bool:
     try:
         path.relative_to(WORKSPACE_ROOT)
@@ -125,6 +137,9 @@ def _build_workflow_error_response(payload: PromptRequest, error: str) -> AIWork
         context_paths=list(normalized_request.context_paths),
         model=normalized_request.model,
         error=error,
+        validation_result=build_skipped_validation_result(
+            error_details="Validation was skipped because the workflow request was rejected."
+        ),
     )
 
 
@@ -324,6 +339,58 @@ async def format_file_endpoint(req: FormatRequest) -> dict[str, Any]:
         }
     except Exception as exc:
         return {"error": str(exc)}
+
+
+@app.post("/api/validate")
+async def validate_workspace_endpoint(req: ValidationRequest) -> dict[str, Any]:
+    """Run one project-approved validation command by label."""
+
+    try:
+        if req.target_file:
+            resolved_target = _resolve_workspace_file(req.target_file)
+            if resolved_target.suffix != ".py":
+                return run_validation_command(
+                    "not_python_test",
+                    policy=ValidationCommandPolicy(),
+                    cwd=WORKSPACE_ROOT,
+                ).to_dict()
+
+            policy = ValidationCommandPolicy(
+                commands={
+                    "python_unittest_target": ValidationCommand(
+                        label="python_unittest_target",
+                        argv=(
+                            "python",
+                            "-m",
+                            "unittest",
+                            str(resolved_target.relative_to(WORKSPACE_ROOT)),
+                        ),
+                        timeout_seconds=60.0,
+                    )
+                }
+            )
+            return run_validation_command(
+                "python_unittest_target",
+                policy=policy,
+                cwd=WORKSPACE_ROOT,
+            ).to_dict()
+
+        policy = build_default_validation_policy(WORKSPACE_ROOT)
+        return run_validation_command(
+            req.command_label,
+            policy=policy,
+            cwd=WORKSPACE_ROOT,
+        ).to_dict()
+    except Exception as exc:
+        return {
+            "status": "failed",
+            "command_label": req.command_label or "not_run",
+            "duration_seconds": 0.0,
+            "exit_code": None,
+            "skipped": True,
+            "output_excerpt": "",
+            "error_details": str(exc),
+        }
 
 
 @app.post("/api/apply")

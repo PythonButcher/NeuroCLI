@@ -20,6 +20,7 @@ import {
   X,
   Compass,
   Keyboard,
+  CheckCircle2,
 } from 'lucide-react'
 
 const INITIAL_HISTORY = [
@@ -34,6 +35,7 @@ function App() {
   const [targetFile, setTargetFile] = useState('')
   const [proposedContent, setProposedContent] = useState('')
   const [generatedProposal, setGeneratedProposal] = useState(null)
+  const [validationResult, setValidationResult] = useState(null)
   const [showApplyBtn, setShowApplyBtn] = useState(false)
   const [isContextModalOpen, setIsContextModalOpen] = useState(false)
   const [contextPaths, setContextPaths] = useState(() => new Set())
@@ -95,6 +97,7 @@ function App() {
     setTargetFile(path)
     setProposedContent('')
     setGeneratedProposal(null)
+    setValidationResult(null)
     setShowApplyBtn(false)
 
     try {
@@ -140,6 +143,7 @@ function App() {
       })
       setProposedContent('')
       setGeneratedProposal(null)
+      setValidationResult(null)
       setShowApplyBtn(false)
       await handleFileSelect(targetFile)
     } catch (error) {
@@ -182,6 +186,7 @@ function App() {
         })
         setProposedContent('')
         setGeneratedProposal(null)
+        setValidationResult(null)
         setShowApplyBtn(false)
         return
       }
@@ -193,12 +198,43 @@ function App() {
       })
       setProposedContent(data.proposed_content || '')
       setGeneratedProposal(null)
+      setValidationResult(null)
       setShowApplyBtn(Boolean(data.proposed_content))
     } catch (error) {
       pushHistoryEntry({
         id: createEntryId('error'),
         type: 'error',
         content: `Formatter Error: ${error.message}`,
+      })
+    }
+  }
+
+  const handleValidate = async () => {
+    pushHistoryEntry({
+      id: createEntryId('validate'),
+      type: 'system',
+      content: 'Running approved validation label python_unittest...',
+    })
+
+    try {
+      const payload = { command_label: 'python_unittest' }
+      if (targetFile.trim()) {
+        payload.target_file = targetFile.trim()
+      }
+
+      const data = await postJson('/api/validate', payload)
+      const normalizedResult = normalizeValidationResult(data)
+      setValidationResult(normalizedResult)
+      pushHistoryEntry({
+        id: createEntryId('validate'),
+        type: normalizedResult.status === 'passed' ? 'system' : 'error',
+        content: buildValidationResultMessage(normalizedResult),
+      })
+    } catch (error) {
+      pushHistoryEntry({
+        id: createEntryId('error'),
+        type: 'error',
+        content: `Validation Error: ${error.message}`,
       })
     }
   }
@@ -239,6 +275,7 @@ function App() {
     setIsStreaming(true)
     setProposedContent('')
     setGeneratedProposal(null)
+    setValidationResult(null)
     setShowApplyBtn(false)
 
     try {
@@ -349,6 +386,8 @@ function App() {
       setTargetFile(response.target_file)
     }
 
+    setValidationResult(normalizeValidationResult(response.validation_result))
+
     if (response.response_kind === 'file_update') {
       const proposal = normalizeGeneratedProposal(response.proposal)
       const proposalTarget = proposal?.target_path || response.target_file || targetFile
@@ -422,6 +461,7 @@ function App() {
               setHistory([{ id: 'reset-1', type: 'system', content: 'Console reset.' }])
               setProposedContent('')
               setGeneratedProposal(null)
+              setValidationResult(null)
               setShowApplyBtn(false)
             }}
           >
@@ -509,6 +549,7 @@ function App() {
                 setTargetFile('')
                 setProposedContent('')
                 setGeneratedProposal(null)
+                setValidationResult(null)
                 setShowApplyBtn(false)
               }}
               disabled={!targetFile}
@@ -538,6 +579,7 @@ function App() {
           <div className="pl-2 text-xs text-[#8b949e]">
             {selectedModel ? `Model: ${selectedModel}` : 'Model: backend default'}
             {contextPaths.size > 0 ? ` | Context files: ${contextPaths.size}` : ' | Context files: none'}
+            {` | Validation: ${buildValidationStatusLabel(validationResult)}`}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pl-2">
@@ -551,6 +593,7 @@ function App() {
                   setInput('')
                   setProposedContent('')
                   setGeneratedProposal(null)
+                  setValidationResult(null)
                   setShowApplyBtn(false)
                   setHistory([{ id: 'clear-1', type: 'system', content: 'Console cleared.' }])
                 }}
@@ -625,6 +668,15 @@ function App() {
               >
                 <Compass size={14} className="text-[#58a6ff]" />
                 <span>Review</span>
+              </button>
+
+              <button
+                onClick={handleValidate}
+                disabled={isStreaming}
+                className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <CheckCircle2 size={14} className="text-[#3fb950]" />
+                <span>Validate</span>
               </button>
 
               <button
@@ -738,6 +790,60 @@ function normalizeGeneratedProposal(rawProposal) {
       ? rawProposal.errors.filter((error) => typeof error === 'string')
       : [],
   }
+}
+
+function normalizeValidationResult(rawResult) {
+  if (!rawResult || typeof rawResult !== 'object') {
+    return null
+  }
+
+  return {
+    status: typeof rawResult.status === 'string' ? rawResult.status : 'skipped',
+    command_label: typeof rawResult.command_label === 'string' ? rawResult.command_label : 'not_run',
+    duration_seconds: Number.isFinite(Number(rawResult.duration_seconds))
+      ? Number(rawResult.duration_seconds)
+      : 0,
+    exit_code: Number.isInteger(rawResult.exit_code) ? rawResult.exit_code : null,
+    skipped: Boolean(rawResult.skipped),
+    output_excerpt:
+      typeof rawResult.output_excerpt === 'string' ? rawResult.output_excerpt : '',
+    error_details:
+      typeof rawResult.error_details === 'string' ? rawResult.error_details : null,
+  }
+}
+
+function buildValidationStatusLabel(validationResult) {
+  if (!validationResult) {
+    return 'not available'
+  }
+
+  const commandLabel = validationResult.command_label || 'not_run'
+  if (validationResult.status === 'skipped') {
+    return `skipped, ${commandLabel}`
+  }
+
+  return `${validationResult.status}, ${commandLabel}`
+}
+
+function buildValidationResultMessage(validationResult) {
+  if (!validationResult) {
+    return 'Validation did not return a result.'
+  }
+
+  const exitCode = validationResult.exit_code === null ? 'none' : validationResult.exit_code
+  const details = validationResult.error_details || 'No error details.'
+  const output = validationResult.output_excerpt || 'No output captured.'
+
+  return [
+    `Validation: ${validationResult.status}`,
+    `Command label: ${validationResult.command_label}`,
+    `Duration: ${validationResult.duration_seconds.toFixed(2)}s`,
+    `Exit code: ${exitCode}`,
+    `Skipped: ${validationResult.skipped ? 'yes' : 'no'}`,
+    `Details: ${details}`,
+    '',
+    output,
+  ].join('\n')
 }
 
 function buildProposalStatusMessage(proposal, targetPath) {

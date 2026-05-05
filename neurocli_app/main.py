@@ -16,11 +16,14 @@ from neurocli_app.review_modal import ReviewModal
 from neurocli_app.theme import arctic_theme, fleet_dark, modern_theme, solid_modern
 from neurocli_app.workflow_adapter import (
     build_textual_workflow_request,
+    format_validation_result_markdown,
     run_textual_stream_workflow,
+    run_textual_validation,
 )
 from neurocli_core.code_formatter import format_code
 from neurocli_core.diff_generator import generate_diff
 from neurocli_core.file_handler import create_backup
+from neurocli_core.validation_result import ValidationResult
 from neurocli_core.workflow_service import AIWorkflowRequest, AIWorkflowResponse, AIWorkflowStreamEvent
 
 
@@ -36,6 +39,7 @@ class NeuroApp(App):
         ("ctrl+o", "open_context", "Context"),
         ("ctrl+d", "open_radar", "Radar"),
         ("ctrl+e", "open_review", "Review"),
+        ("ctrl+t", "run_validation", "Validate"),
         ("ctrl+g", "open_git", "Git"),
         ("ctrl+k", "open_commands", "Commands"),
         ("ctrl+l", "reset_workspace", "Reset"),
@@ -48,6 +52,7 @@ class NeuroApp(App):
         self._proposal_baseline_content: str = ""
         self._streamed_output: str = ""
         self._workflow_state: str = "Idle"
+        self._validation_result: ValidationResult | None = None
         self.context_paths: set[str] = set()
         self.selected_model: str = ""
         self.model_options_text: str = ""
@@ -95,6 +100,7 @@ class NeuroApp(App):
                                 yield Button("Run", id="run_button", classes="run_btn")
                                 yield Button("Format", id="format_button", classes="run_btn")
                                 yield Button("🧭 Review", id="btn_review", classes="run_btn")
+                                yield Button("Validate", id="validate_button", classes="run_btn")
                                 yield Button("Commit 🐙", id="btn_commit", classes="run_btn")
 
     def on_mount(self) -> None:
@@ -152,6 +158,26 @@ class NeuroApp(App):
             )
             self._workflow_state = "File read error"
             self._refresh_workspace_status()
+
+    def _run_validation(self) -> None:
+        """Run the default approved validation label without accepting shell text."""
+
+        self._workflow_state = "Validating"
+        target_file = self.query_one("#file_path_input", Input).value.strip()
+        command_label = "python_unittest_target" if target_file else "python_unittest"
+        self.query_one("#loading_indicator").styles.display = "block"
+        self.query_one("#response_display", Markdown).update(
+            f"### Validation\n\nRunning approved command label `{command_label}`..."
+        )
+        self._refresh_workspace_status()
+        self.run_worker(
+            lambda: self.call_from_thread(
+                self._handle_validation_result,
+                run_textual_validation("python_unittest", target_file=target_file),
+            ),
+            thread=True,
+            name="run_validation",
+        )
 
     def _run_prompt(self) -> None:
         """Run the AI request using the shared streaming workflow contract."""
@@ -244,6 +270,8 @@ class NeuroApp(App):
             self._run_prompt()
         elif event.button.id == "format_button":
             self._format_file()
+        elif event.button.id == "validate_button":
+            self._run_validation()
         elif event.button.id == "btn_model":
             self.push_screen(
                 ModelModal(self.selected_model, self.model_options_text),
@@ -311,14 +339,26 @@ class NeuroApp(App):
             model_label = f"{model_label} + options"
 
         apply_label = "ready" if self._proposed_content else "idle"
+        validation_label = self._validation_status_label()
         status_text = (
             f"State: {self._workflow_state} | "
             f"Target: {target_label} | "
             f"Context: {len(self.context_paths)} | "
             f"Model: {model_label} | "
-            f"Apply: {apply_label}"
+            f"Apply: {apply_label} | "
+            f"Validation: {validation_label}"
         )
         self.query_one("#workspace_status", Static).update(status_text)
+
+    def _validation_status_label(self) -> str:
+        """Return a compact validation state for the workspace status strip."""
+
+        if self._validation_result is None:
+            return "not run"
+
+        result = self._validation_result
+        duration = f"{result.duration_seconds:.2f}s"
+        return f"{result.status} {result.command_label} ({duration})"
 
     def _apply_changes(self) -> None:
         """Apply the currently reviewed proposal after creating a local backup."""
@@ -357,6 +397,7 @@ class NeuroApp(App):
         self._proposed_content = ""
         self._proposal_baseline_content = ""
         self._streamed_output = ""
+        self._validation_result = None
         self._workflow_state = "Reset"
         self.query_one("#prompt_input", Input).value = ""
         self.query_one("#response_display", Markdown).update("AI response will appear here...")
@@ -379,7 +420,7 @@ class NeuroApp(App):
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
-        if event.worker.name != "run_ai_workflow":
+        if event.worker.name not in {"run_ai_workflow", "run_validation"}:
             return
 
         state_name = getattr(event.state, "name", str(event.state))
@@ -400,6 +441,17 @@ class NeuroApp(App):
             self._refresh_workspace_status()
 
         loading_indicator.styles.display = "none"
+
+    def _handle_validation_result(self, result: ValidationResult) -> None:
+        """Display a shared validation artifact in the Textual app."""
+
+        self._validation_result = result
+        self.query_one("#response_display", Markdown).update(
+            format_validation_result_markdown(result)
+        )
+        self._workflow_state = f"Validation {result.status}"
+        self.query_one("#loading_indicator").styles.display = "none"
+        self._refresh_workspace_status()
 
     def _handle_stream_event(
         self,
@@ -511,6 +563,11 @@ class NeuroApp(App):
         """Keyboard action for the reviewed apply-with-backup path."""
 
         self._apply_changes()
+
+    def action_run_validation(self) -> None:
+        """Keyboard action for the approved validation label."""
+
+        self._run_validation()
 
     def action_open_model(self) -> None:
         """Open model overrides without introducing app-specific fields."""

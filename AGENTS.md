@@ -46,6 +46,14 @@ Gemini should not be the primary owner for:
 - If a React task mixes UI and logic, Codex owns the logic layer and Gemini owns the presentational layer.
 - Shared decisions, blockers, plans, and handoffs should be written in the `handoff/` folder.
 
+## Compound Checkpoints
+
+Every phase, implementation slice, and handoff must include a compound checkpoint. A compound checkpoint is the plain-language answer to: "What can a user do after this work that they could not do before?"
+
+The checkpoint must name the surface where the capability is available. Because Textual is the flagship app, a backend-only or React-only capability is not considered a full product checkpoint unless the docs explicitly say why Textual is deferred and what the next Textual checkpoint is.
+
+Each implementation handoff must state three things: the user-visible capability now available, the backend or API contract that supports it, and any surface that still cannot use it.
+
 ## Files To Review First
 
 - `AGENTS.md`
@@ -54,6 +62,7 @@ Gemini should not be the primary owner for:
 - `handoff/plans/current_plan.md`
 - `handoff/plans/roadmap.md`
 - `handoff/coordination/shared_decisions.md`
+- `handoff/coordination/frontend_parity.md`
 
 ## Working Agreement
 

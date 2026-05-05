@@ -49,9 +49,11 @@ The Textual app should also stay aligned with `neurocli_core` instead of carryin
 - Codex owns backend, Python, API, shared logic, and React integration logic.
 - Gemini owns UI-only work in `web_client`.
 - If a UI task depends on new backend data or changed payloads, record that in `handoff/coordination/shared_decisions.md`.
+- Every React presentation change must preserve the current compound checkpoint documented by Codex. Do not make the UI imply that a capability is available if the backend contract or Textual flagship checkpoint has not caught up.
 - Before starting, review:
   - `handoff/README.md`
   - `handoff/plans/current_plan.md`
+  - `handoff/coordination/frontend_parity.md`
   - `handoff/coordination/gemini_handoff.md`
   - `handoff/coordination/shared_decisions.md`
 

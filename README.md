@@ -6,6 +6,7 @@ NeuroCLI has two supported app paths:
 - a React web app in `web_client`
 
 Both should use the same shared backend logic from `neurocli_core`.
+The Textual app is the flagship product surface; React is the companion web surface.
 
 ## Getting Started
 
@@ -55,6 +56,8 @@ The active plan still calls for manual Textual smoke testing and live browser sm
 ## Project Docs
 
 Project planning and handoff docs live in `handoff/`.
+
+Project work uses compound checkpoints. Each phase should say plainly what someone can do in NeuroCLI after the work lands that they could not do before, and whether that capability is available in Textual, React, or only the backend/API.
 
 Start with:
 

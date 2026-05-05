@@ -18,6 +18,14 @@ from neurocli_core.workflow_service import (
     execute_ai_workflow,
     stream_ai_workflow,
 )
+from neurocli_core.validation_result import (
+    ValidationCommand,
+    ValidationCommandPolicy,
+    ValidationResult,
+    build_default_validation_policy,
+    build_skipped_validation_result,
+    run_validation_command,
+)
 
 def get_greeting() -> str:
     """A UI-agnostic function that represents a piece of core business logic.
@@ -44,10 +52,16 @@ __all__ = [
     "AIWorkflowResponse",
     "AIWorkflowStreamEvent",
     "GeneratedFileProposal",
+    "ValidationCommand",
+    "ValidationCommandPolicy",
+    "ValidationResult",
+    "build_default_validation_policy",
     "build_generated_file_proposal",
+    "build_skipped_validation_result",
     "build_ai_workflow_request",
     "execute_ai_workflow",
     "get_ai_response",
     "get_greeting",
+    "run_validation_command",
     "stream_ai_workflow",
 ]

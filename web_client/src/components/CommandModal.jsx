@@ -4,6 +4,7 @@ const ACTIONS = [
   { label: 'Run', description: 'Send the current prompt through the shared workflow.' },
   { label: 'Format', description: 'Format the active target file and show a review diff.' },
   { label: 'Review', description: 'Edit the current proposal before keeping or applying it.' },
+  { label: 'Validate', description: 'Run the approved project validation label and show the shared result.' },
   { label: 'Commit', description: 'Open the git status, diff, and commit workflow.' },
   { label: 'Radar', description: 'Open repository health, debt, and recent edit signals.' },
   { label: 'Model', description: 'Set model override and raw model options JSON.' },

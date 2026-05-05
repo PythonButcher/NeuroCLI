@@ -16,6 +16,8 @@ Gemini owns React presentation work only.
 - do not take ownership of Python-only app changes
 - if a React change needs new backend behavior, record it in `handoff/coordination/shared_decisions.md`
 - preserve the one-backend/two-frontends architecture: React presentation should consume the FastAPI bridge, and the bridge should remain aligned with `neurocli_core`
+- preserve compound checkpoints: React UI should not imply a capability is product-complete when the Textual flagship checkpoint is still missing
+- document intentional Textual/React differences in `handoff/coordination/frontend_parity.md`
 
 ## Current Notes
 
@@ -32,6 +34,8 @@ Gemini owns React presentation work only.
 - Textual has a Review Editor for editing the current generated/formatted proposal before apply. React now mirrors this mental model by staging backend `proposal.normalized_content` and showing backend proposal errors/status in the review flow.
 - The active roadmap now lives in `handoff/plans/roadmap.md`.
 - The current shared proposal/diff capability is backend-defined. Gemini presentation work should preserve the `response.proposal` contract and keep apply disabled for non-ready proposals.
+- The current shared validation capability is backend-defined. React may display `response.validation_result`, but presentation work should not add command execution or invent command labels without Codex updating the backend/API contract.
+- Phase 2 validation is complete across both app surfaces. React has a safe Validate action over the approved `python_unittest` label; do not replace it with raw command input.
 
 ## Current UI Direction For Gemini
 

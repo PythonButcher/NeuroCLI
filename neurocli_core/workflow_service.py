@@ -12,6 +12,10 @@ from neurocli_core.generated_file_proposal import (
     build_generated_file_proposal,
 )
 from neurocli_core.llm_api_openai import call_openai_api, stream_openai_api
+from neurocli_core.validation_result import (
+    ValidationResult,
+    build_skipped_validation_result,
+)
 
 
 SYSTEM_PROMPT = """
@@ -61,6 +65,7 @@ class AIWorkflowResponse:
     model: str | None = None
     error: str | None = None
     proposal: GeneratedFileProposal | None = None
+    validation_result: ValidationResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable representation for API callers."""
@@ -345,6 +350,7 @@ def _build_success_response(
         original_content=prepared.original_content,
         model=prepared.model,
         proposal=proposal,
+        validation_result=build_skipped_validation_result(),
     )
 
 
@@ -368,4 +374,7 @@ def _build_error_response(
         original_content=original_content,
         model=model or request.model,
         error=error,
+        validation_result=build_skipped_validation_result(
+            error_details="Validation was skipped because the workflow did not complete."
+        ),
     )

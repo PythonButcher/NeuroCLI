@@ -4,52 +4,67 @@
 
 NeuroCLI should move forward as a terminal-first AI development environment with one shared Python capability engine and two supported frontend surfaces.
 
-`neurocli_core` remains the backend source of truth. The Textual app in `neurocli_app` is the flagship terminal surface and calls `neurocli_core` directly. The React frontend in `web_client` is a supported companion surface and reaches the same backend behavior through the FastAPI bridge in `api`.
+`neurocli_core` remains the backend source of truth. The Textual app in `neurocli_app` is the flagship surface and should be the first place where core workflow capabilities become practically usable. The React frontend in `web_client` is a supported companion surface and reaches the same backend behavior through the FastAPI bridge in `api`.
 
-The Agent Council runs on May 3, 2026 clarified the next direction: do not chase autonomous orchestration first, and do not turn React into a separate product center. Build a reliable repo-aware loop first: understand context, target files, generate proposals, review diffs, validate results, and prepare commits with human approval.
+The Agent Council runs on May 3, 2026 clarified the product loop to strengthen: understand repo state, select target and context, generate a structured proposal, review a diff, validate the result, apply with backup, and prepare a commit with human approval.
 
-## Active Roadmap
+## Compound Checkpoint Standard
 
-The active phased roadmap lives in `handoff/plans/roadmap.md`.
+Every implementation slice must answer this question before it is considered complete: what can a user do after this work that they could not do before?
 
-The next implementation slice should be Phase 1 from that roadmap: define a shared generated-file proposal and diff artifact in `neurocli_core`, expose it through `api`, and make React consume that artifact instead of treating raw `output_text` as directly applyable proposed content.
+That answer must name the surface: Textual app, React app, API, or backend only. Backend-only work is allowed as groundwork, but it is not a complete product checkpoint unless the docs explicitly name the missing app checkpoint. Because Textual is the flagship app, a phase that adds capability only to React or only to the API must identify the next Textual step.
 
 ## Current Status
 
-Phases 1 and 2 of the earlier repair work are complete: the shared AI workflow service exists in `neurocli_core`, and the FastAPI bridge calls the real workflow instead of a fake stream.
+Phase 1 is complete. React consumes backend generated-file proposal/diff artifacts for AI `file_update` responses. Textual keeps its existing local review/apply path because it already protects editable review, diff, backup, and explicit apply.
 
-The Phase 3 React wiring is implemented but still needs final live browser smoke verification against the local backend and real model runtime.
+Phase 2 is now complete at the compound-checkpoint level. The backend defines `ValidationResult`, `ValidationCommandPolicy`, and a shell-free runner selected only by approved command label. The API exposes `POST /api/validate`. Textual has a Validate action and Ctrl+T path that runs the approved `python_unittest` label and displays status, command label, duration, exit code, skipped state, details, and output excerpt. React has a matching Validate action over `/api/validate` and displays the same artifact.
 
-The Phase 4 Textual alignment is implemented but still needs manual runtime smoke verification against the real model runtime.
+The current practical answer is: a user can now run approved validation from either app and see a structured pass, fail, timeout, skipped, or rejected result. Neither app accepts arbitrary shell command text.
 
-Phase 5 produced useful Textual and React polish, including command/reference modals, review editors, action-rail alignment, model settings, context selection, and backend-bound prompt fields.
+## Active Roadmap
 
-Phase 1 of the active roadmap is now implemented in code: `neurocli_core` creates a shared generated-file proposal/diff artifact for AI `file_update` responses, `api` serializes it through the existing workflow response, and React consumes backend proposal data instead of staging raw `output_text` alone. Textual keeps its current review/apply path.
+The active phased roadmap lives in `handoff/plans/roadmap.md`. The next implementation slice is Phase 3: Workflow Timeline.
+
+## Current Compound Checkpoint
+
+After Phase 3, a Textual user should be able to see where the workflow is in the safe loop: context collected, target read, model request started, stream complete, proposal created, diff generated, validation run, apply ready, backup created, and commit prepared.
+
+React should receive the same timeline event semantics through the API and may display them in a companion way once the backend contract is available.
 
 ## Immediate Next Work
 
-1. Confirm the local verification baseline: document exactly how to run the Textual smoke test, the FastAPI backend, and the React browser smoke test with the available dependency setup.
-2. Run live smoke verification for the shared proposal path against the local FastAPI backend and React browser once model credentials/runtime are available.
-3. Keep Textual on its current review/apply path until a migration to the shared artifact can be proven without weakening backup, editable review, and explicit apply behavior.
-4. Start Phase 2 validation-result artifact only as a separate slice; do not combine it with proposal/diff cleanup.
+1. Define a shared workflow timeline event artifact in `neurocli_core`.
+2. Emit timeline events from the workflow path for context collection, target read, model request, stream completion, proposal creation, diff generation, validation run, apply readiness, backup creation, and commit preparation where those steps exist.
+3. Keep timeline content redacted by default; do not store full source files, secrets, raw model prompts, or long outputs in timeline events.
+4. Expose timeline events through `api` without breaking existing prompt, stream, validate, format, or apply behavior.
+5. Wire Textual first so the flagship app shows useful workflow state, then document any React differences in `handoff/coordination/frontend_parity.md`.
 
 ## Main Files For The Next Slice
 
 - `neurocli_core/workflow_service.py`
-- `neurocli_core/diff_generator.py`
-- `neurocli_core/formatter.py`
+- `neurocli_core/validation_result.py`
 - `api/main.py`
 - `neurocli_app/main.py`
 - `neurocli_app/workflow_adapter.py`
 - `web_client/src/App.jsx`
-- `web_client/src/lib/api.js`
 - `tests/test_ai_services.py`
 - `tests/test_api_main.py`
 - `tests/test_textual_workflow_adapter.py`
 - `handoff/plans/roadmap.md`
 - `handoff/coordination/shared_decisions.md`
+- `handoff/coordination/frontend_parity.md`
 - `handoff/coordination/codex_handoff.md`
-- `handoff/coordination/gemini_handoff.md`
+
+## Verification Notes
+
+Use the local dependency cache when FastAPI, Textual, or SSE dependencies are unavailable in the default Python environment:
+
+`$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_validation_result tests.test_textual_workflow_adapter tests.test_api_main tests.test_ai_services tests.test_generated_file_proposal tests.test_radar_engine`
+
+`npm --prefix web_client run build`
+
+Full `python -m unittest discover tests` is currently blocked because `tests/testcli.py` contains plain error text and is not valid Python.
 
 ## Current Council Inputs
 
