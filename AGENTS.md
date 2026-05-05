@@ -52,7 +52,8 @@ Gemini should not be the primary owner for:
 - `GEMINI.md`
 - `handoff/README.md`
 - `handoff/plans/current_plan.md`
-- `handoff/plans/repair_plan.md`
+- `handoff/plans/roadmap.md`
+- `handoff/coordination/shared_decisions.md`
 
 ## Working Agreement
 
@@ -62,3 +63,4 @@ Gemini should not be the primary owner for:
 - Keep the Python Textual app and React frontend as feature-aligned as practical.
 - If a feature cannot be identical across both frontends, document the reason and preserve the same backend contract.
 - Prefer additive collaboration notes in `handoff/` over rewriting another agent's instructions.
+- Older phase plans live in `handoff/archive/` and should be treated as historical reference, not active roadmap.

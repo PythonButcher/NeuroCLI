@@ -1,0 +1,440 @@
+{
+  "schema_version": "1.0",
+  "artifact_type": "agent_council_output",
+  "is_sample": true,
+  "topic": {
+    "title": "Shared generated-file proposal and diff contract for React parity",
+    "prompt": "Should NeuroCLI define a shared generated-file proposal and diff contract so the React frontend can review AI file updates before apply while preserving the Textual review flow?",
+    "requested_by": "sample artifact",
+    "created_at": "2026-05-02",
+    "status": "sample_only"
+  },
+  "project_context": {
+    "project_name": "NeuroCLI",
+    "overview": "NeuroCLI has one shared Python backend workflow in neurocli_core, a Textual frontend in neurocli_app, a FastAPI bridge in api, and a React frontend in web_client.",
+    "current_phase": "Phase 5 frontend polish and feature parity, with generated-file review called out as the main parity gap.",
+    "architectural_constraints": [
+      "neurocli_core remains the backend source of truth.",
+      "api is a bridge to neurocli_core rather than a second behavior layer.",
+      "React must not invent backend workflow logic in web_client.",
+      "Gemini owns React presentation work only; Codex owns contracts and integration logic."
+    ]
+  },
+  "files_or_sources_reviewed": [
+    {
+      "path": "AGENTS.md",
+      "source_type": "doc",
+      "relevance": "Defines Codex and Gemini ownership boundaries and the one-backend/two-frontends architecture."
+    },
+    {
+      "path": "handoff/plans/current_plan.md",
+      "source_type": "plan",
+      "relevance": "Identifies generated-file review as the current React parity gap."
+    },
+    {
+      "path": "handoff/coordination/shared_decisions.md",
+      "source_type": "coordination",
+      "relevance": "Records shared workflow contract fields and current frontend/backend constraints."
+    },
+    {
+      "path": "handoff/coordination/gemini_handoff.md",
+      "source_type": "coordination",
+      "relevance": "States that React should not fake generated-file diff review without a Codex-defined contract."
+    }
+  ],
+  "participating_agents": [
+    {
+      "id": "architecture_guardian",
+      "role_name": "Architecture Guardian",
+      "perspective": "Protect shared backend contracts and prevent duplicated workflow logic.",
+      "responsibilities": ["Identify contract boundaries", "Protect neurocli_core as source of truth"],
+      "non_goals": ["Design React visuals", "Implement runtime changes inside a planning artifact"]
+    },
+    {
+      "id": "product_ux_strategist",
+      "role_name": "Product/UX Strategist",
+      "perspective": "Keep the developer review loop clear, inspectable, and consistent across surfaces.",
+      "responsibilities": ["Evaluate user workflow clarity", "Protect review-before-apply behavior"],
+      "non_goals": ["Override backend ownership", "Prioritize polish over a real data path"]
+    },
+    {
+      "id": "ai_workflow_steward",
+      "role_name": "AI Workflow Steward",
+      "perspective": "Ensure generated model output is structured enough to audit and apply safely.",
+      "responsibilities": ["Assess AI output shape", "Protect context and target-file semantics"],
+      "non_goals": ["Assume free-form output can be applied safely", "Move model parsing into React"]
+    },
+    {
+      "id": "skeptic_qa_reviewer",
+      "role_name": "Skeptic/QA Reviewer",
+      "perspective": "Challenge claims, missing tests, and unverified parity assumptions.",
+      "responsibilities": ["Find edge cases", "Demand validation and smoke tests"],
+      "non_goals": ["Accept a UI-only parity claim", "Treat sample output as a real council run"]
+    },
+    {
+      "id": "implementation_planner",
+      "role_name": "Implementation Planner",
+      "perspective": "Sequence work into small, verifiable phases with clear owners.",
+      "responsibilities": ["Plan implementation order", "Separate contract, integration, and presentation work"],
+      "non_goals": ["Start with Gemini UI changes before contract work", "Bundle unrelated Phase 5 work"]
+    },
+    {
+      "id": "frontend_parity_advocate",
+      "role_name": "Frontend Parity Advocate",
+      "perspective": "Keep Textual and React capabilities aligned without forcing identical presentation.",
+      "responsibilities": ["Track user-facing parity", "Protect ownership between Codex and Gemini"],
+      "non_goals": ["Duplicate Textual internals in React", "Treat presentation parity as contract parity"]
+    }
+  ],
+  "conversation_rounds": [
+    {
+      "round_number": 1,
+      "name": "Independent Proposal",
+      "summary": "The council independently proposed a shared proposal/diff object as the safest way to close the React review gap.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "Add a shared generated-file proposal contract in neurocli_core and expose it through api before React UI work.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; the first position is contract-first."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "Improve the user review loop so React users can inspect generated file changes before apply.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; the proposal focuses on review clarity."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Structure generated AI output into proposed content, target path, formatted content, and diff metadata.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; the proposal centers on auditable output."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Protect against declaring parity without tests for missing targets, malformed model output, and apply failures.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; QA requires explicit verification."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Phase the work as contract design, backend tests, API bridge, React integration, and Gemini presentation polish.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; sequencing starts with Codex-owned logic."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "React should mirror the Textual review mental model, but it should not duplicate Textual-only implementation details.",
+          "challenges_received": [],
+          "changes_after_challenge": "No change yet; parity means capability alignment."
+        }
+      ],
+      "decisions": []
+    },
+    {
+      "round_number": 2,
+      "name": "Critique and Challenge",
+      "summary": "The council challenged UI-first approaches, vague diff semantics, and insufficient validation.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "A React-only diff would violate the backend source-of-truth rule.",
+          "challenges_received": ["Product/UX asked whether contract work delays user-visible parity."],
+          "changes_after_challenge": "Accepted that the contract should be minimal and focused on the existing review loop."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "The contract must still support a clean user story: generate, review, edit if needed, apply with backup.",
+          "challenges_received": ["Skeptic/QA questioned whether edit behavior creates additional testing scope."],
+          "changes_after_challenge": "Separated required generated diff review from optional advanced editor behavior."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Free-form `output_text` should not be the only applyable artifact for generated file updates.",
+          "challenges_received": ["Implementation Planner asked for a smaller first contract."],
+          "changes_after_challenge": "Reduced the first contract to target path, proposed content, normalized content, diff text, and status."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Tests must cover malformed AI responses and files outside the workspace.",
+          "challenges_received": ["Architecture Guardian noted workspace path checks already exist in api."],
+          "changes_after_challenge": "Kept path tests but scoped them to the new proposal endpoint or response fields."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Gemini should wait for the bridge shape before final presentation polish.",
+          "challenges_received": ["Frontend Parity Advocate asked whether existing ReviewModal can still be used."],
+          "changes_after_challenge": "Allowed React to reuse existing presentation state after Codex updates the data source."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "The user-facing gap is not just a modal; it is the absence of the same generated diff confidence Textual has.",
+          "challenges_received": ["Product/UX asked whether identical UI is necessary."],
+          "changes_after_challenge": "Clarified that identical UI is not required; equivalent review capability is required."
+        }
+      ],
+      "decisions": ["Do not solve generated-file diff review as a frontend-only feature."]
+    },
+    {
+      "round_number": 3,
+      "name": "Reconciliation and Prioritization",
+      "summary": "The council reconciled around a minimal shared proposal contract, with UI polish explicitly deferred until after Codex-owned integration work.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "Contract design belongs in neurocli_core with api exposing the same semantics to React.",
+          "challenges_received": ["Implementation Planner asked whether Textual must change immediately."],
+          "changes_after_challenge": "Textual can be adapted after the contract is proven, without removing its current review path first."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "The first usable milestone is visible diff review in React, not a full editor suite.",
+          "challenges_received": ["Skeptic/QA requested concrete exit criteria."],
+          "changes_after_challenge": "Added exit criteria around diff visibility, disabled apply on invalid proposal, and error recovery."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Proposal status should distinguish generated content, formatted content, diff creation failure, and non-file chat output.",
+          "challenges_received": ["Architecture Guardian warned against over-expanding the first schema."],
+          "changes_after_challenge": "Kept status explicit but deferred richer metadata until after first tests."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Unit tests should pin the normalized proposal shape before browser work is claimed complete.",
+          "challenges_received": ["Product/UX asked for manual verification too."],
+          "changes_after_challenge": "Added browser smoke testing after unit and API tests."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Codex should implement contract and integration, then Gemini can refine presentation in web_client.",
+          "challenges_received": ["Frontend Parity Advocate requested a shared decision update."],
+          "changes_after_challenge": "Added `handoff/coordination/shared_decisions.md` as an explicit documentation update."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "React parity is complete only when the review path consumes backend-generated proposal data.",
+          "challenges_received": ["Skeptic/QA asked how to detect regression."],
+          "changes_after_challenge": "Added parity checks comparing Textual and React generated-file workflows."
+        }
+      ],
+      "decisions": ["Prioritize a minimal contract, backend/API tests, React integration, then presentation polish."]
+    },
+    {
+      "round_number": 4,
+      "name": "Final Synthesis",
+      "summary": "The final synthesis recommends a Codex-owned shared proposal/diff contract as the next implementation topic, followed by React integration and Gemini-owned presentation polish.",
+      "agent_contributions": [
+        {
+          "agent_id": "architecture_guardian",
+          "position": "Approved only if the source of truth stays in neurocli_core.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation preserves backend ownership."
+        },
+        {
+          "agent_id": "product_ux_strategist",
+          "position": "Approved because it improves the review-before-apply loop.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation keeps user-visible review as the goal."
+        },
+        {
+          "agent_id": "ai_workflow_steward",
+          "position": "Approved if generated AI output becomes a structured proposal rather than raw text only.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation requires structured proposal data."
+        },
+        {
+          "agent_id": "skeptic_qa_reviewer",
+          "position": "Approved with tests and smoke checks as non-optional exit criteria.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation includes validation work."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "position": "Approved as a staged Phase 5 parity item.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation separates contract, integration, and presentation phases."
+        },
+        {
+          "agent_id": "frontend_parity_advocate",
+          "position": "Approved because it aligns React with Textual capability without requiring identical UI.",
+          "challenges_received": ["None in final round."],
+          "changes_after_challenge": "Final recommendation defines parity as shared capability."
+        }
+      ],
+      "decisions": ["Proceed with contract-first planning before runtime implementation."]
+    }
+  ],
+  "major_disagreements": [
+    {
+      "id": "disagreement_001",
+      "topic": "Whether React can close the gap with UI-only diff handling.",
+      "positions": [
+        {
+          "agent_id": "product_ux_strategist",
+          "claim": "A fast UI improvement could make the review loop feel better sooner.",
+          "rationale": "Users experience the gap in React, so visible review matters."
+        },
+        {
+          "agent_id": "architecture_guardian",
+          "claim": "UI-only diff handling would create duplicated workflow behavior.",
+          "rationale": "The repo explicitly requires backend workflow behavior to stay in neurocli_core."
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "id": "disagreement_002",
+      "topic": "How rich the first proposal contract should be.",
+      "positions": [
+        {
+          "agent_id": "ai_workflow_steward",
+          "claim": "The contract should include enough status metadata to make AI output auditable.",
+          "rationale": "Generated file content can fail formatting, diffing, or target validation."
+        },
+        {
+          "agent_id": "implementation_planner",
+          "claim": "The first pass should stay minimal to avoid blocking Phase 5 on schema design.",
+          "rationale": "A small contract can be tested and expanded after it proves useful."
+        }
+      ],
+      "status": "resolved"
+    }
+  ],
+  "resolved_recommendations": [
+    {
+      "id": "recommendation_001",
+      "title": "Define a shared generated-file proposal contract",
+      "decision": "Create a minimal contract in neurocli_core that represents target path, proposed content, normalized content, diff text, proposal status, and errors.",
+      "rationale": "React cannot safely match Textual generated-file review while it treats output_text as directly applyable content.",
+      "owner_role": "Codex",
+      "implementation_priority": "high",
+      "impacted_areas": ["neurocli_core", "api", "neurocli_app", "web_client"],
+      "dependencies": ["Agreement on minimal proposal fields", "Tests for proposal generation and failure states"]
+    },
+    {
+      "id": "recommendation_002",
+      "title": "Expose the proposal contract through the FastAPI bridge",
+      "decision": "Have api return the same proposal semantics to React that Textual can consume directly from neurocli_core.",
+      "rationale": "The bridge should expose shared backend behavior instead of creating a separate interpretation layer.",
+      "owner_role": "Codex",
+      "implementation_priority": "high",
+      "impacted_areas": ["api", "web_client"],
+      "dependencies": ["Shared proposal contract"]
+    },
+    {
+      "id": "recommendation_003",
+      "title": "Let Gemini polish presentation after contract integration",
+      "decision": "Gemini can refine React review UI once Codex wires real proposal data into React state.",
+      "rationale": "This preserves ownership boundaries and avoids UI that implies unsupported backend behavior.",
+      "owner_role": "Gemini after Codex handoff",
+      "implementation_priority": "medium",
+      "impacted_areas": ["web_client"],
+      "dependencies": ["Codex-defined React integration state"]
+    }
+  ],
+  "unresolved_questions": [
+    {
+      "id": "question_001",
+      "question": "Should Textual immediately migrate to the new proposal object or keep its current review implementation until React parity is proven?",
+      "why_it_matters": "A forced migration could create unnecessary risk in the strongest current review path.",
+      "proposed_owner_role": "Codex",
+      "blocking": false
+    },
+    {
+      "id": "question_002",
+      "question": "Should AI commit-message generation become a shared contract in the same Phase 5 slice?",
+      "why_it_matters": "It is another parity gap, but bundling it with generated-file review may broaden the work too much.",
+      "proposed_owner_role": "Implementation Planner",
+      "blocking": false
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk_001",
+      "risk": "React presents a diff that was not produced by the shared backend workflow.",
+      "impact": "high",
+      "likelihood": "medium",
+      "mitigation": "Require backend proposal data before declaring React generated-file parity complete.",
+      "detection_signal": "web_client computes generated-file review state without a matching api or neurocli_core field."
+    },
+    {
+      "id": "risk_002",
+      "risk": "The proposal contract becomes too broad and delays the parity fix.",
+      "impact": "medium",
+      "likelihood": "medium",
+      "mitigation": "Start with a minimal required field set and defer advanced editor metadata.",
+      "detection_signal": "Schema discussion expands into unrelated git, radar, or command-palette features."
+    },
+    {
+      "id": "risk_003",
+      "risk": "Tests cover only successful generation and miss malformed AI output.",
+      "impact": "high",
+      "likelihood": "medium",
+      "mitigation": "Add failure-state tests for missing target files, formatting errors, and invalid generated content.",
+      "detection_signal": "Only happy-path tests exist for proposal generation."
+    }
+  ],
+  "impacted_areas": {
+    "codebase": ["neurocli_core/workflow_service.py", "api/main.py", "neurocli_app/main.py", "web_client/src/App.jsx"],
+    "documentation": ["handoff/coordination/shared_decisions.md", "handoff/plans/current_plan.md"],
+    "runtime_behavior_changed": false,
+    "frontend_implications": [
+      "React should consume backend proposal data before Gemini treats review presentation as complete.",
+      "Textual should keep its review flow stable while the shared contract is introduced."
+    ],
+    "backend_implications": [
+      "neurocli_core needs to own proposal semantics if the recommendation becomes implementation work.",
+      "api needs to expose the same semantics without interpreting generated content separately."
+    ]
+  },
+  "contract_considerations": {
+    "changes_required": true,
+    "details": "A future implementation would require Codex to define or approve a shared generated-file proposal contract before React presentation work proceeds.",
+    "approval_owner": "Codex"
+  },
+  "testing_considerations": [
+    {
+      "area": "neurocli_core",
+      "recommendation": "Add unit tests for proposal creation, formatting success, formatting failure, and non-file chat output.",
+      "required_before_implementation": true
+    },
+    {
+      "area": "api",
+      "recommendation": "Add tests that confirm the FastAPI bridge returns proposal fields without allowing paths outside the workspace.",
+      "required_before_implementation": true
+    },
+    {
+      "area": "web_client",
+      "recommendation": "Run a browser smoke test showing generated proposal review, disabled invalid apply, edit, and apply-with-backup behavior.",
+      "required_before_implementation": false
+    }
+  ],
+  "implementation_priority": "high",
+  "suggested_implementation_phases": [
+    {
+      "phase": "Phase 1",
+      "goal": "Define the minimal proposal object in neurocli_core and document it in shared decisions.",
+      "owner": "Codex",
+      "exit_criteria": ["Contract fields are named", "Failure states are explicit", "Shared decisions are updated"]
+    },
+    {
+      "phase": "Phase 2",
+      "goal": "Expose proposal data through api and add backend/API tests.",
+      "owner": "Codex",
+      "exit_criteria": ["Unit tests pass", "API tests pass", "Workspace path protections remain intact"]
+    },
+    {
+      "phase": "Phase 3",
+      "goal": "Wire React integration state to backend proposal data without changing presentation ownership.",
+      "owner": "Codex",
+      "exit_criteria": ["React no longer treats raw output_text as the only generated-file proposal source", "Existing apply flow still works"]
+    },
+    {
+      "phase": "Phase 4",
+      "goal": "Polish React review presentation after the real data path exists.",
+      "owner": "Gemini",
+      "exit_criteria": ["Review UI displays backend proposal state", "Wide and narrow browser layouts are checked", "No frontend-only backend behavior is introduced"]
+    }
+  ],
+  "final_synthesis_summary": "This sample council recommends treating React generated-file review as a contract-first Phase 5 parity item. The next implementation should be Codex-owned: define minimal proposal semantics in neurocli_core, expose them through api, test failure states, then let React consume the real data before Gemini polishes presentation."
+}
