@@ -46,6 +46,7 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertEqual(response.status, "completed")
         self.assertEqual(response.response_kind, "message")
         self.assertEqual(response.output_text, "synthetic response")
+        self.assertIsNone(response.proposal)
         self.assertEqual(response.model, "test-model")
         self.assertEqual(call_args["api_key"], "test-key")
         self.assertIn("USER PROMPT: Write hello world", call_args["prompt"])
@@ -79,6 +80,9 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertEqual(response.response_kind, "file_update")
         self.assertEqual(response.original_content, "")
         self.assertEqual(response.target_file, str(target_path))
+        self.assertIsNotNone(response.proposal)
+        self.assertEqual(response.proposal.status, "ready")
+        self.assertEqual(response.proposal.target_path, str(target_path))
         self.assertIn("TARGET FILE CONTEXT:", captured_prompt["value"])
 
     def test_execute_returns_structured_error_when_key_is_missing(self) -> None:

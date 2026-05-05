@@ -48,6 +48,34 @@ Sync response fields:
 - `original_content`
 - `model`
 - `error`
+- optional `proposal`
+
+## Generated File Proposal Contract
+
+AI `file_update` responses now include a shared generated-file proposal artifact at `response.proposal`. Non-file chat responses keep `proposal` as `null`.
+
+The proposal artifact is created in `neurocli_core/generated_file_proposal.py` and exposed unchanged through `api` via the normal workflow response serialization. React generated-file review must consume this backend artifact instead of treating raw `output_text` as directly applicable file content.
+
+Proposal fields:
+
+- `target_path`
+- `original_content`
+- `original_content_reference`
+- `proposed_content`
+- `normalized_content`
+- `diff_text`
+- `status`
+- `errors`
+
+Proposal status values:
+
+- `ready`: formatted or normalized content differs from the original and can be reviewed before apply.
+- `no_change`: normalized content matches the original; no apply action should be offered.
+- `error`: proposal creation failed, such as empty model output, formatter failure, or diff failure; no apply action should be offered.
+
+The artifact currently stores `original_content` directly because the existing workflow response already returns the original target content. A later persistence layer may replace this with a durable content reference, but frontends should not invent that reference.
+
+Textual keeps its existing review/apply path for now. It may consume the shared proposal later only if that preserves the current format, diff, editable review, backup, and explicit apply behavior.
 
 Stream event fields:
 
@@ -115,13 +143,14 @@ These runs support the current direction: terminal-first AI development environm
 - Define the shared generated-file proposal/diff artifact in `neurocli_core`.
 - Expose the proposal/diff artifact through `api` for React.
 - Update React integration so AI file updates review backend proposal/diff data rather than raw `output_text` alone.
+- Keep React apply disabled when a `file_update` response lacks a proposal or returns a proposal status other than `ready`.
 - Keep frontend cleanup from changing backend rules without updating this file.
 
 ## Historical Phase 5 Parity Audit
 
 The shared prompt contract is aligned for both frontends: `prompt`, optional `target_file`, optional `context_paths`, optional `model`, and optional `model_options` flow through `neurocli_core`. Streaming is also aligned through structured `start`, `delta`, `complete`, and `error` events.
 
-The main parity gap is generated file review. Textual formats a generated `file_update`, builds a diff with `neurocli_core.diff_generator`, and applies only after backup creation. React receives the same final workflow response but currently treats `output_text` as directly applyable proposed content, so it lacks the same formatted generated diff before apply. Fix this with a shared proposal/diff contract before treating the React UI as feature-complete.
+The main parity gap was generated file review. Textual formats a generated `file_update`, builds a diff with `neurocli_core.diff_generator`, and applies only after backup creation. React now consumes the shared backend proposal/diff artifact for generated file updates instead of treating `output_text` as directly applicable proposed content.
 
 Formatting existing files is aligned in behavior but not contract shape: Textual calls `format_code` and `generate_diff` directly; React uses `/api/format`, which mirrors that behavior through the API bridge. Apply-with-backup is also aligned in behavior: Textual calls `create_backup` and writes locally; React uses `/api/apply`.
 

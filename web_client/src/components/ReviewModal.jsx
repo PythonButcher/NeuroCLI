@@ -6,6 +6,7 @@ export default function ReviewModal({
   onClose,
   targetFile,
   proposedContent,
+  proposal,
   onApply,
   setProposedContent
 }) {
@@ -29,6 +30,8 @@ export default function ReviewModal({
   const hasProposal = Boolean(proposedContent)
   const lineCount = localContent ? localContent.split('\n').length : 0
   const fileName = targetFile ? targetFile.split(/[\\/]/).pop() : 'none'
+  const proposalStatus = proposal?.status || (hasProposal ? 'ready' : 'not ready')
+  const proposalErrors = Array.isArray(proposal?.errors) ? proposal.errors : []
 
   const handleReset = () => {
     setLocalContent(proposedContent || initialEditorText())
@@ -66,9 +69,15 @@ export default function ReviewModal({
         <div className="flex items-center justify-between border-b border-[#30363d] bg-[#010409] px-4 py-2 text-xs font-mono">
           <div className="font-bold text-[#c9d1d9]">Target: {fileName}</div>
           <div className="text-[#8b949e]">
-            Proposal: {hasProposal ? `editable draft, ${lineCount.toLocaleString()} lines` : 'not ready'}
+            Proposal: {hasProposal ? `${proposalStatus}, ${lineCount.toLocaleString()} lines` : proposalStatus}
           </div>
         </div>
+
+        {proposalErrors.length > 0 && (
+          <div className="border-b border-[#30363d] bg-[#2d1117] px-4 py-2 text-xs text-[#f85149]">
+            {proposalErrors.join(' ')}
+          </div>
+        )}
 
         {/* Future Actions Row (Disabled) */}
         <div className="flex items-center gap-4 border-b border-[#30363d] border-dashed bg-[#0d1117] px-4 py-2">

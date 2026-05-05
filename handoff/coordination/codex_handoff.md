@@ -18,7 +18,7 @@ Codex owns backend and integration work across this repo.
 - The React frontend Phase 3 logic has been rewired to the real API contract.
 - The Textual app Phase 4 contract alignment is now wired in code.
 - Phase 5 produced useful Textual and React polish, but the active roadmap has now been consolidated in `handoff/plans/roadmap.md`.
-- The next Codex-owned implementation slice is the shared generated-file proposal/diff artifact.
+- The shared generated-file proposal/diff artifact is now implemented in `neurocli_core` and exposed through `api`.
 
 ## Active Contract Notes
 
@@ -38,8 +38,8 @@ Codex owns backend and integration work across this repo.
 - Textual keyboard bindings now cover run, format, apply, model, context, radar, review, git, commands, reset, and quit.
 - `neurocli_app/command_modal.py` provides the discoverable command reference window opened by the top `⌨ Commands` control or Ctrl+K.
 - `neurocli_app/review_modal.py` provides the Textual Review Editor opened by `🧭 Review` or Ctrl+E. It edits the current proposed content, can keep the edited draft, and can apply edited content through the existing backup/write path in `neurocli_app/main.py`.
-- Do not consider React generated-file parity complete until it has a shared formatted diff/proposal path for AI `file_update` responses.
-- Do not start validation artifacts, workflow timeline, model profiles, MCP-style connectors, background task lanes, or productized council sessions before the proposal/diff artifact is designed and tested.
+- React generated-file review now consumes the backend proposal artifact for AI `file_update` responses and disables apply unless the proposal status is `ready`.
+- Do not start validation artifacts, workflow timeline, model profiles, MCP-style connectors, background task lanes, or productized council sessions unless the next roadmap slice explicitly calls for them.
 
 ## Coordination Rule
 If frontend work needs a backend contract change, record it in `handoff/coordination/shared_decisions.md`.
@@ -48,7 +48,7 @@ If frontend work needs a backend contract change, record it in `handoff/coordina
 
 Read `handoff/plans/current_plan.md`, then `handoff/plans/roadmap.md`. The council-backed direction is terminal-first core-loop reliability, then shared capability parity, then structured orchestration later.
 
-The immediate slice should define and test a shared proposal/diff artifact in `neurocli_core`, expose it through `api`, and wire React integration to consume it. Textual should keep its current review/apply path unless consuming the shared artifact is clearly safe.
+The completed Phase 1 slice defined and tested a shared proposal/diff artifact in `neurocli_core`, exposed it through `api`, and wired React integration to consume it. Textual still keeps its current review/apply path.
 
 ## Verification Notes
 
@@ -56,6 +56,8 @@ The immediate slice should define and test a shared proposal/diff artifact in `n
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\model_modal.py neurocli_app\\workflow_adapter.py neurocli_core\\workflow_service.py` passes locally
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\model_modal.py neurocli_app\\workflow_adapter.py neurocli_core\\workflow_service.py neurocli_core\\git_engine.py neurocli_core\\radar_engine.py api\\main.py` passes locally
 - `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_ai_services tests.test_textual_workflow_adapter tests.test_api_main` passes locally
+- `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_generated_file_proposal tests.test_ai_services tests.test_api_main tests.test_textual_workflow_adapter` passes locally
+- `npm --prefix web_client run build` passes locally
 - `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -c "import neurocli_app.main; import neurocli_app.workflow_adapter; import api.main; import neurocli_core.workflow_service; print('imports ok')"` passes locally after restoring Textual dependencies into `.codex_tmp_py/site-packages`
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\review_modal.py neurocli_app\\command_modal.py` passes locally
 - Default `python -m unittest tests.test_api_main` still fails without `PYTHONPATH` because the sandbox Python path does not include local target-installed dependencies

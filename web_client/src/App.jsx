@@ -33,6 +33,7 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [targetFile, setTargetFile] = useState('')
   const [proposedContent, setProposedContent] = useState('')
+  const [generatedProposal, setGeneratedProposal] = useState(null)
   const [showApplyBtn, setShowApplyBtn] = useState(false)
   const [isContextModalOpen, setIsContextModalOpen] = useState(false)
   const [contextPaths, setContextPaths] = useState(() => new Set())
@@ -93,6 +94,7 @@ function App() {
   const handleFileSelect = async (path) => {
     setTargetFile(path)
     setProposedContent('')
+    setGeneratedProposal(null)
     setShowApplyBtn(false)
 
     try {
@@ -137,6 +139,7 @@ function App() {
         content: data.message,
       })
       setProposedContent('')
+      setGeneratedProposal(null)
       setShowApplyBtn(false)
       await handleFileSelect(targetFile)
     } catch (error) {
@@ -178,6 +181,7 @@ function App() {
           content: 'No formatting changes were needed.',
         })
         setProposedContent('')
+        setGeneratedProposal(null)
         setShowApplyBtn(false)
         return
       }
@@ -188,6 +192,7 @@ function App() {
         content: data.diff,
       })
       setProposedContent(data.proposed_content || '')
+      setGeneratedProposal(null)
       setShowApplyBtn(Boolean(data.proposed_content))
     } catch (error) {
       pushHistoryEntry({
@@ -233,6 +238,7 @@ function App() {
     setInput('')
     setIsStreaming(true)
     setProposedContent('')
+    setGeneratedProposal(null)
     setShowApplyBtn(false)
 
     try {
@@ -344,17 +350,50 @@ function App() {
     }
 
     if (response.response_kind === 'file_update') {
-      setProposedContent(response.output_text || '')
-      setShowApplyBtn(Boolean(response.output_text))
+      const proposal = normalizeGeneratedProposal(response.proposal)
+      const proposalTarget = proposal?.target_path || response.target_file || targetFile
+
+      if (!proposal) {
+        setProposedContent('')
+        setGeneratedProposal(null)
+        setShowApplyBtn(false)
+        pushHistoryEntry({
+          id: createEntryId('error'),
+          type: 'error',
+          content: 'The backend did not return a generated-file proposal. Apply is disabled for this response.',
+        })
+        return
+      }
+
+      setGeneratedProposal(proposal)
+
+      if (proposal.status === 'ready') {
+        const reviewContent = proposal.normalized_content || proposal.proposed_content || ''
+        setProposedContent(reviewContent)
+        setShowApplyBtn(Boolean(reviewContent))
+
+        if (proposal.diff_text) {
+          pushHistoryEntry({
+            id: createEntryId('diff'),
+            type: 'system',
+            content: proposal.diff_text,
+          })
+        }
+      } else {
+        setProposedContent('')
+        setShowApplyBtn(false)
+      }
+
       pushHistoryEntry({
         id: createEntryId('system'),
         type: 'system',
-        content: `Generated a full file update for ${getFileLabel(response.target_file || targetFile)}. Review the streamed output, then apply the changes when ready.`,
+        content: buildProposalStatusMessage(proposal, proposalTarget),
       })
       return
     }
 
     setProposedContent('')
+    setGeneratedProposal(null)
     setShowApplyBtn(false)
   }
 
@@ -382,6 +421,7 @@ function App() {
               setIsStreaming(false)
               setHistory([{ id: 'reset-1', type: 'system', content: 'Console reset.' }])
               setProposedContent('')
+              setGeneratedProposal(null)
               setShowApplyBtn(false)
             }}
           >
@@ -468,6 +508,7 @@ function App() {
               onClick={() => {
                 setTargetFile('')
                 setProposedContent('')
+                setGeneratedProposal(null)
                 setShowApplyBtn(false)
               }}
               disabled={!targetFile}
@@ -509,6 +550,7 @@ function App() {
                 onClick={() => {
                   setInput('')
                   setProposedContent('')
+                  setGeneratedProposal(null)
                   setShowApplyBtn(false)
                   setHistory([{ id: 'clear-1', type: 'system', content: 'Console cleared.' }])
                 }}
@@ -634,6 +676,7 @@ function App() {
         onClose={() => setIsReviewModalOpen(false)}
         targetFile={targetFile}
         proposedContent={proposedContent}
+        proposal={generatedProposal}
         setProposedContent={setProposedContent}
         onApply={handleApply}
       />
@@ -668,6 +711,48 @@ function buildRequestPayload({ prompt, targetFile, contextPaths, model, modelOpt
   }
 
   return payload
+}
+
+function normalizeGeneratedProposal(rawProposal) {
+  if (!rawProposal || typeof rawProposal !== 'object') {
+    return null
+  }
+
+  const targetPath = typeof rawProposal.target_path === 'string' ? rawProposal.target_path : ''
+  const status = typeof rawProposal.status === 'string' ? rawProposal.status : 'error'
+
+  // Keep proposal consumption strict so React review mirrors the backend artifact.
+  return {
+    target_path: targetPath,
+    original_content: typeof rawProposal.original_content === 'string' ? rawProposal.original_content : '',
+    original_content_reference:
+      typeof rawProposal.original_content_reference === 'string'
+        ? rawProposal.original_content_reference
+        : targetPath,
+    proposed_content: typeof rawProposal.proposed_content === 'string' ? rawProposal.proposed_content : '',
+    normalized_content:
+      typeof rawProposal.normalized_content === 'string' ? rawProposal.normalized_content : '',
+    diff_text: typeof rawProposal.diff_text === 'string' ? rawProposal.diff_text : '',
+    status,
+    errors: Array.isArray(rawProposal.errors)
+      ? rawProposal.errors.filter((error) => typeof error === 'string')
+      : [],
+  }
+}
+
+function buildProposalStatusMessage(proposal, targetPath) {
+  const fileLabel = getFileLabel(targetPath)
+
+  if (proposal.status === 'ready') {
+    return `Generated a backend proposal for ${fileLabel}. Review the diff and editable draft before applying.`
+  }
+
+  if (proposal.status === 'no_change') {
+    return `Generated proposal for ${fileLabel}, but the backend found no content changes to apply.`
+  }
+
+  const details = proposal.errors.length > 0 ? ` ${proposal.errors.join(' ')}` : ''
+  return `Generated proposal for ${fileLabel} is not applicable.${details}`
 }
 
 function parseModelOptions(rawText) {

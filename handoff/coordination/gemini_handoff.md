@@ -27,17 +27,17 @@ Gemini owns React presentation work only.
 - avoid reintroducing the old fake stream assumptions or placeholder AI git behaviors
 - React polish should aim for feature parity with the Textual app where the shared backend supports the same flow
 - the Phase 5 audit found that React already mirrors prompt runs, streaming, target file, context, model override, model options, radar, manual git status/diff/commit, existing-file formatting, and apply-with-backup through the API bridge
-- React does not yet have Textual-equivalent generated-file diff review for AI `file_update` responses; do not solve this with frontend-only diff logic unless Codex first defines the shared backend/API contract
+- React generated-file review now consumes the backend `response.proposal` artifact for AI `file_update` responses; do not replace this with frontend-only diff logic
 - AI commit-message generation exists in the Textual git modal through `neurocli_core.git_engine`, but it is not exposed by the current React API contract
-- Textual now has a Review Editor for editing the current generated/formatted proposal before apply. React should eventually mirror this mental model, but only after Codex defines the shared generated-file proposal/diff contract.
+- Textual has a Review Editor for editing the current generated/formatted proposal before apply. React now mirrors this mental model by staging backend `proposal.normalized_content` and showing backend proposal errors/status in the review flow.
 - The active roadmap now lives in `handoff/plans/roadmap.md`.
-- The next shared capability is the proposal/diff artifact. Gemini should not present generated-file diff review as complete until Codex exposes backend proposal/diff data through React integration.
+- The current shared proposal/diff capability is backend-defined. Gemini presentation work should preserve the `response.proposal` contract and keep apply disabled for non-ready proposals.
 
 ## Current UI Direction For Gemini
 
 React presentation polish should mirror the same developer command-center mental model now reinforced in Textual: active target file, context stack, model state, streaming state, apply readiness, review lane, radar access, and clear git actions. UI work should stay presentational unless Codex updates `web_client` state/API wiring or the FastAPI contract.
 
-Future React polish should follow Codex handoff order: proposal/diff data first, then validation results, workflow timeline, workspace intelligence, git review lane, model profiles, and later orchestration surfaces if those contracts exist.
+Future React polish should follow Codex handoff order: validation results, workflow timeline, workspace intelligence, git review lane, model profiles, and later orchestration surfaces if those contracts exist.
 
 ## Historical Phase 5 Web-Only Implementation Plan
 
@@ -51,9 +51,9 @@ In the React web UI, cross-reference only the web files that already own the bro
 
 The bottom web action rail was reordered into this workflow sequence: Settings, Clear, Model, Context, Radar, Run, Format, Review, Commit. It should stay responsive and content-driven so buttons do not drift apart on wide screens or collide on narrow screens.
 
-The web `ReviewModal.jsx` was added as a presentational component matching the Git modal style. It consumes existing `proposedContent`, `targetFile`, and `handleApply` state/actions from `App.jsx`; it must not be treated as real generated-file diff parity until Codex provides the shared proposal/diff artifact.
+The web `ReviewModal.jsx` consumes `proposedContent`, `targetFile`, `handleApply`, and the backend-generated `proposal` metadata from `App.jsx`. It can show proposal status and errors, but should remain a presentation component.
 
-Keep the current backend limits visible in the UI. React can edit and apply existing proposed content, but it still does not have Textual-equivalent formatted generated-file diff review for AI `file_update` responses. Do not fake that as a backend feature. If the UI needs a true proposal/diff contract, hand that back to Codex before proceeding.
+Keep backend limits visible in the UI. React can edit and apply ready backend proposals, but validation results, workflow timeline state, and model profiles are not part of the current proposal contract.
 
 Historical validation for this slice was browser-only: React build, bottom rail at narrow and wide widths, Radar and Git modal comparison, Review empty/disabled state, format proposal through the existing web Format flow, edit in Review, keep draft, and apply edited content through the existing apply path.
 

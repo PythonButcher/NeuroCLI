@@ -22,17 +22,16 @@ The Phase 3 React wiring is implemented but still needs final live browser smoke
 
 The Phase 4 Textual alignment is implemented but still needs manual runtime smoke verification against the real model runtime.
 
-Phase 5 produced useful Textual and React polish, including command/reference modals, review editors, action-rail alignment, model settings, context selection, and backend-bound prompt fields. The remaining critical gap is shared generated-file review: Textual can format, diff, review, and apply with backup; React still lacks a shared backend proposal/diff artifact for AI `file_update` responses.
+Phase 5 produced useful Textual and React polish, including command/reference modals, review editors, action-rail alignment, model settings, context selection, and backend-bound prompt fields.
+
+Phase 1 of the active roadmap is now implemented in code: `neurocli_core` creates a shared generated-file proposal/diff artifact for AI `file_update` responses, `api` serializes it through the existing workflow response, and React consumes backend proposal data instead of staging raw `output_text` alone. Textual keeps its current review/apply path.
 
 ## Immediate Next Work
 
 1. Confirm the local verification baseline: document exactly how to run the Textual smoke test, the FastAPI backend, and the React browser smoke test with the available dependency setup.
-2. Define the shared generated-file proposal/diff artifact in `neurocli_core`.
-3. Add focused tests for proposal creation, malformed model output, format/diff failure, non-file chat responses, and workspace path safety.
-4. Expose the proposal/diff artifact through `api`.
-5. Update React integration so generated-file review consumes backend proposal data instead of raw `output_text` alone.
-6. Update Textual only where it can safely consume the shared artifact without weakening its current review/apply path.
-7. Record the new contract in `handoff/coordination/shared_decisions.md` and update Codex/Gemini handoff notes before Gemini does any presentation-only React polish.
+2. Run live smoke verification for the shared proposal path against the local FastAPI backend and React browser once model credentials/runtime are available.
+3. Keep Textual on its current review/apply path until a migration to the shared artifact can be proven without weakening backup, editable review, and explicit apply behavior.
+4. Start Phase 2 validation-result artifact only as a separate slice; do not combine it with proposal/diff cleanup.
 
 ## Main Files For The Next Slice
 

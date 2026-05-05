@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any, Iterator, Literal, Mapping
 
 from neurocli_core.config import get_default_openai_model, get_openai_api_key
+from neurocli_core.generated_file_proposal import (
+    GeneratedFileProposal,
+    build_generated_file_proposal,
+)
 from neurocli_core.llm_api_openai import call_openai_api, stream_openai_api
 
 
@@ -56,6 +60,7 @@ class AIWorkflowResponse:
     original_content: str = ""
     model: str | None = None
     error: str | None = None
+    proposal: GeneratedFileProposal | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable representation for API callers."""
@@ -321,6 +326,14 @@ def _build_success_response(
 ) -> AIWorkflowResponse:
     """Create a stable success payload for sync and streaming callers."""
 
+    proposal = None
+    if prepared.response_kind == "file_update":
+        proposal = build_generated_file_proposal(
+            target_path=prepared.request.target_file,
+            original_content=prepared.original_content,
+            output_text=output_text,
+        )
+
     return AIWorkflowResponse(
         ok=True,
         status="completed",
@@ -331,6 +344,7 @@ def _build_success_response(
         context_paths=list(prepared.request.context_paths),
         original_content=prepared.original_content,
         model=prepared.model,
+        proposal=proposal,
     )
 
 

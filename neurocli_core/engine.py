@@ -6,6 +6,10 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 from neurocli_core.ai_services import get_ai_response as get_ai_response_from_service
+from neurocli_core.generated_file_proposal import (
+    GeneratedFileProposal,
+    build_generated_file_proposal,
+)
 from neurocli_core.workflow_service import (
     AIWorkflowRequest,
     AIWorkflowResponse,
@@ -39,6 +43,8 @@ __all__ = [
     "AIWorkflowRequest",
     "AIWorkflowResponse",
     "AIWorkflowStreamEvent",
+    "GeneratedFileProposal",
+    "build_generated_file_proposal",
     "build_ai_workflow_request",
     "execute_ai_workflow",
     "get_ai_response",
