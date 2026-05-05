@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from api import main
+from neurocli_core.generated_file_proposal import GeneratedFileProposal
 from neurocli_core.workflow_service import AIWorkflowResponse, AIWorkflowStreamEvent
 
 
@@ -29,6 +30,15 @@ class PromptEndpointTests(unittest.TestCase):
                 context_paths=list(workflow_request.context_paths),
                 original_content="print('before')\n",
                 model=workflow_request.model,
+                proposal=GeneratedFileProposal(
+                    target_path=workflow_request.target_file or "",
+                    original_content="print('before')\n",
+                    original_content_reference=workflow_request.target_file or "",
+                    proposed_content="print('after')",
+                    normalized_content="print('after')\n",
+                    diff_text="```diff\n-before\n+after\n```",
+                    status="ready",
+                ),
             )
 
         with tempfile.TemporaryDirectory(dir=main.WORKSPACE_ROOT) as temp_dir:
@@ -54,6 +64,9 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(data["target_file"], str(target_file.resolve()))
         self.assertEqual(data["context_paths"], [str(context_file.resolve())])
         self.assertEqual(data["model"], "gpt-test")
+        self.assertEqual(data["proposal"]["status"], "ready")
+        self.assertEqual(data["proposal"]["target_path"], str(target_file.resolve()))
+        self.assertEqual(data["proposal"]["normalized_content"], "print('after')\n")
 
         workflow_request = captured_request["value"]
         self.assertEqual(workflow_request.target_file, str(target_file.resolve()))
@@ -70,6 +83,23 @@ class PromptEndpointTests(unittest.TestCase):
 
         self.assertFalse(data["ok"])
         self.assertEqual(data["status"], "error")
+        self.assertIn("workspace root", data["error"])
+        self.assertIsNone(data["proposal"])
+
+    def test_prompt_endpoint_rejects_unsafe_context_path_before_workflow(self) -> None:
+        with tempfile.NamedTemporaryFile(suffix=".md") as outside_file:
+            with patch("api.main.execute_ai_workflow") as mocked_execute:
+                data = asyncio.run(
+                    main.execute_prompt(
+                        main.PromptRequest(
+                            prompt="Use unsafe context",
+                            context_paths=[outside_file.name],
+                        )
+                    )
+                )
+
+        mocked_execute.assert_not_called()
+        self.assertFalse(data["ok"])
         self.assertIn("workspace root", data["error"])
 
     def test_stream_endpoint_emits_structured_json_sse_events(self) -> None:

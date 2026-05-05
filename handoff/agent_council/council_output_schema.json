@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurocli.local/handoff/agent_council/council_output_schema.json",
+  "title": "NeuroCLI Agent Council Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "is_sample",
+    "topic",
+    "project_context",
+    "files_or_sources_reviewed",
+    "participating_agents",
+    "conversation_rounds",
+    "major_disagreements",
+    "resolved_recommendations",
+    "unresolved_questions",
+    "risks",
+    "impacted_areas",
+    "contract_considerations",
+    "testing_considerations",
+    "implementation_priority",
+    "suggested_implementation_phases",
+    "final_synthesis_summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["agent_council_output"]
+    },
+    "is_sample": {
+      "type": "boolean"
+    },
+    "topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "prompt", "requested_by", "created_at", "status"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "prompt": {"type": "string", "minLength": 1},
+        "requested_by": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "minLength": 1},
+        "status": {
+          "type": "string",
+          "enum": ["sample_only", "completed", "draft", "needs_followup"]
+        }
+      }
+    },
+    "project_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_name", "overview", "current_phase", "architectural_constraints"],
+      "properties": {
+        "project_name": {"type": "string", "minLength": 1},
+        "overview": {"type": "string", "minLength": 1},
+        "current_phase": {"type": "string", "minLength": 1},
+        "architectural_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "files_or_sources_reviewed": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "source_type", "relevance"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "source_type": {
+            "type": "string",
+            "enum": ["doc", "plan", "coordination", "code", "config", "sample"]
+          },
+          "relevance": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "participating_agents": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "role_name", "perspective", "responsibilities", "non_goals"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "role_name": {"type": "string", "minLength": 1},
+          "perspective": {"type": "string", "minLength": 1},
+          "responsibilities": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "non_goals": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "conversation_rounds": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["round_number", "name", "summary", "agent_contributions", "decisions"],
+        "properties": {
+          "round_number": {"type": "integer"},
+          "name": {
+            "type": "string",
+            "enum": [
+              "Independent Proposal",
+              "Critique and Challenge",
+              "Reconciliation and Prioritization",
+              "Final Synthesis"
+            ]
+          },
+          "summary": {"type": "string", "minLength": 1},
+          "agent_contributions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["agent_id", "position", "challenges_received", "changes_after_challenge"],
+              "properties": {
+                "agent_id": {"type": "string", "minLength": 1},
+                "position": {"type": "string", "minLength": 1},
+                "challenges_received": {
+                  "type": "array",
+                  "items": {"type": "string", "minLength": 1}
+                },
+                "changes_after_challenge": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "major_disagreements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "topic", "positions", "status"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "topic": {"type": "string", "minLength": 1},
+          "positions": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["agent_id", "claim", "rationale"],
+              "properties": {
+                "agent_id": {"type": "string", "minLength": 1},
+                "claim": {"type": "string", "minLength": 1},
+                "rationale": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["resolved", "deferred", "unresolved"]
+          }
+        }
+      }
+    },
+    "resolved_recommendations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "decision", "rationale", "owner_role", "implementation_priority", "impacted_areas", "dependencies"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "decision": {"type": "string", "minLength": 1},
+          "rationale": {"type": "string", "minLength": 1},
+          "owner_role": {"type": "string", "minLength": 1},
+          "implementation_priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "urgent"]
+          },
+          "impacted_areas": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "unresolved_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "why_it_matters", "proposed_owner_role", "blocking"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "question": {"type": "string", "minLength": 1},
+          "why_it_matters": {"type": "string", "minLength": 1},
+          "proposed_owner_role": {"type": "string", "minLength": 1},
+          "blocking": {"type": "boolean"}
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "risk", "impact", "likelihood", "mitigation", "detection_signal"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "risk": {"type": "string", "minLength": 1},
+          "impact": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "likelihood": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "mitigation": {"type": "string", "minLength": 1},
+          "detection_signal": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "impacted_areas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codebase",
+        "documentation",
+        "runtime_behavior_changed",
+        "frontend_implications",
+        "backend_implications"
+      ],
+      "properties": {
+        "codebase": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "documentation": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "runtime_behavior_changed": {
+          "type": "boolean",
+          "const": false
+        },
+        "frontend_implications": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "backend_implications": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "contract_considerations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changes_required", "details", "approval_owner"],
+      "properties": {
+        "changes_required": {"type": "boolean"},
+        "details": {"type": "string", "minLength": 1},
+        "approval_owner": {"type": "string", "minLength": 1}
+      }
+    },
+    "testing_considerations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["area", "recommendation", "required_before_implementation"],
+        "properties": {
+          "area": {"type": "string", "minLength": 1},
+          "recommendation": {"type": "string", "minLength": 1},
+          "required_before_implementation": {"type": "boolean"}
+        }
+      }
+    },
+    "implementation_priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "urgent"]
+    },
+    "suggested_implementation_phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phase", "goal", "owner", "exit_criteria"],
+        "properties": {
+          "phase": {"type": "string", "minLength": 1},
+          "goal": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "minLength": 1},
+          "exit_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "final_synthesis_summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

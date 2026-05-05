@@ -1,4 +1,8 @@
-# NeuroCLI Repair Plan
+# Archived NeuroCLI Repair Plan
+
+This document is historical. It records the earlier repair and alignment roadmap for Phases 1 through 5. The active plan now lives in `handoff/plans/current_plan.md`, and the active phased roadmap lives in `handoff/plans/roadmap.md`.
+
+Do not treat this file as the current next-work list.
 
 ## Goal
 Keep NeuroCLI working as one shared backend product with two supported frontends:

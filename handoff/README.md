@@ -14,16 +14,17 @@ Everything that is not a root-level `README.md`, `AGENTS.md`, or `GEMINI.md` sho
 
 - `plans/`
   - `current_plan.md`: short status and next-step file
-  - `repair_plan.md`: main repair roadmap
-  - `phase_5_direction.md`: frontend polish, feature parity, and product direction for the next phase
+  - `roadmap.md`: active phased roadmap based on current project state and Agent Council outputs
 - `coordination/`
   - `codex_handoff.md`: backend and integration notes
   - `gemini_handoff.md`: frontend UI-only notes
   - `shared_decisions.md`: rules and contracts both agents should follow
 - `reference/`
   - supporting docs such as file maps
+- `agent_council/`
+  - reusable multi-agent planning workflow, roles, prompt, JSON schema, sample output, and validator
 - `archive/`
-  - older plans and idea lists that are not active work
+  - older plans, idea lists, and superseded prompts that are not active work
 
 ## Read Order
 
@@ -31,7 +32,8 @@ Everything that is not a root-level `README.md`, `AGENTS.md`, or `GEMINI.md` sho
 2. `GEMINI.md`
 3. `handoff/README.md`
 4. `handoff/plans/current_plan.md`
-5. `handoff/coordination/shared_decisions.md`
+5. `handoff/plans/roadmap.md`
+6. `handoff/coordination/shared_decisions.md`
 
 ## Rules
 
@@ -40,3 +42,5 @@ Everything that is not a root-level `README.md`, `AGENTS.md`, or `GEMINI.md` sho
 - add handoff context here when one agent's work changes expectations for the other
 - prefer updating an existing doc over creating a new duplicate doc
 - preserve the one-backend/two-frontends architecture in all future plans
+- use `agent_council/` for structured debate before large product, architecture, AI workflow, or cross-frontend implementation decisions
+- keep superseded planning docs in `archive/` with clear archive status
