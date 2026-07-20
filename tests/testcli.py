@@ -1,1 +1,0 @@
-Error: Could not retrieve response from OpenAI API. Details: 'OpenAI' object has no attribute 'responses'

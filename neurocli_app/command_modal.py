@@ -17,6 +17,7 @@ class CommandModal(ModalScreen[None]):
         ("Ctrl+O", "Context manager", "Attach or remove files from the prompt context stack."),
         ("Ctrl+D", "Workspace radar", "Open repository health, debt, and recent edit signals."),
         ("Ctrl+E", "Review editor", "Edit the current proposal before keeping or applying it."),
+        ("Ctrl+T", "Validate", "Run the approved project validation label and show the shared result artifact."),
         ("Ctrl+G", "Git review", "Open the git status, diff, and commit workflow."),
         ("Ctrl+L", "Reset view", "Clear transient prompt, stream, diff, and apply state."),
         ("Ctrl+K", "Commands", "Open this command reference window."),

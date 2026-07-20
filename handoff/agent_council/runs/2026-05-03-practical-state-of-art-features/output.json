@@ -35,7 +35,7 @@
       "relevance": "Defines React presentation guardrails and the rule that Gemini should not redefine backend contracts."
     },
     {
-      "path": "handoff/plans/current_plan.md",
+      "path": "handoff/active_gate/README.md",
       "source_type": "plan",
       "relevance": "Identifies the current Phase 5 gaps and active next work."
     },
@@ -770,7 +770,7 @@
       "tests"
     ],
     "documentation": [
-      "handoff/plans/current_plan.md",
+      "handoff/active_gate/README.md",
       "handoff/plans/phase_5_direction.md",
       "handoff/coordination/shared_decisions.md",
       "handoff/coordination/codex_handoff.md",

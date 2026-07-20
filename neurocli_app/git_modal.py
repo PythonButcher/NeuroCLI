@@ -9,6 +9,7 @@ from neurocli_core.git_engine import (
     generate_commit_message,
     execute_commit_and_push
 )
+from neurocli_core.workflow_timeline import build_timeline_event
 
 
 class GitModal(ModalScreen[None]):
@@ -60,6 +61,16 @@ class GitModal(ModalScreen[None]):
                 text_area.load_text(event.worker.result)
                 text_area.styles.display = "block"
                 self.query_one("#git_action_row").styles.display = "block"
+                if hasattr(self.app, "record_workflow_timeline_event"):
+                    no_changes = event.worker.result == "No changes detected to commit."
+                    self.app.record_workflow_timeline_event(
+                        build_timeline_event(
+                            "commit_prepared",
+                            "skipped" if no_changes else "completed",
+                            summary="Commit message draft was prepared; commit text and diff are not stored in the timeline.",
+                            metadata={"uses_unstaged_fallback": self._add_all},
+                        )
+                    )
                 
             elif event.state == WorkerState.ERROR:
                 self.query_one("#git_loading_indicator").styles.display = "none"
@@ -67,6 +78,15 @@ class GitModal(ModalScreen[None]):
                 text_area.load_text(f"Error generating commit message: {event.worker.error}")
                 text_area.styles.display = "block"
                 self.query_one("#btn_cancel_git").styles.display = "block"
+                if hasattr(self.app, "record_workflow_timeline_event"):
+                    self.app.record_workflow_timeline_event(
+                        build_timeline_event(
+                            "commit_prepared",
+                            "error",
+                            summary="Commit preparation failed before a reviewed message was available.",
+                            metadata={"error_type": event.worker.error.__class__.__name__},
+                        )
+                    )
                 # Don't show commit button if there's an error
                 
         # Handle the push worker finishing

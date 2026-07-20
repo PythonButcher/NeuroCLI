@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Compass, Search, FileDiff, FlaskConical, Zap, Save, CheckCircle2, RotateCcw } from 'lucide-react'
 
+const EMPTY_EDITOR_TEXT =
+  "No editable proposal is ready yet.\n\n" +
+  "Run a file-targeted prompt or format a selected file first, then reopen Review."
+
 export default function ReviewModal({
-  isOpen,
   onClose,
   targetFile,
   proposedContent,
@@ -10,22 +13,9 @@ export default function ReviewModal({
   onApply,
   setProposedContent
 }) {
-  const [localContent, setLocalContent] = useState('')
-
-  useEffect(() => {
-    if (isOpen) {
-      setLocalContent(proposedContent || initialEditorText())
-    }
-  }, [isOpen, proposedContent])
-
-  const initialEditorText = () => {
-    return (
-      "No editable proposal is ready yet.\n\n" +
-      "Run a file-targeted prompt or format a selected file first, then reopen Review."
-    )
-  }
-
-  if (!isOpen) return null
+  // App remounts the editor for each review session, which safely resets the
+  // local draft from the latest reviewed proposal without an effect.
+  const [localContent, setLocalContent] = useState(proposedContent || EMPTY_EDITOR_TEXT)
 
   const hasProposal = Boolean(proposedContent)
   const lineCount = localContent ? localContent.split('\n').length : 0
@@ -34,7 +24,7 @@ export default function ReviewModal({
   const proposalErrors = Array.isArray(proposal?.errors) ? proposal.errors : []
 
   const handleReset = () => {
-    setLocalContent(proposedContent || initialEditorText())
+    setLocalContent(proposedContent || EMPTY_EDITOR_TEXT)
   }
 
   const handleKeep = () => {
