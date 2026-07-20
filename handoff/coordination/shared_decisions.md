@@ -9,7 +9,7 @@
 - `web_client` is the React frontend.
 - Feature work should preserve parity between the Textual and React frontends whenever the shared backend supports the same behavior.
 - The active roadmap is `handoff/plans/roadmap.md`.
-- The current implementation slice is Phase 3 workflow timeline.
+- The current completed implementation slice is Phase 3 workflow timeline.
 - Older phase plans live in `handoff/archive/` and are historical reference only.
 
 ## Compound Checkpoints
@@ -19,6 +19,8 @@ A compound checkpoint is required for every phase and implementation slice. It a
 Each checkpoint must name the available surface: Textual app, React app, API, or backend only. Because Textual is the flagship app, backend-only or React-only work must document the missing Textual checkpoint and should not be described as product-complete.
 
 Completed Phase 2 checkpoint: approved validation is usable in both app surfaces through the shared `ValidationResult` artifact. Users can run the safe `python_unittest` label and see pass, fail, timeout, skipped, or policy rejection details.
+
+Completed Phase 3 checkpoint: Textual users can see the current safe-loop workflow timeline, including context collection, target read, model request start, stream completion, proposal creation, diff generation, validation, apply readiness, backup creation, and commit preparation when those steps occur. React consumes the same backend timeline event shape and shows compact status only.
 
 ## Ownership
 
@@ -65,6 +67,7 @@ Sync response fields:
 - `error`
 - optional `proposal`
 - optional `validation_result`
+- `timeline`
 
 ## Generated File Proposal Contract
 
@@ -128,6 +131,43 @@ Command policy rules:
 React consumes `response.validation_result` in the status strip and can run the approved `python_unittest` label through `/api/validate`.
 
 Textual can run the approved `python_unittest` label through the Validate action or Ctrl+T and displays the shared artifact. Neither app accepts raw validation command text.
+
+## Workflow Timeline Contract
+
+Timeline events are defined in `neurocli_core.workflow_timeline.WorkflowTimelineEvent`. The artifact is intentionally concise and redacted by default. Timeline events must not store full source files, secrets, raw model prompts, raw model outputs, diffs, or long command output. Those details stay in their existing reviewed artifacts, such as the workflow response, proposal, validation excerpt, or local file system.
+
+Timeline event fields:
+
+- `event_type`
+- `status`
+- `label`
+- `summary`
+- `metadata`
+- `occurred_at`
+
+Current event types:
+
+- `context_collected`
+- `target_read`
+- `model_request_started`
+- `stream_complete`
+- `proposal_created`
+- `diff_generated`
+- `validation_run`
+- `apply_ready`
+- `backup_created`
+- `commit_prepared`
+
+Current event status values:
+
+- `completed`
+- `running`
+- `skipped`
+- `error`
+
+Workflow responses include a `timeline` list. Stream events may include a single `timeline_event` for state transitions that occur before the final response, such as model request start or stream completion. API validation, apply, and commit responses may include `timeline` while preserving their existing top-level success, status, message, error, and validation fields.
+
+Textual is the reference surface for displaying the timeline as a safe-loop lane. React consumes the same event shape through the API and currently displays a compact companion status label rather than a full lane.
 
 Stream event fields:
 
@@ -193,9 +233,8 @@ These runs support the current direction: terminal-first AI development environm
 
 - Confirm the local Textual smoke-test path against the real model runtime.
 - Confirm the local FastAPI and React browser smoke-test path against the real model runtime.
-- Add a shared workflow timeline artifact and event contract.
 - Run live smoke verification for shared proposal, validation, and timeline display against Textual, the local FastAPI backend, and React once model credentials/runtime are available.
-- Keep timeline content redacted by default and avoid storing full source files, secrets, raw model prompts, or long outputs.
+- Keep timeline content redacted by default and avoid storing full source files, secrets, raw model prompts, diffs, or long outputs.
 - Keep frontend cleanup from changing backend rules without updating this file.
 
 ## Historical Phase 5 Parity Audit
@@ -226,4 +265,4 @@ The active roadmap phases are:
 5. Shared intelligence and React parity.
 6. State-of-the-art layer.
 
-Do not start MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only orchestration controls before the Phase 3 workflow timeline checkpoint is complete.
+Do not start MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only orchestration controls during the Phase 4 terminal-first slice unless the active roadmap explicitly changes.

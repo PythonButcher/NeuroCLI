@@ -66,6 +66,8 @@ Textual outcome: Textual shows a concise workflow timeline or activity lane for 
 
 React outcome: React can receive the same timeline events and display them once presentation work starts, without inventing its own workflow states.
 
+Current implementation status: Phase 3 is complete at the compound-checkpoint level. `WorkflowTimelineEvent` lives in `neurocli_core.workflow_timeline`, workflow responses include `timeline`, stream events may include `timeline_event`, API validation/apply/commit responses attach redacted timeline events while preserving existing primary fields, Textual shows the current safe-loop timeline lane, and React consumes the same event shape in a compact status label.
+
 Exit criteria: event ordering is tested for success and error paths, redaction is documented, Textual displays useful state, and React receives the same event shape through the API.
 
 ## Phase 4: Terminal-First Experience

@@ -36,6 +36,7 @@ function App() {
   const [proposedContent, setProposedContent] = useState('')
   const [generatedProposal, setGeneratedProposal] = useState(null)
   const [validationResult, setValidationResult] = useState(null)
+  const [timelineEvents, setTimelineEvents] = useState([])
   const [showApplyBtn, setShowApplyBtn] = useState(false)
   const [isContextModalOpen, setIsContextModalOpen] = useState(false)
   const [contextPaths, setContextPaths] = useState(() => new Set())
@@ -98,6 +99,7 @@ function App() {
     setProposedContent('')
     setGeneratedProposal(null)
     setValidationResult(null)
+    setTimelineEvents([])
     setShowApplyBtn(false)
 
     try {
@@ -146,6 +148,7 @@ function App() {
       setValidationResult(null)
       setShowApplyBtn(false)
       await handleFileSelect(targetFile)
+      setTimelineEvents(normalizeTimelineEvents(data.timeline))
     } catch (error) {
       pushHistoryEntry({
         id: createEntryId('error'),
@@ -187,6 +190,7 @@ function App() {
         setProposedContent('')
         setGeneratedProposal(null)
         setValidationResult(null)
+        setTimelineEvents([])
         setShowApplyBtn(false)
         return
       }
@@ -199,6 +203,7 @@ function App() {
       setProposedContent(data.proposed_content || '')
       setGeneratedProposal(null)
       setValidationResult(null)
+      setTimelineEvents([])
       setShowApplyBtn(Boolean(data.proposed_content))
     } catch (error) {
       pushHistoryEntry({
@@ -225,6 +230,7 @@ function App() {
       const data = await postJson('/api/validate', payload)
       const normalizedResult = normalizeValidationResult(data)
       setValidationResult(normalizedResult)
+      setTimelineEvents(normalizeTimelineEvents(data.timeline))
       pushHistoryEntry({
         id: createEntryId('validate'),
         type: normalizedResult.status === 'passed' ? 'system' : 'error',
@@ -276,6 +282,7 @@ function App() {
     setProposedContent('')
     setGeneratedProposal(null)
     setValidationResult(null)
+    setTimelineEvents([])
     setShowApplyBtn(false)
 
     try {
@@ -283,6 +290,7 @@ function App() {
         payload: requestPayload,
         responseEntryId,
         onComplete: (response) => {
+          setTimelineEvents(normalizeTimelineEvents(response.timeline))
           applyWorkflowResponse(response)
         },
         onError: (message) => {
@@ -316,6 +324,11 @@ function App() {
         '/api/ai/stream',
         payload,
         {
+          onEvent: (event) => {
+            if (event.timeline_event) {
+              appendTimelineEvent(event.timeline_event)
+            }
+          },
           onDelta: (event) => {
             replaceHistoryEntry(responseEntryId, (entry) => ({
               ...entry,
@@ -387,6 +400,7 @@ function App() {
     }
 
     setValidationResult(normalizeValidationResult(response.validation_result))
+    setTimelineEvents(normalizeTimelineEvents(response.timeline))
 
     if (response.response_kind === 'file_update') {
       const proposal = normalizeGeneratedProposal(response.proposal)
@@ -436,6 +450,15 @@ function App() {
     setShowApplyBtn(false)
   }
 
+  const appendTimelineEvent = (rawEvent) => {
+    const event = normalizeTimelineEvent(rawEvent)
+    if (!event) {
+      return
+    }
+
+    setTimelineEvents((previousEvents) => [...previousEvents, event].slice(-12))
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#010409] font-mono leading-relaxed text-[#c9d1d9]">
       <div className="z-20 flex w-64 flex-shrink-0 flex-col border-r border-[#30363d] bg-[#0d1117]">
@@ -462,6 +485,7 @@ function App() {
               setProposedContent('')
               setGeneratedProposal(null)
               setValidationResult(null)
+              setTimelineEvents([])
               setShowApplyBtn(false)
             }}
           >
@@ -550,6 +574,7 @@ function App() {
                 setProposedContent('')
                 setGeneratedProposal(null)
                 setValidationResult(null)
+                setTimelineEvents([])
                 setShowApplyBtn(false)
               }}
               disabled={!targetFile}
@@ -580,6 +605,7 @@ function App() {
             {selectedModel ? `Model: ${selectedModel}` : 'Model: backend default'}
             {contextPaths.size > 0 ? ` | Context files: ${contextPaths.size}` : ' | Context files: none'}
             {` | Validation: ${buildValidationStatusLabel(validationResult)}`}
+            {` | Timeline: ${buildTimelineStatusLabel(timelineEvents)}`}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pl-2">
@@ -812,6 +838,29 @@ function normalizeValidationResult(rawResult) {
   }
 }
 
+function normalizeTimelineEvents(rawEvents) {
+  if (!Array.isArray(rawEvents)) {
+    return []
+  }
+
+  return rawEvents.map(normalizeTimelineEvent).filter(Boolean)
+}
+
+function normalizeTimelineEvent(rawEvent) {
+  if (!rawEvent || typeof rawEvent !== 'object') {
+    return null
+  }
+
+  return {
+    event_type: typeof rawEvent.event_type === 'string' ? rawEvent.event_type : 'unknown',
+    status: typeof rawEvent.status === 'string' ? rawEvent.status : 'skipped',
+    label: typeof rawEvent.label === 'string' ? rawEvent.label : 'Workflow Event',
+    summary: typeof rawEvent.summary === 'string' ? rawEvent.summary : '',
+    metadata: rawEvent.metadata && typeof rawEvent.metadata === 'object' ? rawEvent.metadata : {},
+    occurred_at: typeof rawEvent.occurred_at === 'string' ? rawEvent.occurred_at : '',
+  }
+}
+
 function buildValidationStatusLabel(validationResult) {
   if (!validationResult) {
     return 'not available'
@@ -823,6 +872,17 @@ function buildValidationStatusLabel(validationResult) {
   }
 
   return `${validationResult.status}, ${commandLabel}`
+}
+
+function buildTimelineStatusLabel(timelineEvents) {
+  if (!timelineEvents.length) {
+    return 'idle'
+  }
+
+  return timelineEvents
+    .slice(-4)
+    .map((event) => `${event.label}: ${event.status}`)
+    .join(' / ')
 }
 
 function buildValidationResultMessage(validationResult) {

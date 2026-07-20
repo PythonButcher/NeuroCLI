@@ -24,6 +24,11 @@ from neurocli_core.validation_result import (
     build_skipped_validation_result,
     run_validation_command,
 )
+from neurocli_core.workflow_timeline import (
+    build_target_metadata,
+    build_timeline_event,
+    build_validation_metadata,
+)
 from neurocli_core.workflow_service import (
     AIWorkflowRequest,
     AIWorkflowResponse,
@@ -299,14 +304,36 @@ async def get_diff_endpoint(path: str | None = None) -> dict[str, str]:
 
 @app.post("/api/git/commit")
 async def execute_commit_endpoint(req: CommitRequest) -> dict[str, Any]:
+    timeline = []
     try:
         status_msg, unsaved_files = _get_git_status()
         _ = status_msg
         add_all = len(unsaved_files) > 0
+        timeline.append(
+            build_timeline_event(
+                "commit_prepared",
+                "completed",
+                summary="Commit request was prepared from the reviewed message; message text is not stored in the timeline.",
+                metadata={"add_all": add_all, "unsaved_file_count": len(unsaved_files)},
+            ).to_dict()
+        )
         execute_commit_and_push(req.message, add_all=add_all)
-        return {"success": True, "message": "Successfully committed and pushed"}
+        return {
+            "success": True,
+            "message": "Successfully committed and pushed",
+            "timeline": timeline,
+        }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        if not timeline:
+            timeline.append(
+                build_timeline_event(
+                    "commit_prepared",
+                    "error",
+                    summary="Commit preparation failed before git execution.",
+                    metadata={"error_type": exc.__class__.__name__},
+                ).to_dict()
+            )
+        return {"success": False, "message": str(exc), "timeline": timeline}
 
 
 @app.get("/api/file")
@@ -349,11 +376,12 @@ async def validate_workspace_endpoint(req: ValidationRequest) -> dict[str, Any]:
         if req.target_file:
             resolved_target = _resolve_workspace_file(req.target_file)
             if resolved_target.suffix != ".py":
-                return run_validation_command(
+                result = run_validation_command(
                     "not_python_test",
                     policy=ValidationCommandPolicy(),
                     cwd=WORKSPACE_ROOT,
-                ).to_dict()
+                )
+                return _validation_response_with_timeline(result)
 
             policy = ValidationCommandPolicy(
                 commands={
@@ -369,18 +397,20 @@ async def validate_workspace_endpoint(req: ValidationRequest) -> dict[str, Any]:
                     )
                 }
             )
-            return run_validation_command(
+            result = run_validation_command(
                 "python_unittest_target",
                 policy=policy,
                 cwd=WORKSPACE_ROOT,
-            ).to_dict()
+            )
+            return _validation_response_with_timeline(result)
 
         policy = build_default_validation_policy(WORKSPACE_ROOT)
-        return run_validation_command(
+        result = run_validation_command(
             req.command_label,
             policy=policy,
             cwd=WORKSPACE_ROOT,
-        ).to_dict()
+        )
+        return _validation_response_with_timeline(result)
     except Exception as exc:
         return {
             "status": "failed",
@@ -390,21 +420,77 @@ async def validate_workspace_endpoint(req: ValidationRequest) -> dict[str, Any]:
             "skipped": True,
             "output_excerpt": "",
             "error_details": str(exc),
+            "timeline": [
+                build_timeline_event(
+                    "validation_run",
+                    "error",
+                    summary="Validation failed before command execution completed.",
+                    metadata={"error_type": exc.__class__.__name__},
+                ).to_dict()
+            ],
         }
 
 
 @app.post("/api/apply")
-async def apply_changes_endpoint(req: ApplyRequest) -> dict[str, str]:
+async def apply_changes_endpoint(req: ApplyRequest) -> dict[str, Any]:
     """Write proposed changes back to disk after creating a local backup."""
 
     try:
         resolved_path = _resolve_workspace_file(req.file_path)
         backup_dir = resolved_path.parent / "backups"
-        create_backup(str(resolved_path), str(backup_dir))
+        backup_path = create_backup(str(resolved_path), str(backup_dir))
         resolved_path.write_text(req.content, encoding="utf-8")
         return {
             "status": "success",
             "message": f"Changes applied to {resolved_path.name} successfully.",
+            "timeline": [
+                build_timeline_event(
+                    "apply_ready",
+                    "completed",
+                    summary="Reviewed content was accepted for apply.",
+                    metadata=build_target_metadata(resolved_path),
+                ).to_dict(),
+                build_timeline_event(
+                    "backup_created",
+                    "completed" if backup_path else "error",
+                    summary="Backup creation completed before writing proposed content.",
+                    metadata={
+                        "target": build_target_metadata(resolved_path),
+                        "backup_label": Path(backup_path).name if backup_path else "",
+                    },
+                ).to_dict(),
+            ],
         }
     except Exception as exc:
-        return {"error": str(exc)}
+        return {
+            "error": str(exc),
+            "timeline": [
+                build_timeline_event(
+                    "backup_created",
+                    "error",
+                    summary="Apply failed before backup and write completed.",
+                    metadata={"error_type": exc.__class__.__name__},
+                ).to_dict()
+            ],
+        }
+
+
+def _validation_response_with_timeline(result) -> dict[str, Any]:
+    """Attach a redacted shared timeline event to a validation artifact."""
+
+    payload = result.to_dict()
+    payload["timeline"] = [
+        build_timeline_event(
+            "validation_run",
+            "completed" if result.status in {"passed", "failed", "timeout", "rejected"} else "skipped",
+            summary="Approved validation label finished; command output is stored only on the validation artifact excerpt.",
+            metadata=build_validation_metadata(
+                command_label=result.command_label,
+                status=result.status,
+                duration_seconds=result.duration_seconds,
+                exit_code=result.exit_code,
+                skipped=result.skipped,
+            ),
+        ).to_dict()
+    ]
+    return payload

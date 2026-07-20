@@ -48,6 +48,7 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertEqual(response.output_text, "synthetic response")
         self.assertIsNone(response.proposal)
         self.assertEqual(response.model, "test-model")
+        self.assertIn("model_request_started", [event.event_type for event in response.timeline])
         self.assertEqual(call_args["api_key"], "test-key")
         self.assertIn("USER PROMPT: Write hello world", call_args["prompt"])
         self.assertEqual(call_args["options"], {"temperature": 0.2})
@@ -83,6 +84,11 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(response.proposal)
         self.assertEqual(response.proposal.status, "ready")
         self.assertEqual(response.proposal.target_path, str(target_path))
+        timeline_types = [event.event_type for event in response.timeline]
+        self.assertIn("target_read", timeline_types)
+        self.assertIn("proposal_created", timeline_types)
+        self.assertIn("diff_generated", timeline_types)
+        self.assertIn("apply_ready", timeline_types)
         self.assertIn("TARGET FILE CONTEXT:", captured_prompt["value"])
 
     def test_execute_returns_structured_error_when_key_is_missing(self) -> None:
@@ -109,6 +115,9 @@ class StreamAIWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(events[-1].response)
         self.assertEqual(events[-1].response.output_text, "hello world")
         self.assertEqual(events[-1].response.response_kind, "message")
+        self.assertEqual(events[0].timeline_event.event_type, "model_request_started")
+        self.assertEqual(events[-1].timeline_event.event_type, "stream_complete")
+        self.assertIn("stream_complete", [event.event_type for event in events[-1].response.timeline])
 
 
 class LegacyCompatibilityTests(unittest.TestCase):

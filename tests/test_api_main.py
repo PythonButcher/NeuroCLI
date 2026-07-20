@@ -13,6 +13,7 @@ from api import main
 from neurocli_core.generated_file_proposal import GeneratedFileProposal
 from neurocli_core.validation_result import ValidationResult
 from neurocli_core.workflow_service import AIWorkflowResponse, AIWorkflowStreamEvent
+from neurocli_core.workflow_timeline import build_timeline_event
 
 
 class PromptEndpointTests(unittest.TestCase):
@@ -47,6 +48,14 @@ class PromptEndpointTests(unittest.TestCase):
                     skipped=True,
                     error_details="Validation was not requested.",
                 ),
+                timeline=[
+                    build_timeline_event(
+                        "context_collected",
+                        "completed",
+                        summary="context ready",
+                        metadata={"requested_count": 1},
+                    )
+                ],
             )
 
         with tempfile.TemporaryDirectory(dir=main.WORKSPACE_ROOT) as temp_dir:
@@ -77,6 +86,7 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(data["proposal"]["normalized_content"], "print('after')\n")
         self.assertEqual(data["validation_result"]["status"], "skipped")
         self.assertEqual(data["validation_result"]["command_label"], "not_run")
+        self.assertEqual(data["timeline"][0]["event_type"], "context_collected")
 
         workflow_request = captured_request["value"]
         self.assertEqual(workflow_request.target_file, str(target_file.resolve()))
@@ -137,7 +147,8 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(response.__class__.__name__, "EventSourceResponse")
         self.assertEqual([item["event"] for item in serialized_events], ["start", "delta", "complete"])
         payloads = [json.loads(item["data"]) for item in serialized_events]
-        self.assertEqual(payloads[0], {"event": "start", "delta": ""})
+        self.assertEqual(payloads[0]["event"], "start")
+        self.assertEqual(payloads[0]["delta"], "")
         self.assertEqual(payloads[1], {"event": "delta", "delta": "hello "})
         self.assertEqual(payloads[2]["event"], "complete")
         self.assertEqual(payloads[2]["response"]["output_text"], "hello world")
@@ -165,6 +176,7 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(data["status"], "passed")
         self.assertEqual(data["command_label"], "python_unittest")
         self.assertEqual(data["output_excerpt"], "ok")
+        self.assertEqual(data["timeline"][0]["event_type"], "validation_run")
 
     def test_validate_endpoint_targets_selected_python_file(self) -> None:
         result = ValidationResult(
@@ -201,6 +213,7 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertIn("python_unittest_target", policy.commands)
         self.assertEqual(data["status"], "failed")
         self.assertEqual(data["command_label"], "python_unittest_target")
+        self.assertEqual(data["timeline"][0]["event_type"], "validation_run")
 
 
 class FileSafetyEndpointTests(unittest.TestCase):

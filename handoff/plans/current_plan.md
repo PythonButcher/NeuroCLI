@@ -18,37 +18,39 @@ That answer must name the surface: Textual app, React app, API, or backend only.
 
 Phase 1 is complete. React consumes backend generated-file proposal/diff artifacts for AI `file_update` responses. Textual keeps its existing local review/apply path because it already protects editable review, diff, backup, and explicit apply.
 
-Phase 2 is now complete at the compound-checkpoint level. The backend defines `ValidationResult`, `ValidationCommandPolicy`, and a shell-free runner selected only by approved command label. The API exposes `POST /api/validate`. Textual has a Validate action and Ctrl+T path that runs the approved `python_unittest` label and displays status, command label, duration, exit code, skipped state, details, and output excerpt. React has a matching Validate action over `/api/validate` and displays the same artifact.
+Phase 2 is complete at the compound-checkpoint level. The backend defines `ValidationResult`, `ValidationCommandPolicy`, and a shell-free runner selected only by approved command label. The API exposes `POST /api/validate`. Textual has a Validate action and Ctrl+T path that runs the approved `python_unittest` label and displays status, command label, duration, exit code, skipped state, details, and output excerpt. React has a matching Validate action over `/api/validate` and displays the same artifact.
 
-The current practical answer is: a user can now run approved validation from either app and see a structured pass, fail, timeout, skipped, or rejected result. Neither app accepts arbitrary shell command text.
+Phase 3 is now complete at the compound-checkpoint level. The backend defines a redacted `WorkflowTimelineEvent` artifact, workflow responses include `timeline`, stream events may include `timeline_event`, and validation/apply/commit API responses attach timeline state without changing their existing primary fields. Textual, as the flagship app, shows a visible safe-loop timeline lane for the current run. React consumes the same backend timeline state and displays a compact companion status label.
+
+The current practical answer is: a Textual user can now see where the workflow is in the safe loop, including context collection, target read, model request start, stream completion, proposal creation, diff generation, validation, apply readiness, backup creation, and commit preparation when those steps occur.
 
 ## Active Roadmap
 
-The active phased roadmap lives in `handoff/plans/roadmap.md`. The next implementation slice is Phase 3: Workflow Timeline.
+The active phased roadmap lives in `handoff/plans/roadmap.md`. The next implementation slice is Phase 4: Terminal-First Experience.
 
 ## Current Compound Checkpoint
 
-After Phase 3, a Textual user should be able to see where the workflow is in the safe loop: context collected, target read, model request started, stream complete, proposal created, diff generated, validation run, apply ready, backup created, and commit prepared.
+After Phase 3, a Textual user can see where the workflow is in the safe loop: context collected, target read, model request started, stream complete, proposal created, diff generated, validation run, apply ready, backup created, and commit prepared. Timeline events are redacted by default and do not store full source files, secrets, raw model prompts, diffs, or long command output.
 
-React should receive the same timeline event semantics through the API and may display them in a companion way once the backend contract is available.
+React receives the same timeline event semantics through the API and displays a compact companion status label. Textual remains the reference surface for the full terminal-first workflow lane.
 
 ## Immediate Next Work
 
-1. Define a shared workflow timeline event artifact in `neurocli_core`.
-2. Emit timeline events from the workflow path for context collection, target read, model request, stream completion, proposal creation, diff generation, validation run, apply readiness, backup creation, and commit preparation where those steps exist.
-3. Keep timeline content redacted by default; do not store full source files, secrets, raw model prompts, or long outputs in timeline events.
-4. Expose timeline events through `api` without breaking existing prompt, stream, validate, format, or apply behavior.
-5. Wire Textual first so the flagship app shows useful workflow state, then document any React differences in `handoff/coordination/frontend_parity.md`.
+1. Start Phase 4 terminal-first experience work without changing backend contracts casually.
+2. Improve Textual focus order, diff readability, review lane ergonomics, validation readiness, and safe workflow controls around the shared artifacts.
+3. Preserve the existing timeline, proposal, validation, apply-with-backup, radar, and git behavior while improving terminal usability.
+4. Keep React changes limited to consuming documented backend contracts unless the Phase 4 work explicitly defines a shared contract.
 
 ## Main Files For The Next Slice
 
 - `neurocli_core/workflow_service.py`
-- `neurocli_core/validation_result.py`
+- `neurocli_core/workflow_timeline.py`
 - `api/main.py`
 - `neurocli_app/main.py`
 - `neurocli_app/workflow_adapter.py`
 - `web_client/src/App.jsx`
 - `tests/test_ai_services.py`
+- `tests/test_workflow_timeline.py`
 - `tests/test_api_main.py`
 - `tests/test_textual_workflow_adapter.py`
 - `handoff/plans/roadmap.md`
@@ -60,7 +62,7 @@ React should receive the same timeline event semantics through the API and may d
 
 Use the local dependency cache when FastAPI, Textual, or SSE dependencies are unavailable in the default Python environment:
 
-`$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_validation_result tests.test_textual_workflow_adapter tests.test_api_main tests.test_ai_services tests.test_generated_file_proposal tests.test_radar_engine`
+`$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_workflow_timeline tests.test_validation_result tests.test_textual_workflow_adapter tests.test_api_main tests.test_ai_services tests.test_generated_file_proposal tests.test_radar_engine`
 
 `npm --prefix web_client run build`
 

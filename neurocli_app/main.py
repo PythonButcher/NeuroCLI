@@ -25,6 +25,12 @@ from neurocli_core.diff_generator import generate_diff
 from neurocli_core.file_handler import create_backup
 from neurocli_core.validation_result import ValidationResult
 from neurocli_core.workflow_service import AIWorkflowRequest, AIWorkflowResponse, AIWorkflowStreamEvent
+from neurocli_core.workflow_timeline import (
+    WorkflowTimelineEvent,
+    build_target_metadata,
+    build_timeline_event,
+    build_validation_metadata,
+)
 
 
 class NeuroApp(App):
@@ -53,6 +59,7 @@ class NeuroApp(App):
         self._streamed_output: str = ""
         self._workflow_state: str = "Idle"
         self._validation_result: ValidationResult | None = None
+        self._timeline_events: list[WorkflowTimelineEvent] = []
         self.context_paths: set[str] = set()
         self.selected_model: str = ""
         self.model_options_text: str = ""
@@ -71,6 +78,7 @@ class NeuroApp(App):
                     yield Static("NeuroCLI v1.0 | Engine Dashboard", id="workspace_header")
                     yield Button("⌨   Commands", id="btn_commands", classes="top_icon_btn")
                 yield Static("", id="workspace_status")
+                yield Static("", id="workflow_timeline")
                 with Container(id="workspace_panel"):
                     # Output/History Section
                     yield Markdown("AI response will appear here...", id="response_display")
@@ -115,6 +123,7 @@ class NeuroApp(App):
         self.query_one("#apply_button").styles.display = "none"
         self._refresh_model_button()
         self._refresh_workspace_status()
+        self._refresh_workflow_timeline()
         self.query_one("#prompt_input", Input).focus()
 
     def on_directory_tree_file_selected(
@@ -138,6 +147,7 @@ class NeuroApp(App):
         self.query_one("#apply_button").styles.display = "none"
         self._workflow_state = "Viewing file"
         self._refresh_workspace_status()
+        self._refresh_workflow_timeline()
 
         try:
             # Determine extension for syntax highlighting
@@ -158,6 +168,7 @@ class NeuroApp(App):
             )
             self._workflow_state = "File read error"
             self._refresh_workspace_status()
+            self._refresh_workflow_timeline()
 
     def _run_validation(self) -> None:
         """Run the default approved validation label without accepting shell text."""
@@ -165,6 +176,14 @@ class NeuroApp(App):
         self._workflow_state = "Validating"
         target_file = self.query_one("#file_path_input", Input).value.strip()
         command_label = "python_unittest_target" if target_file else "python_unittest"
+        self._append_timeline_event(
+            build_timeline_event(
+                "validation_run",
+                "running",
+                summary="Approved validation label started.",
+                metadata={"command_label": command_label},
+            )
+        )
         self.query_one("#loading_indicator").styles.display = "block"
         self.query_one("#response_display", Markdown).update(
             f"### Validation\n\nRunning approved command label `{command_label}`..."
@@ -204,6 +223,7 @@ class NeuroApp(App):
         self._streamed_output = ""
         self._proposed_content = ""
         self._proposal_baseline_content = ""
+        self._timeline_events = []
         self._workflow_state = "Streaming"
         self.query_one("#apply_button").styles.display = "none"
         self.query_one("#loading_indicator").styles.display = "block"
@@ -246,6 +266,14 @@ class NeuroApp(App):
                 self._proposed_content = ""
                 self._proposal_baseline_content = ""
                 self._workflow_state = "Format clean"
+                self._append_timeline_event(
+                    build_timeline_event(
+                        "diff_generated",
+                        "skipped",
+                        summary="Formatting produced no content changes.",
+                        metadata=build_target_metadata(file_path),
+                    )
+                )
             else:
                 diff = generate_diff(original_content, formatted_content)
                 self.query_one("#response_display", Markdown).update(diff)
@@ -253,6 +281,22 @@ class NeuroApp(App):
                 self._proposal_baseline_content = original_content
                 self.query_one("#apply_button").styles.display = "block"
                 self._workflow_state = "Format review ready"
+                self._append_timeline_event(
+                    build_timeline_event(
+                        "diff_generated",
+                        "completed",
+                        summary="Formatter diff is ready; diff text is not stored in the timeline.",
+                        metadata=build_target_metadata(file_path),
+                    )
+                )
+                self._append_timeline_event(
+                    build_timeline_event(
+                        "apply_ready",
+                        "completed",
+                        summary="Formatted content is staged for review and explicit apply.",
+                        metadata=build_target_metadata(file_path),
+                    )
+                )
         except RuntimeError as e:
             self.query_one("#response_display", Markdown).update(f"### Formatter Error\n\n{e}")
             self._workflow_state = "Formatter error"
@@ -349,6 +393,7 @@ class NeuroApp(App):
             f"Validation: {validation_label}"
         )
         self.query_one("#workspace_status", Static).update(status_text)
+        self._refresh_workflow_timeline()
 
     def _validation_status_label(self) -> str:
         """Return a compact validation state for the workspace status strip."""
@@ -371,7 +416,18 @@ class NeuroApp(App):
 
         try:
             backup_dir = os.path.join(os.path.dirname(file_path), "backups")
-            create_backup(file_path, backup_dir)
+            backup_path = create_backup(file_path, backup_dir)
+            self._append_timeline_event(
+                build_timeline_event(
+                    "backup_created",
+                    "completed" if backup_path else "error",
+                    summary="Backup creation completed before local apply.",
+                    metadata={
+                        "target": build_target_metadata(file_path),
+                        "backup_label": Path(backup_path).name if backup_path else "",
+                    },
+                )
+            )
 
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(self._proposed_content)
@@ -398,12 +454,14 @@ class NeuroApp(App):
         self._proposal_baseline_content = ""
         self._streamed_output = ""
         self._validation_result = None
+        self._timeline_events = []
         self._workflow_state = "Reset"
         self.query_one("#prompt_input", Input).value = ""
         self.query_one("#response_display", Markdown).update("AI response will appear here...")
         self.query_one("#loading_indicator").styles.display = "none"
         self.query_one("#apply_button").styles.display = "none"
         self._refresh_workspace_status()
+        self._refresh_workflow_timeline()
         self.query_one("#prompt_input", Input).focus()
 
     def on_file_open_selected(self, path: str) -> None:
@@ -446,6 +504,20 @@ class NeuroApp(App):
         """Display a shared validation artifact in the Textual app."""
 
         self._validation_result = result
+        self._append_timeline_event(
+            build_timeline_event(
+                "validation_run",
+                "completed" if result.status in {"passed", "failed", "timeout", "rejected"} else "skipped",
+                summary="Approved validation label finished; output remains on the validation artifact excerpt.",
+                metadata=build_validation_metadata(
+                    command_label=result.command_label,
+                    status=result.status,
+                    duration_seconds=result.duration_seconds,
+                    exit_code=result.exit_code,
+                    skipped=result.skipped,
+                ),
+            )
+        )
         self.query_one("#response_display", Markdown).update(
             format_validation_result_markdown(result)
         )
@@ -464,6 +536,8 @@ class NeuroApp(App):
 
         if event.event == "start":
             self._streamed_output = ""
+            if event.timeline_event is not None:
+                self._set_timeline_events([event.timeline_event])
             self._workflow_state = "Streaming started"
             self._refresh_workspace_status()
             markdown_display.update(self._render_stream_output(request))
@@ -510,6 +584,8 @@ class NeuroApp(App):
 
         if response.target_file:
             file_path_input.value = response.target_file
+
+        self._set_timeline_events(response.timeline)
 
         if not response.ok:
             self._proposed_content = ""
@@ -604,6 +680,11 @@ class NeuroApp(App):
 
         self.push_screen(GitModal())
 
+    def record_workflow_timeline_event(self, event: WorkflowTimelineEvent) -> None:
+        """Allow child screens to report shared safe-loop events."""
+
+        self._append_timeline_event(event)
+
     def action_open_commands(self) -> None:
         """Open the visible command reference window."""
 
@@ -643,6 +724,46 @@ class NeuroApp(App):
                 "Review draft updated. Apply is ready when you are."
             )
         self._refresh_workspace_status()
+
+    def _set_timeline_events(self, events: list[WorkflowTimelineEvent]) -> None:
+        """Replace the visible safe-loop timeline with backend events."""
+
+        self._timeline_events = list(events)
+        self._refresh_workflow_timeline()
+
+    def _append_timeline_event(self, event: WorkflowTimelineEvent) -> None:
+        """Append one redacted event and refresh the Textual timeline lane."""
+
+        self._timeline_events.append(event)
+        self._refresh_workflow_timeline()
+
+    def _refresh_workflow_timeline(self) -> None:
+        """Render a compact safe-loop activity lane for the current run."""
+
+        if not self.is_mounted:
+            return
+
+        if not self._timeline_events:
+            timeline_text = "Timeline: idle"
+        else:
+            entries = []
+            for event in self._timeline_events[-10:]:
+                marker = self._timeline_marker(event.status)
+                entries.append(f"{marker} {event.label}: {event.status}")
+            timeline_text = "Timeline: " + "  |  ".join(entries)
+
+        self.query_one("#workflow_timeline", Static).update(timeline_text)
+
+    def _timeline_marker(self, status: str) -> str:
+        """Return an ASCII marker so timeline state is readable in terminals."""
+
+        if status == "completed":
+            return "+"
+        if status == "running":
+            return ">"
+        if status == "error":
+            return "!"
+        return "-"
 
 
 def main():

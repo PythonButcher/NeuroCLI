@@ -21,12 +21,13 @@ Codex owns backend and integration work across this repo.
 - Phase 5 produced useful Textual and React polish, but the active roadmap has now been consolidated in `handoff/plans/roadmap.md`.
 - The shared generated-file proposal/diff artifact is now implemented in `neurocli_core` and exposed through `api`.
 - The shared validation-result artifact and command policy are now implemented in `neurocli_core` and exposed through `api`.
+- The shared workflow timeline artifact is now implemented in `neurocli_core`, exposed through workflow/API responses, displayed first in Textual, and consumed minimally in React.
 
 ## Compound Checkpoint
 
 Every Codex implementation handoff must answer what the user can do now that they could not do before. The answer must name the surface: Textual, React, API, or backend only.
 
-Current checkpoint: Phase 2 validation is complete across Textual, React, API, and backend. The next slice is Phase 3 workflow timeline.
+Current checkpoint: Phase 3 workflow timeline is complete across Textual, API, backend, and minimal React consumption. A Textual user can now see where the current run is in the safe loop, including context collection, target read, model request start, stream completion, proposal creation, diff generation, validation, apply readiness, backup creation, and commit preparation when those steps occur.
 
 ## Active Contract Notes
 
@@ -51,7 +52,9 @@ Current checkpoint: Phase 2 validation is complete across Textual, React, API, a
 - Workflow responses include a skipped `validation_result` by default, and `POST /api/validate` can run approved labels such as `python_unittest` or `react_build`.
 - React displays backend validation readiness in the existing status strip but does not execute validation commands.
 - Textual and React can both run the approved `python_unittest` validation label and display the shared validation artifact.
-- Do not start model profiles, MCP-style connectors, background task lanes, or productized council sessions before the workflow timeline checkpoint is complete.
+- Workflow responses now include redacted `timeline` events, and stream events may include `timeline_event`. Timeline metadata must not store full source, secrets, raw prompts, raw model outputs, diff text, or long command output.
+- `neurocli_app/main.py` displays the timeline as the Textual safe-loop lane. `web_client/src/App.jsx` consumes the same API event shape and shows compact status only.
+- Do not start model profiles, MCP-style connectors, background task lanes, autonomous commits, or productized council sessions as part of Phase 4 terminal experience work.
 
 ## Coordination Rule
 If frontend work needs a backend contract change, record it in `handoff/coordination/shared_decisions.md`.
@@ -62,7 +65,7 @@ If Textual and React intentionally differ after a slice, record the difference i
 
 Read `handoff/plans/current_plan.md`, then `handoff/plans/roadmap.md`. The council-backed direction is terminal-first core-loop reliability, then shared capability parity, then structured orchestration later.
 
-The completed Phase 1 slice defined and tested a shared proposal/diff artifact in `neurocli_core`, exposed it through `api`, and wired React integration to consume it. Phase 2 now lets both Textual and React run approved validation through the shared `ValidationResult` artifact without accepting raw shell command text. The next checkpoint is Phase 3 workflow timeline.
+The completed Phase 1 slice defined and tested a shared proposal/diff artifact in `neurocli_core`, exposed it through `api`, and wired React integration to consume it. Phase 2 lets both Textual and React run approved validation through the shared `ValidationResult` artifact without accepting raw shell command text. Phase 3 adds a redacted shared workflow timeline and displays it first in Textual. The next checkpoint is Phase 4 terminal-first experience.
 
 ## Verification Notes
 
@@ -76,4 +79,5 @@ The completed Phase 1 slice defined and tested a shared proposal/diff artifact i
 - `python -m py_compile neurocli_app\\main.py neurocli_app\\review_modal.py neurocli_app\\command_modal.py` passes locally
 - Default `python -m unittest tests.test_api_main` still fails without `PYTHONPATH` because the sandbox Python path does not include local target-installed dependencies
 - `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_validation_result tests.test_api_main tests.test_ai_services tests.test_generated_file_proposal tests.test_textual_workflow_adapter tests.test_radar_engine` passes locally
+- `$env:PYTHONPATH='.codex_tmp_py\\site-packages'; python -m unittest tests.test_workflow_timeline tests.test_ai_services tests.test_api_main tests.test_textual_workflow_adapter tests.test_validation_result tests.test_generated_file_proposal` passes locally
 - `python -m unittest discover tests` still fails because `tests/testcli.py` contains plain error text and is not valid Python
