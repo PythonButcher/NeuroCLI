@@ -1,6 +1,6 @@
 # Archived Phase 5 Direction
 
-This document is historical. It captured the Phase 5 direction before the Agent Council roadmap consolidation. The active plan now lives in `handoff/plans/current_plan.md`, and the active phased roadmap lives in `handoff/plans/roadmap.md`.
+This document is historical. It captured the Phase 5 direction before the Agent Council roadmap consolidation. Current work is routed through `handoff/active_gate/README.md`, and product direction lives in `handoff/plans/roadmap.md`.
 
 Do not treat this file as the current next-work list.
 

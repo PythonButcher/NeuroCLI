@@ -1,66 +1,56 @@
 # NeuroCLI
 
-NeuroCLI has two supported app paths:
+NeuroCLI is a terminal-first AI development environment with one Python capability engine and two product surfaces:
 
-- a Python Textual app in `neurocli_app`
-- a React web app in `web_client`
+- `neurocli_app`: flagship Python Textual application
+- `web_client`: React companion application through the FastAPI bridge in `api`
 
-Both should use the same shared backend logic from `neurocli_core`.
+Shared workflow and business behavior lives in `neurocli_core`.
 
-## Getting Started
+## Local Setup
 
-### Requirements
+Requirements are Python 3.10+, Node.js for the web app, and an OpenAI API key.
 
-- Python 3.10+
-- an OpenAI API key in the project `.env` file
+Copy `.env.example` to `.env`, then set your real key locally. `.env` is ignored by Git.
 
-Example:
+Install the Python application:
 
-```bash
-OPENAI_API_KEY=sk-your-key
+```powershell
+python -m pip install -e .
 ```
 
-### Install
+Run Textual:
 
-```bash
-pip install -e .
-```
-
-### Run The Python App
-
-```bash
+```powershell
 neurocli
 ```
 
-### Run The API Bridge
+Run the API in a second terminal:
 
-```bash
+```powershell
 python -m uvicorn api.main:app --reload --host 127.0.0.1 --port 8010
 ```
 
-The React frontend defaults to `http://127.0.0.1:8010` for API calls.
+Run React in a third terminal:
 
-### Run The React Frontend
-
-```bash
-cd web_client
-npm install
-npm run dev
+```powershell
+npm --prefix web_client install
+npm --prefix web_client run dev
 ```
 
-### Local Verification Notes
+React defaults to `http://127.0.0.1:8010`. Override it locally with `web_client/.env` using the example in `web_client/.env.example`.
 
-The active plan still calls for manual Textual smoke testing and live browser smoke testing against the real model runtime. Some local test commands may require dependencies installed into `.codex_tmp_py/site-packages` and `PYTHONPATH` pointed at that folder.
+## Verification
 
-## Project Docs
+```powershell
+python -m unittest discover tests
+python -m ruff check neurocli_core api neurocli_app tests
+npm --prefix web_client run lint
+npm --prefix web_client run build
+```
 
-Project planning and handoff docs live in `handoff/`.
+Live model smoke testing requires valid credentials and remains separate from deterministic automated tests.
 
-Start with:
+## Project Navigation
 
-- `handoff/README.md`
-- `handoff/plans/current_plan.md`
-- `handoff/plans/roadmap.md`
-- `handoff/coordination/shared_decisions.md`
-
-Older phase plans live in `handoff/archive/` and are kept for historical context only.
+Start with [AGENTS.md](AGENTS.md), then read [the active gate](handoff/active_gate/README.md). The roadmap, contracts, parity record, owner handoffs, and archives are routed through [handoff/README.md](handoff/README.md).

@@ -1,8 +1,9 @@
-from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical, Grid
-from textual.screen import ModalScreen
-from textual.widgets import Button, Label, DataTable, Static
 from pathlib import Path
+
+from textual.app import ComposeResult
+from textual.containers import Container, Grid, Horizontal, Vertical
+from textual.screen import ModalScreen
+from textual.widgets import Button, DataTable, Label
 
 from neurocli_core.radar_engine import scan_workspace_health, scan_technical_debt, scan_recent_edits
 

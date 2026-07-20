@@ -1,8 +1,9 @@
+from pathlib import Path
+
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, DirectoryTree, Label, ListView, ListItem, Static
-from pathlib import Path
+from textual.widgets import Button, DirectoryTree, Label, ListItem, ListView
 
 
 class ContextModal(ModalScreen[set[str]]):

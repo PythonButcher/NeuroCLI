@@ -11,7 +11,9 @@ from unittest.mock import patch
 
 from api import main
 from neurocli_core.generated_file_proposal import GeneratedFileProposal
+from neurocli_core.validation_result import ValidationResult
 from neurocli_core.workflow_service import AIWorkflowResponse, AIWorkflowStreamEvent
+from neurocli_core.workflow_timeline import build_timeline_event
 
 
 class PromptEndpointTests(unittest.TestCase):
@@ -39,6 +41,21 @@ class PromptEndpointTests(unittest.TestCase):
                     diff_text="```diff\n-before\n+after\n```",
                     status="ready",
                 ),
+                validation_result=ValidationResult(
+                    status="skipped",
+                    command_label="not_run",
+                    duration_seconds=0.0,
+                    skipped=True,
+                    error_details="Validation was not requested.",
+                ),
+                timeline=[
+                    build_timeline_event(
+                        "context_collected",
+                        "completed",
+                        summary="context ready",
+                        metadata={"requested_count": 1},
+                    )
+                ],
             )
 
         with tempfile.TemporaryDirectory(dir=main.WORKSPACE_ROOT) as temp_dir:
@@ -67,6 +84,9 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(data["proposal"]["status"], "ready")
         self.assertEqual(data["proposal"]["target_path"], str(target_file.resolve()))
         self.assertEqual(data["proposal"]["normalized_content"], "print('after')\n")
+        self.assertEqual(data["validation_result"]["status"], "skipped")
+        self.assertEqual(data["validation_result"]["command_label"], "not_run")
+        self.assertEqual(data["timeline"][0]["event_type"], "context_collected")
 
         workflow_request = captured_request["value"]
         self.assertEqual(workflow_request.target_file, str(target_file.resolve()))
@@ -85,6 +105,7 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(data["status"], "error")
         self.assertIn("workspace root", data["error"])
         self.assertIsNone(data["proposal"])
+        self.assertEqual(data["validation_result"]["status"], "skipped")
 
     def test_prompt_endpoint_rejects_unsafe_context_path_before_workflow(self) -> None:
         with tempfile.NamedTemporaryFile(suffix=".md") as outside_file:
@@ -126,10 +147,73 @@ class PromptEndpointTests(unittest.TestCase):
         self.assertEqual(response.__class__.__name__, "EventSourceResponse")
         self.assertEqual([item["event"] for item in serialized_events], ["start", "delta", "complete"])
         payloads = [json.loads(item["data"]) for item in serialized_events]
-        self.assertEqual(payloads[0], {"event": "start", "delta": ""})
+        self.assertEqual(payloads[0]["event"], "start")
+        self.assertEqual(payloads[0]["delta"], "")
         self.assertEqual(payloads[1], {"event": "delta", "delta": "hello "})
         self.assertEqual(payloads[2]["event"], "complete")
         self.assertEqual(payloads[2]["response"]["output_text"], "hello world")
+
+    def test_validate_endpoint_exposes_policy_gated_artifact(self) -> None:
+        result = ValidationResult(
+            status="passed",
+            command_label="python_unittest",
+            duration_seconds=0.1,
+            exit_code=0,
+            output_excerpt="ok",
+        )
+
+        with patch("api.main.build_default_validation_policy") as mocked_policy, patch(
+            "api.main.run_validation_command", return_value=result
+        ) as mocked_run:
+            data = asyncio.run(
+                main.validate_workspace_endpoint(
+                    main.ValidationRequest(command_label="python_unittest")
+                )
+            )
+
+        mocked_policy.assert_called_once_with(main.WORKSPACE_ROOT)
+        mocked_run.assert_called_once()
+        self.assertEqual(data["status"], "passed")
+        self.assertEqual(data["command_label"], "python_unittest")
+        self.assertEqual(data["output_excerpt"], "ok")
+        self.assertEqual(data["timeline"][0]["event_type"], "validation_run")
+
+    def test_validate_endpoint_targets_selected_python_file(self) -> None:
+        result = ValidationResult(
+            status="failed",
+            command_label="python_unittest_target",
+            duration_seconds=0.1,
+            exit_code=1,
+            output_excerpt="failed",
+        )
+
+        with tempfile.TemporaryDirectory(dir=main.WORKSPACE_ROOT) as temp_dir:
+            target_file = Path(temp_dir) / "test_selected.py"
+            target_file.write_text(
+                "import unittest\n\n"
+                "class SelectedTest(unittest.TestCase):\n"
+                "    def test_failure(self):\n"
+                "        self.fail('expected')\n",
+                encoding="utf-8",
+            )
+
+            with patch("api.main.run_validation_command", return_value=result) as mocked_run:
+                data = asyncio.run(
+                    main.validate_workspace_endpoint(
+                        main.ValidationRequest(
+                            command_label="python_unittest",
+                            target_file=str(target_file.relative_to(main.WORKSPACE_ROOT)),
+                        )
+                    )
+                )
+
+        command_label, kwargs = mocked_run.call_args.args[0], mocked_run.call_args.kwargs
+        policy = kwargs["policy"]
+        self.assertEqual(command_label, "python_unittest_target")
+        self.assertIn("python_unittest_target", policy.commands)
+        self.assertEqual(data["status"], "failed")
+        self.assertEqual(data["command_label"], "python_unittest_target")
+        self.assertEqual(data["timeline"][0]["event_type"], "validation_run")
 
 
 class FileSafetyEndpointTests(unittest.TestCase):

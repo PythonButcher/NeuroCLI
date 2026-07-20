@@ -110,6 +110,18 @@ Screen {
     border-left: thick $accent;
 }
 
+#workflow_timeline {
+    width: 100%;
+    height: 2;
+    content-align: left middle;
+    color: $foreground;
+    text-style: dim;
+    padding: 0 1;
+    margin-bottom: 1;
+    background: transparent;
+    border-left: thick $secondary;
+}
+
 #workspace_panel {
     height: 1fr;
     padding: 0;

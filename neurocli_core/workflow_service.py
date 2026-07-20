@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterator, Literal, Mapping
 
@@ -12,6 +12,16 @@ from neurocli_core.generated_file_proposal import (
     build_generated_file_proposal,
 )
 from neurocli_core.llm_api_openai import call_openai_api, stream_openai_api
+from neurocli_core.validation_result import (
+    ValidationResult,
+    build_skipped_validation_result,
+)
+from neurocli_core.workflow_timeline import (
+    WorkflowTimelineEvent,
+    build_context_metadata,
+    build_target_metadata,
+    build_timeline_event,
+)
 
 
 SYSTEM_PROMPT = """
@@ -61,6 +71,8 @@ class AIWorkflowResponse:
     model: str | None = None
     error: str | None = None
     proposal: GeneratedFileProposal | None = None
+    validation_result: ValidationResult | None = None
+    timeline: list[WorkflowTimelineEvent] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable representation for API callers."""
@@ -75,11 +87,14 @@ class AIWorkflowStreamEvent:
     event: StreamEventType
     delta: str = ""
     response: AIWorkflowResponse | None = None
+    timeline_event: WorkflowTimelineEvent | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable event payload."""
 
         payload: dict[str, Any] = {"event": self.event, "delta": self.delta}
+        if self.timeline_event is not None:
+            payload["timeline_event"] = self.timeline_event.to_dict()
         if self.response is not None:
             payload["response"] = self.response.to_dict()
         return payload
@@ -94,6 +109,7 @@ class _PreparedWorkflow:
     response_kind: ResponseKind
     original_content: str
     model: str
+    timeline: list[WorkflowTimelineEvent] = field(default_factory=list)
 
 
 def build_ai_workflow_request(
@@ -141,7 +157,17 @@ def execute_ai_workflow(request: AIWorkflowRequest) -> AIWorkflowResponse:
             response_kind=prepared.response_kind,
             original_content=prepared.original_content,
             model=prepared.model,
+            timeline=prepared.timeline,
         )
+
+    timeline = list(prepared.timeline)
+    model_request_event = build_timeline_event(
+        "model_request_started",
+        "running",
+        summary="Model request started with redacted prompt content.",
+        metadata={"model": prepared.model, "response_kind": prepared.response_kind},
+    )
+    timeline.append(model_request_event)
 
     try:
         output_text = call_openai_api(
@@ -151,15 +177,28 @@ def execute_ai_workflow(request: AIWorkflowRequest) -> AIWorkflowResponse:
             options=prepared.request.model_options,
         )
     except RuntimeError as exc:
+        # Keep the emitted start marker immutable while returning an accurate
+        # terminal state in the final workflow timeline.
+        timeline[-1] = replace(
+            model_request_event,
+            status="error",
+            summary="Model request failed; error details remain on the workflow response.",
+        )
         return _build_error_response(
             prepared.request,
             str(exc),
             response_kind=prepared.response_kind,
             original_content=prepared.original_content,
             model=prepared.model,
+            timeline=timeline,
         )
 
-    return _build_success_response(prepared, output_text)
+    timeline[-1] = replace(
+        model_request_event,
+        status="completed",
+        summary="Model request completed; generated text remains on the workflow response.",
+    )
+    return _build_success_response(prepared, output_text, timeline=timeline)
 
 
 def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamEvent]:
@@ -180,11 +219,21 @@ def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamE
                 response_kind=prepared.response_kind,
                 original_content=prepared.original_content,
                 model=prepared.model,
+                timeline=prepared.timeline,
             ),
         )
         return
 
-    yield AIWorkflowStreamEvent(event="start")
+    timeline = list(prepared.timeline)
+    model_request_event = build_timeline_event(
+        "model_request_started",
+        "running",
+        summary="Streaming model request started with redacted prompt content.",
+        metadata={"model": prepared.model, "response_kind": prepared.response_kind},
+    )
+    timeline.append(model_request_event)
+
+    yield AIWorkflowStreamEvent(event="start", timeline_event=model_request_event)
 
     collected_chunks: list[str] = []
     try:
@@ -197,6 +246,13 @@ def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamE
             collected_chunks.append(chunk)
             yield AIWorkflowStreamEvent(event="delta", delta=chunk)
     except RuntimeError as exc:
+        # The start stream event remains a running snapshot; only the final
+        # response timeline receives the terminal error state.
+        timeline[-1] = replace(
+            model_request_event,
+            status="error",
+            summary="Streaming model request failed; error details remain on the workflow response.",
+        )
         yield AIWorkflowStreamEvent(
             event="error",
             response=_build_error_response(
@@ -205,13 +261,27 @@ def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamE
                 response_kind=prepared.response_kind,
                 original_content=prepared.original_content,
                 model=prepared.model,
+                timeline=timeline,
             ),
         )
         return
 
+    timeline[-1] = replace(
+        model_request_event,
+        status="completed",
+        summary="Streaming model request completed; generated text remains on the workflow response.",
+    )
+    stream_complete_event = build_timeline_event(
+        "stream_complete",
+        "completed",
+        summary="Model stream completed; generated text is stored only on the workflow response.",
+        metadata={"chunk_count": len(collected_chunks), "character_count": len("".join(collected_chunks))},
+    )
+    timeline.append(stream_complete_event)
     yield AIWorkflowStreamEvent(
         event="complete",
-        response=_build_success_response(prepared, "".join(collected_chunks)),
+        response=_build_success_response(prepared, "".join(collected_chunks), timeline=timeline),
+        timeline_event=stream_complete_event,
     )
 
 
@@ -267,6 +337,7 @@ def _prepare_workflow(
     compiled_prompt = SYSTEM_PROMPT
     response_kind: ResponseKind = "message"
     original_content = ""
+    timeline: list[WorkflowTimelineEvent] = []
 
     if normalized_request.target_file:
         target_path = Path(normalized_request.target_file)
@@ -279,7 +350,19 @@ def _prepare_workflow(
                     normalized_request,
                     f"Error reading file {normalized_request.target_file}: {exc}",
                     response_kind=response_kind,
+                    timeline=timeline,
                 )
+            timeline.append(
+                build_timeline_event(
+                    "target_read",
+                    "completed",
+                    summary="Target file was read for model context; source text is not stored in the timeline.",
+                    metadata=build_target_metadata(
+                        normalized_request.target_file,
+                        bytes_read=len(original_content.encode("utf-8")),
+                    ),
+                )
+            )
             compiled_prompt += f"\n\n{CODE_GEN_INSTRUCTIONS.strip()}"
             compiled_prompt += f"\n\nTARGET FILE CONTEXT:\n---\n{original_content}\n---"
         else:
@@ -288,8 +371,25 @@ def _prepare_workflow(
                 return None, _build_error_response(
                     normalized_request,
                     context_content,
+                    timeline=timeline,
                 )
+            timeline.append(
+                build_timeline_event(
+                    "target_read",
+                    "completed",
+                    summary="Target path context was collected; source text is not stored in the timeline.",
+                    metadata=build_target_metadata(normalized_request.target_file),
+                )
+            )
             compiled_prompt += f"\n\nTARGET CONTEXT:\n---\n{context_content}\n---"
+    else:
+        timeline.append(
+            build_timeline_event(
+                "target_read",
+                "skipped",
+                summary="No target file was selected for this workflow run.",
+            )
+        )
 
     if normalized_request.context_paths:
         context_sections: list[str] = []
@@ -301,9 +401,30 @@ def _prepare_workflow(
                     context_content,
                     response_kind=response_kind,
                     original_content=original_content,
+                    timeline=timeline,
                 )
             context_sections.append(context_content)
         compiled_prompt += "\n\nADDITIONAL CONTEXT FILES:\n" + "\n".join(context_sections)
+        timeline.append(
+            build_timeline_event(
+                "context_collected",
+                "completed",
+                summary="Additional context was collected; file contents are excluded from the timeline.",
+                metadata=build_context_metadata(
+                    tuple(normalized_request.context_paths),
+                    collected_count=len(context_sections),
+                ),
+            )
+        )
+    else:
+        timeline.append(
+            build_timeline_event(
+                "context_collected",
+                "completed",
+                summary="No additional context paths were selected.",
+                metadata=build_context_metadata((), collected_count=0),
+            )
+        )
 
     compiled_prompt += f"\n\nUSER PROMPT: {normalized_request.prompt}"
     selected_model = normalized_request.model or get_default_openai_model()
@@ -315,6 +436,7 @@ def _prepare_workflow(
             response_kind=response_kind,
             original_content=original_content,
             model=selected_model,
+            timeline=timeline,
         ),
         None,
     )
@@ -323,15 +445,49 @@ def _prepare_workflow(
 def _build_success_response(
     prepared: _PreparedWorkflow,
     output_text: str,
+    *,
+    timeline: list[WorkflowTimelineEvent] | None = None,
 ) -> AIWorkflowResponse:
     """Create a stable success payload for sync and streaming callers."""
 
     proposal = None
+    response_timeline = list(timeline or prepared.timeline)
     if prepared.response_kind == "file_update":
         proposal = build_generated_file_proposal(
             target_path=prepared.request.target_file,
             original_content=prepared.original_content,
             output_text=output_text,
+        )
+        proposal_status = proposal.status if proposal is not None else "error"
+        response_timeline.append(
+            build_timeline_event(
+                "proposal_created",
+                "completed" if proposal_status != "error" else "error",
+                summary="Generated-file proposal artifact was created without storing generated content in the timeline.",
+                metadata={
+                    "proposal_status": proposal_status,
+                    "target": build_target_metadata(prepared.request.target_file),
+                },
+            )
+        )
+        response_timeline.append(
+            build_timeline_event(
+                "diff_generated",
+                "completed" if proposal is not None and proposal.diff_text else "skipped",
+                summary="Diff availability was recorded without embedding diff text in the timeline.",
+                metadata={
+                    "has_diff": bool(proposal is not None and proposal.diff_text),
+                    "proposal_status": proposal_status,
+                },
+            )
+        )
+        response_timeline.append(
+            build_timeline_event(
+                "apply_ready",
+                "completed" if proposal is not None and proposal.status == "ready" else "skipped",
+                summary="Apply readiness was derived from the shared proposal status.",
+                metadata={"proposal_status": proposal_status},
+            )
         )
 
     return AIWorkflowResponse(
@@ -345,6 +501,8 @@ def _build_success_response(
         original_content=prepared.original_content,
         model=prepared.model,
         proposal=proposal,
+        validation_result=build_skipped_validation_result(),
+        timeline=response_timeline,
     )
 
 
@@ -355,6 +513,7 @@ def _build_error_response(
     response_kind: ResponseKind = "message",
     original_content: str = "",
     model: str | None = None,
+    timeline: list[WorkflowTimelineEvent] | None = None,
 ) -> AIWorkflowResponse:
     """Create a stable error payload without raising across UI boundaries."""
 
@@ -368,4 +527,8 @@ def _build_error_response(
         original_content=original_content,
         model=model or request.model,
         error=error,
+        validation_result=build_skipped_validation_result(
+            error_details="Validation was skipped because the workflow did not complete."
+        ),
+        timeline=list(timeline or []),
     )

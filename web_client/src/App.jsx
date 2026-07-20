@@ -20,6 +20,7 @@ import {
   X,
   Compass,
   Keyboard,
+  CheckCircle2,
 } from 'lucide-react'
 
 const INITIAL_HISTORY = [
@@ -34,6 +35,8 @@ function App() {
   const [targetFile, setTargetFile] = useState('')
   const [proposedContent, setProposedContent] = useState('')
   const [generatedProposal, setGeneratedProposal] = useState(null)
+  const [validationResult, setValidationResult] = useState(null)
+  const [timelineEvents, setTimelineEvents] = useState([])
   const [showApplyBtn, setShowApplyBtn] = useState(false)
   const [isContextModalOpen, setIsContextModalOpen] = useState(false)
   const [contextPaths, setContextPaths] = useState(() => new Set())
@@ -87,14 +90,12 @@ function App() {
     })
   }
 
-  const handleClearContext = () => {
-    setContextPaths(new Set())
-  }
-
   const handleFileSelect = async (path) => {
     setTargetFile(path)
     setProposedContent('')
     setGeneratedProposal(null)
+    setValidationResult(null)
+    setTimelineEvents([])
     setShowApplyBtn(false)
 
     try {
@@ -140,8 +141,10 @@ function App() {
       })
       setProposedContent('')
       setGeneratedProposal(null)
+      setValidationResult(null)
       setShowApplyBtn(false)
       await handleFileSelect(targetFile)
+      setTimelineEvents(normalizeTimelineEvents(data.timeline))
     } catch (error) {
       pushHistoryEntry({
         id: createEntryId('error'),
@@ -182,6 +185,8 @@ function App() {
         })
         setProposedContent('')
         setGeneratedProposal(null)
+        setValidationResult(null)
+        setTimelineEvents([])
         setShowApplyBtn(false)
         return
       }
@@ -193,12 +198,45 @@ function App() {
       })
       setProposedContent(data.proposed_content || '')
       setGeneratedProposal(null)
+      setValidationResult(null)
+      setTimelineEvents([])
       setShowApplyBtn(Boolean(data.proposed_content))
     } catch (error) {
       pushHistoryEntry({
         id: createEntryId('error'),
         type: 'error',
         content: `Formatter Error: ${error.message}`,
+      })
+    }
+  }
+
+  const handleValidate = async () => {
+    pushHistoryEntry({
+      id: createEntryId('validate'),
+      type: 'system',
+      content: 'Running approved validation label python_unittest...',
+    })
+
+    try {
+      const payload = { command_label: 'python_unittest' }
+      if (targetFile.trim()) {
+        payload.target_file = targetFile.trim()
+      }
+
+      const data = await postJson('/api/validate', payload)
+      const normalizedResult = normalizeValidationResult(data)
+      setValidationResult(normalizedResult)
+      setTimelineEvents(normalizeTimelineEvents(data.timeline))
+      pushHistoryEntry({
+        id: createEntryId('validate'),
+        type: normalizedResult.status === 'passed' ? 'system' : 'error',
+        content: buildValidationResultMessage(normalizedResult),
+      })
+    } catch (error) {
+      pushHistoryEntry({
+        id: createEntryId('error'),
+        type: 'error',
+        content: `Validation Error: ${error.message}`,
       })
     }
   }
@@ -239,6 +277,8 @@ function App() {
     setIsStreaming(true)
     setProposedContent('')
     setGeneratedProposal(null)
+    setValidationResult(null)
+    setTimelineEvents([])
     setShowApplyBtn(false)
 
     try {
@@ -246,6 +286,7 @@ function App() {
         payload: requestPayload,
         responseEntryId,
         onComplete: (response) => {
+          setTimelineEvents(normalizeTimelineEvents(response.timeline))
           applyWorkflowResponse(response)
         },
         onError: (message) => {
@@ -279,6 +320,11 @@ function App() {
         '/api/ai/stream',
         payload,
         {
+          onEvent: (event) => {
+            if (event.timeline_event) {
+              appendTimelineEvent(event.timeline_event)
+            }
+          },
           onDelta: (event) => {
             replaceHistoryEntry(responseEntryId, (entry) => ({
               ...entry,
@@ -349,6 +395,9 @@ function App() {
       setTargetFile(response.target_file)
     }
 
+    setValidationResult(normalizeValidationResult(response.validation_result))
+    setTimelineEvents(normalizeTimelineEvents(response.timeline))
+
     if (response.response_kind === 'file_update') {
       const proposal = normalizeGeneratedProposal(response.proposal)
       const proposalTarget = proposal?.target_path || response.target_file || targetFile
@@ -397,6 +446,15 @@ function App() {
     setShowApplyBtn(false)
   }
 
+  const appendTimelineEvent = (rawEvent) => {
+    const event = normalizeTimelineEvent(rawEvent)
+    if (!event) {
+      return
+    }
+
+    setTimelineEvents((previousEvents) => [...previousEvents, event].slice(-12))
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#010409] font-mono leading-relaxed text-[#c9d1d9]">
       <div className="z-20 flex w-64 flex-shrink-0 flex-col border-r border-[#30363d] bg-[#0d1117]">
@@ -422,6 +480,8 @@ function App() {
               setHistory([{ id: 'reset-1', type: 'system', content: 'Console reset.' }])
               setProposedContent('')
               setGeneratedProposal(null)
+              setValidationResult(null)
+              setTimelineEvents([])
               setShowApplyBtn(false)
             }}
           >
@@ -509,6 +569,8 @@ function App() {
                 setTargetFile('')
                 setProposedContent('')
                 setGeneratedProposal(null)
+                setValidationResult(null)
+                setTimelineEvents([])
                 setShowApplyBtn(false)
               }}
               disabled={!targetFile}
@@ -538,6 +600,8 @@ function App() {
           <div className="pl-2 text-xs text-[#8b949e]">
             {selectedModel ? `Model: ${selectedModel}` : 'Model: backend default'}
             {contextPaths.size > 0 ? ` | Context files: ${contextPaths.size}` : ' | Context files: none'}
+            {` | Validation: ${buildValidationStatusLabel(validationResult)}`}
+            {` | Timeline: ${buildTimelineStatusLabel(timelineEvents)}`}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pl-2">
@@ -551,6 +615,7 @@ function App() {
                   setInput('')
                   setProposedContent('')
                   setGeneratedProposal(null)
+                  setValidationResult(null)
                   setShowApplyBtn(false)
                   setHistory([{ id: 'clear-1', type: 'system', content: 'Console cleared.' }])
                 }}
@@ -628,6 +693,15 @@ function App() {
               </button>
 
               <button
+                onClick={handleValidate}
+                disabled={isStreaming}
+                className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <CheckCircle2 size={14} className="text-[#3fb950]" />
+                <span>Validate</span>
+              </button>
+
+              <button
                 onClick={() => setIsGitModalOpen(true)}
                 className="flex items-center gap-1.5 px-2 py-1 transition-colors hover:text-[#58a6ff]"
               >
@@ -647,7 +721,9 @@ function App() {
         onFileSelect={handleFileSelect}
       />
 
-      <RadarModal isOpen={isRadarModalOpen} onClose={() => setIsRadarModalOpen(false)} />
+      {isRadarModalOpen && (
+        <RadarModal onClose={() => setIsRadarModalOpen(false)} />
+      )}
 
       <GitModal isOpen={isGitModalOpen} onClose={() => setIsGitModalOpen(false)} />
 
@@ -660,26 +736,30 @@ function App() {
 
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
 
-      <ModelModal
-        isOpen={isModelModalOpen}
-        onClose={() => setIsModelModalOpen(false)}
-        model={selectedModel}
-        modelOptionsText={modelOptionsText}
-        onSave={({ model, modelOptionsText }) => {
-          setSelectedModel(model)
-          setModelOptionsText(modelOptionsText)
-        }}
-      />
+      {/* Mount draft-based modals only while open so each session initializes
+          directly from the latest saved parent state without synchronization effects. */}
+      {isModelModalOpen && (
+        <ModelModal
+          onClose={() => setIsModelModalOpen(false)}
+          model={selectedModel}
+          modelOptionsText={modelOptionsText}
+          onSave={({ model, modelOptionsText }) => {
+            setSelectedModel(model)
+            setModelOptionsText(modelOptionsText)
+          }}
+        />
+      )}
 
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        targetFile={targetFile}
-        proposedContent={proposedContent}
-        proposal={generatedProposal}
-        setProposedContent={setProposedContent}
-        onApply={handleApply}
-      />
+      {isReviewModalOpen && (
+        <ReviewModal
+          onClose={() => setIsReviewModalOpen(false)}
+          targetFile={targetFile}
+          proposedContent={proposedContent}
+          proposal={generatedProposal}
+          setProposedContent={setProposedContent}
+          onApply={handleApply}
+        />
+      )}
 
       <CommandModal
         isOpen={isCommandModalOpen}
@@ -738,6 +818,94 @@ function normalizeGeneratedProposal(rawProposal) {
       ? rawProposal.errors.filter((error) => typeof error === 'string')
       : [],
   }
+}
+
+function normalizeValidationResult(rawResult) {
+  if (!rawResult || typeof rawResult !== 'object') {
+    return null
+  }
+
+  return {
+    status: typeof rawResult.status === 'string' ? rawResult.status : 'skipped',
+    command_label: typeof rawResult.command_label === 'string' ? rawResult.command_label : 'not_run',
+    duration_seconds: Number.isFinite(Number(rawResult.duration_seconds))
+      ? Number(rawResult.duration_seconds)
+      : 0,
+    exit_code: Number.isInteger(rawResult.exit_code) ? rawResult.exit_code : null,
+    skipped: Boolean(rawResult.skipped),
+    output_excerpt:
+      typeof rawResult.output_excerpt === 'string' ? rawResult.output_excerpt : '',
+    error_details:
+      typeof rawResult.error_details === 'string' ? rawResult.error_details : null,
+  }
+}
+
+function normalizeTimelineEvents(rawEvents) {
+  if (!Array.isArray(rawEvents)) {
+    return []
+  }
+
+  return rawEvents.map(normalizeTimelineEvent).filter(Boolean)
+}
+
+function normalizeTimelineEvent(rawEvent) {
+  if (!rawEvent || typeof rawEvent !== 'object') {
+    return null
+  }
+
+  return {
+    event_type: typeof rawEvent.event_type === 'string' ? rawEvent.event_type : 'unknown',
+    status: typeof rawEvent.status === 'string' ? rawEvent.status : 'skipped',
+    label: typeof rawEvent.label === 'string' ? rawEvent.label : 'Workflow Event',
+    summary: typeof rawEvent.summary === 'string' ? rawEvent.summary : '',
+    metadata: rawEvent.metadata && typeof rawEvent.metadata === 'object' ? rawEvent.metadata : {},
+    occurred_at: typeof rawEvent.occurred_at === 'string' ? rawEvent.occurred_at : '',
+  }
+}
+
+function buildValidationStatusLabel(validationResult) {
+  if (!validationResult) {
+    return 'not available'
+  }
+
+  const commandLabel = validationResult.command_label || 'not_run'
+  if (validationResult.status === 'skipped') {
+    return `skipped, ${commandLabel}`
+  }
+
+  return `${validationResult.status}, ${commandLabel}`
+}
+
+function buildTimelineStatusLabel(timelineEvents) {
+  if (!timelineEvents.length) {
+    return 'idle'
+  }
+
+  return timelineEvents
+    .slice(-4)
+    .map((event) => `${event.label}: ${event.status}`)
+    .join(' / ')
+}
+
+function buildValidationResultMessage(validationResult) {
+  if (!validationResult) {
+    return 'Validation did not return a result.'
+  }
+
+  const exitCode = validationResult.exit_code === null ? 'none' : validationResult.exit_code
+  const details = validationResult.error_details || 'No error details.'
+  const output = validationResult.output_excerpt || 'No output captured.'
+
+  return [
+    `Validation: ${validationResult.status}`,
+    `Command label: ${validationResult.command_label}`,
+    `Duration: ${validationResult.duration_seconds.toFixed(2)}s`,
+    `Exit code: ${exitCode}`,
+    `Skipped: ${validationResult.skipped ? 'yes' : 'no'}`,
+    `Details: ${details}`,
+    '',
+    output,
+  ].join('\n')
 }
 
 function buildProposalStatusMessage(proposal, targetPath) {

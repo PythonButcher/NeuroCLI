@@ -8,7 +8,13 @@ The shared backend source of truth is `neurocli_core`. The React app reaches it 
 
 React is a supported companion frontend, not a separate product backend. It should mirror shared safety-critical capabilities where the backend supports them, while using browser-native presentation.
 
-The current known parity gap is generated-file review. Textual can format, diff, review, and apply generated file updates with backup. React should not claim equivalent generated-file diff review until Codex exposes a shared proposal/diff artifact through `api`.
+React now consumes backend generated-file proposal artifacts for AI file updates. It should not replace that contract with frontend-only diff logic.
+
+Validation is backend/API-defined. React has a safe Validate action over the approved workspace `python_unittest` label and may pass the selected target so the API can build a narrow Python-file policy entry. Do not replace this with raw command input or frontend-defined validation behavior.
+
+## Compound Checkpoint Rule
+
+Before changing React presentation, read `../handoff/active_gate/README.md`. Work only from a bounded React goal assigned there, and do not make the UI imply unsupported backend behavior.
 
 ## Local Run
 
@@ -29,4 +35,4 @@ npm run build
 
 ## Planning References
 
-Start with `../handoff/plans/current_plan.md`, `../handoff/plans/roadmap.md`, and `../handoff/coordination/gemini_handoff.md` before changing React presentation.
+Start with `../handoff/active_gate/README.md`, `../handoff/coordination/frontend_parity.md`, and `../handoff/coordination/gemini_handoff.md` before changing React presentation.

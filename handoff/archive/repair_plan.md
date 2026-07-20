@@ -1,6 +1,6 @@
 # Archived NeuroCLI Repair Plan
 
-This document is historical. It records the earlier repair and alignment roadmap for Phases 1 through 5. The active plan now lives in `handoff/plans/current_plan.md`, and the active phased roadmap lives in `handoff/plans/roadmap.md`.
+This document is historical. It records the earlier repair and alignment roadmap for Phases 1 through 5. Current work is routed through `handoff/active_gate/README.md`, and product direction lives in `handoff/plans/roadmap.md`.
 
 Do not treat this file as the current next-work list.
 
@@ -108,7 +108,7 @@ Polish both frontends and iron out feature parity while preserving the one-backe
 
 Phase 5 should focus on making NeuroCLI feel like a state-of-the-art terminal-first developer tool. The Textual app should be treated as a first-class flagship terminal interface, and the React frontend should preserve the same workflow model through the FastAPI bridge.
 
-The working direction for Phase 5 lives in `handoff/plans/phase_5_direction.md`.
+The historical Phase 5 direction now lives in `handoff/archive/phase_5_direction.md`.
 
 ### Phase 6
 Expand tests and do full end-to-end verification for both app versions.

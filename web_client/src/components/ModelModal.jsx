@@ -1,22 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Bot, X } from 'lucide-react'
 
-export default function ModelModal({ isOpen, onClose, model, modelOptionsText, onSave }) {
+export default function ModelModal({ onClose, model, modelOptionsText, onSave }) {
+  // App mounts this modal for one open session, so props are the correct and
+  // complete source for the initial editable draft.
   const [draftModel, setDraftModel] = useState(model)
   const [draftModelOptionsText, setDraftModelOptionsText] = useState(modelOptionsText)
-
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
-
-    setDraftModel(model)
-    setDraftModelOptionsText(modelOptionsText)
-  }, [isOpen, model, modelOptionsText])
-
-  if (!isOpen) {
-    return null
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">

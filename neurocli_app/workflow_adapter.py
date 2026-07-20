@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any, Callable, Iterable
 
+from neurocli_core.validation_result import (
+    ValidationCommand,
+    ValidationCommandPolicy,
+    ValidationResult,
+    run_validation_command,
+)
 from neurocli_core.workflow_service import (
     AIWorkflowRequest,
     AIWorkflowResponse,
@@ -76,3 +83,57 @@ def run_textual_stream_workflow(
         raise RuntimeError("The workflow stream ended without a final response event.")
 
     return final_response
+
+
+def run_textual_validation(
+    command_label: str = "python_unittest",
+    *,
+    cwd: str | Path = ".",
+    target_file: str = "",
+) -> ValidationResult:
+    """Run a policy-approved validation label for the Textual app."""
+
+    target_path = Path(target_file.strip()) if target_file.strip() else None
+    if target_path is None:
+        return run_validation_command(command_label, cwd=cwd)
+
+    workspace_root = Path(cwd).resolve()
+    resolved_target = target_path.resolve(strict=False)
+    try:
+        relative_target = resolved_target.relative_to(workspace_root)
+    except ValueError:
+        return run_validation_command("outside_workspace", policy=ValidationCommandPolicy(), cwd=cwd)
+
+    if resolved_target.suffix != ".py":
+        return run_validation_command("not_python_test", policy=ValidationCommandPolicy(), cwd=cwd)
+
+    policy = ValidationCommandPolicy(
+        commands={
+            "python_unittest_target": ValidationCommand(
+                label="python_unittest_target",
+                argv=("python", "-m", "unittest", str(relative_target)),
+                timeout_seconds=60.0,
+            )
+        }
+    )
+    return run_validation_command("python_unittest_target", policy=policy, cwd=cwd)
+
+
+def format_validation_result_markdown(result: ValidationResult) -> str:
+    """Render a validation result artifact for terminal display."""
+
+    status_title = result.status.replace("_", " ").title()
+    exit_code = "none" if result.exit_code is None else str(result.exit_code)
+    details = result.error_details or "None"
+    output = result.output_excerpt or "No output captured."
+
+    return (
+        f"### Validation: {status_title}\n\n"
+        f"- Command label: `{result.command_label}`\n"
+        f"- Duration: {result.duration_seconds:.2f}s\n"
+        f"- Exit code: {exit_code}\n"
+        f"- Skipped: {'yes' if result.skipped else 'no'}\n"
+        f"- Details: {details}\n\n"
+        f"#### Output excerpt\n\n"
+        f"```text\n{output}\n```"
+    )
