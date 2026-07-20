@@ -22,7 +22,7 @@ Compound checkpoint: after this phase, a new agent can open the docs and know th
 
 Work: keep active docs current, archive superseded docs, validate Agent Council outputs, document smoke-test commands for Textual, FastAPI, and React, and keep compound checkpoints current.
 
-Exit criteria: active docs point to this roadmap, older plans are clearly archived, council folders validate, and `current_plan.md` names the next practical app capability.
+Exit criteria: the active gate links the required roadmap and contracts, older plans are clearly archived, and council folders validate.
 
 ## Phase 1: Shared Proposal And Diff Artifact
 

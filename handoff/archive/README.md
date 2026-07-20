@@ -1,5 +1,5 @@
 # Archived Project Material
 
-> ARCHIVED REFERENCE ONLY: Files in this directory are not part of the default agent scan path. Their plans, phase labels, paths, and status statements are historical unless `handoff/plans/current_plan.md` explicitly points to them.
+> ARCHIVED REFERENCE ONLY: Files in this directory are outside the default agent scan path. Their plans, labels, paths, and status statements are not instructions for current work.
 
-Use these files only when reconstructing a past decision. Current status lives in `handoff/plans/current_plan.md`, and current phase order lives in `handoff/plans/roadmap.md`.
+Use these files only when reconstructing a decision. Current work is defined exclusively by `handoff/active_gate/README.md`.

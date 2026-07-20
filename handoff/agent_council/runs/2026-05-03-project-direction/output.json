@@ -40,7 +40,7 @@
       "relevance": "Defines the handoff folder as the shared planning and decision space."
     },
     {
-      "path": "handoff/plans/current_plan.md",
+      "path": "handoff/active_gate/README.md",
       "source_type": "plan",
       "relevance": "Describes the current Phase 5 state, parity gaps, pending smoke tests, and next work."
     },
@@ -486,7 +486,7 @@
       "owner_role": "Codex for docs and architecture; Gemini for React presentation alignment after Codex handoff",
       "implementation_priority": "high",
       "impacted_areas": [
-        "handoff/plans/current_plan.md",
+        "handoff/active_gate/README.md",
         "handoff/plans/phase_5_direction.md",
         "neurocli_app",
         "web_client"
@@ -563,7 +563,7 @@
       "implementation_priority": "high",
       "impacted_areas": [
         "tests",
-        "handoff/plans/current_plan.md",
+        "handoff/active_gate/README.md",
         "handoff/coordination/codex_handoff.md",
         "handoff/coordination/shared_decisions.md"
       ],
@@ -656,7 +656,7 @@
       "tests"
     ],
     "documentation": [
-      "handoff/plans/current_plan.md",
+      "handoff/active_gate/README.md",
       "handoff/plans/phase_5_direction.md",
       "handoff/plans/repair_plan.md",
       "handoff/coordination/shared_decisions.md",

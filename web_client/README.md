@@ -14,7 +14,7 @@ Validation is backend/API-defined. React has a safe Validate action over the app
 
 ## Compound Checkpoint Rule
 
-Before changing React presentation, identify the current compound checkpoint in `../handoff/plans/current_plan.md`. Do not make React imply that a backend-only feature is fully available in the product when the Textual flagship checkpoint is still missing.
+Before changing React presentation, read `../handoff/active_gate/README.md`. Work only from a bounded React goal assigned there, and do not make the UI imply unsupported backend behavior.
 
 ## Local Run
 
@@ -35,4 +35,4 @@ npm run build
 
 ## Planning References
 
-Start with `../handoff/plans/current_plan.md`, `../handoff/plans/roadmap.md`, `../handoff/coordination/frontend_parity.md`, and `../handoff/coordination/gemini_handoff.md` before changing React presentation.
+Start with `../handoff/active_gate/README.md`, `../handoff/coordination/frontend_parity.md`, and `../handoff/coordination/gemini_handoff.md` before changing React presentation.

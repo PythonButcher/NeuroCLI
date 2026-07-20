@@ -52,7 +52,7 @@ The Textual app should also stay aligned with `neurocli_core` instead of carryin
 - Every React presentation change must preserve the current compound checkpoint documented by Codex. Do not make the UI imply that a capability is available if the backend contract or Textual flagship checkpoint has not caught up.
 - Before starting, review:
   - `handoff/README.md`
-  - `handoff/plans/current_plan.md`
+  - `handoff/active_gate/README.md`
   - `handoff/coordination/frontend_parity.md`
   - `handoff/coordination/gemini_handoff.md`
   - `handoff/coordination/shared_decisions.md`
@@ -63,7 +63,7 @@ The Textual app should also stay aligned with `neurocli_core` instead of carryin
 - Prefer presentational improvements over logic rewrites.
 - Do not move stateful backend behavior into JSX components.
 - Keep components ready to consume backend data from Codex-defined contracts.
-- During Phase 5, aim for feature parity with the Textual app where the backend supports the same behavior.
+- Work only from a bounded React goal explicitly assigned by `handoff/active_gate/README.md`.
 
 ## Safety
 

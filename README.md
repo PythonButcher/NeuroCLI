@@ -53,4 +53,4 @@ Live model smoke testing requires valid credentials and remains separate from de
 
 ## Project Navigation
 
-Start with [AGENTS.md](AGENTS.md), then read [the current plan](handoff/plans/current_plan.md). The active roadmap, contracts, parity record, owner handoffs, and archives are routed through [handoff/README.md](handoff/README.md).
+Start with [AGENTS.md](AGENTS.md), then read [the active gate](handoff/active_gate/README.md). The roadmap, contracts, parity record, owner handoffs, and archives are routed through [handoff/README.md](handoff/README.md).

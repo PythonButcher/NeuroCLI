@@ -27,7 +27,7 @@
       "relevance": "Defines Codex and Gemini ownership boundaries and the one-backend/two-frontends architecture."
     },
     {
-      "path": "handoff/plans/current_plan.md",
+      "path": "handoff/active_gate/README.md",
       "source_type": "plan",
       "relevance": "Identifies generated-file review as the current React parity gap."
     },
@@ -376,7 +376,7 @@
   ],
   "impacted_areas": {
     "codebase": ["neurocli_core/workflow_service.py", "api/main.py", "neurocli_app/main.py", "web_client/src/App.jsx"],
-    "documentation": ["handoff/coordination/shared_decisions.md", "handoff/plans/current_plan.md"],
+    "documentation": ["handoff/coordination/shared_decisions.md", "handoff/active_gate/README.md"],
     "runtime_behavior_changed": false,
     "frontend_implications": [
       "React should consume backend proposal data before Gemini treats review presentation as complete.",

@@ -4,7 +4,7 @@ AGENTS.md – Compact project routing, architecture, ownership, and checkpoint r
 GEMINI.md – Gemini-specific project behavior and frontend guidance.
 README.md – Product overview, setup, run, and verification commands.
 
-handoff/plans/current_plan.md – Single current status and next-work source.
+handoff/active_gate/README.md – Single current-work entrypoint, goal, scope, acceptance, verification, and owner.
 handoff/plans/roadmap.md – Active phase order and product checkpoints.
 handoff/coordination/shared_decisions.md – Shared backend, API, safety, and artifact contracts.
 handoff/coordination/frontend_parity.md – Intentional Textual and React differences.

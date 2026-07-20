@@ -22,7 +22,7 @@ The council lives in this folder:
 
 ## How To Run A Real Council
 
-Start by reading the project source-of-truth documents listed in `AGENTS.md`: `AGENTS.md`, `GEMINI.md`, `handoff/README.md`, `handoff/plans/current_plan.md`, `handoff/plans/roadmap.md`, and `handoff/coordination/shared_decisions.md`. For frontend-sensitive work, also read `handoff/coordination/gemini_handoff.md`.
+Start by reading the project routing documents listed in `AGENTS.md`: `AGENTS.md`, `GEMINI.md`, `handoff/active_gate/README.md`, `handoff/plans/roadmap.md`, and `handoff/coordination/shared_decisions.md`. For frontend-sensitive work, also read `handoff/coordination/gemini_handoff.md`.
 
 Choose one concrete topic. Good council topics are decisions such as "Should React get generated-file diff review through a shared backend proposal contract?" or "How should the Textual command palette be phased without changing workflow behavior?"
 

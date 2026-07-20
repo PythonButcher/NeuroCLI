@@ -1,12 +1,12 @@
 # NeuroCLI Agent Map
 
-Use this file as a router. Current status belongs in `handoff/plans/current_plan.md`; historical detail belongs in `handoff/archive/`.
+Use this file as a router. Current work belongs only in `handoff/active_gate/`; historical detail belongs in `handoff/archive/`.
 
 ## Start Here
 
 | Need | Read |
 | --- | --- |
-| Start any project task | `handoff/plans/current_plan.md` |
+| Start any project task | `handoff/active_gate/README.md` |
 | Understand the phased direction | `handoff/plans/roadmap.md` |
 | Change a backend or API contract | `handoff/coordination/shared_decisions.md` |
 | Compare Textual and React behavior | `handoff/coordination/frontend_parity.md` |
@@ -33,13 +33,14 @@ Gemini owns React presentation work in `web_client`: layout, styling, presentati
 
 ## Working Rules
 
-- Read the current plan before making changes; do not scan archives by default.
+- Read `handoff/active_gate/README.md` before making changes; do not scan archives by default.
 - Keep business rules in `neurocli_core` where practical.
 - Use `apply_patch` for source and documentation edits.
 - Preserve user changes and avoid destructive Git commands.
 - Make coding changes one bounded step at a time and verify each slice.
 - Update active documentation when status, contracts, parity, or ownership changes.
 - Keep `.agents/`, `.codex/`, and `.gemini/` free of project-local skills until a demonstrated need exists.
+- Keep the active gate entirely forward-looking. Never put prior-phase references, completion recaps, implementation history, or review history in `handoff/active_gate/`.
 
 ## Compound Checkpoint
 

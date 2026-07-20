@@ -1,14 +1,6 @@
-# Codex Handoff
-
-## Ownership
+# Codex Ownership And Integration Guide
 
 Codex owns `neurocli_core`, `api`, `neurocli_app`, Python tests, shared architecture, documentation, and React state/API integration.
-
-## Current Gate
-
-Phase 3 is complete across the backend, API, Textual app, and compact React consumption. The next Codex-owned slice is Phase 4 terminal-first experience work.
-
-There is no active Gemini implementation handoff. Do not create React-only workflow behavior to imitate Textual features.
 
 ## Integration Map
 
@@ -20,14 +12,12 @@ There is no active Gemini implementation handoff. Do not create React-only workf
 - `neurocli_app/workflow_adapter.py`: thin Textual adapter over shared contracts.
 - `web_client/src/lib/api.js`: React API and stream client.
 
-## Current Constraints
+## Safety Boundaries
 
 Validation accepts stable command labels, never arbitrary shell text. A selected Python target uses a generated `python_unittest_target` policy entry; a non-Python or out-of-workspace target is rejected without starting a process.
 
 Apply operations require explicit user action and create backups. Commit operations require explicit approval. Timeline events stay concise and do not embed prompts, source, output, diffs, secrets, or long logs.
 
-Textual and React intentionally differ in presentation depth. Consult `frontend_parity.md` before changing either surface.
+Textual and React may differ in presentation depth. Consult `frontend_parity.md` before changing either surface.
 
-## Next Acceptance Gate
-
-Phase 4 must let a user remain in Textual for the full safe loop with clearer focus, review, validation, and apply controls. Backend contracts should change only when the UI improvement genuinely requires shared behavior.
+For current work, read `handoff/active_gate/README.md`.

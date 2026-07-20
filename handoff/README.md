@@ -1,24 +1,23 @@
 # NeuroCLI Project Documentation
 
-This directory contains active project truth, ownership handoffs, reusable planning artifacts, and clearly separated history.
-
 ## Read Order
 
 | Need | Read |
 | --- | --- |
-| Current status and next slice | `plans/current_plan.md` |
-| Full phased direction | `plans/roadmap.md` |
-| Shared backend/API contracts | `coordination/shared_decisions.md` |
-| Textual and React differences | `coordination/frontend_parity.md` |
-| Codex-owned integration notes | `coordination/codex_handoff.md` |
-| Gemini-owned presentation notes | `coordination/gemini_handoff.md` |
-| Structured design council | `agent_council/README.md` |
-| Historical context | `archive/README.md` |
+| Work on the active goal | `active_gate/README.md` |
+| Understand product direction | `plans/roadmap.md` |
+| Use shared backend/API contracts | `coordination/shared_decisions.md` |
+| Compare Textual and React behavior | `coordination/frontend_parity.md` |
+| Confirm ownership boundaries | `coordination/codex_handoff.md` or `coordination/gemini_handoff.md` |
+| Run a structured design council | `agent_council/README.md` |
+| Consult historical material | `archive/README.md` only when required |
 
 ## Documentation Rules
 
-`plans/current_plan.md` is the only current status source. The roadmap defines phase order; shared decisions define contracts; frontend parity records intentional surface differences.
+`active_gate/README.md` is the only entrypoint for current work. Keep every current goal, scope boundary, acceptance check, verification command, and active owner inside `active_gate/`.
 
-Keep active files concise. Move superseded plans and completed implementation diaries to `archive/`, fix links after moves, and do not make agents scan historical material by default.
+The active gate must be entirely forward-looking. It must never mention earlier work, prior phases, completion history, implementation history, or review history.
 
-Every completed slice must record its compound checkpoint: the new user-visible capability, its available surface, the supporting backend/API contract, and any remaining surface gap.
+The roadmap defines direction, shared decisions define contracts, frontend parity records surface differences, and owner handoffs define stable responsibilities. These supporting files must not compete with the active gate as a current-status source.
+
+Move historical material to `archive/`, repair links after moves, and do not make agents scan archives by default.

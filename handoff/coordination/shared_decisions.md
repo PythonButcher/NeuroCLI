@@ -68,6 +68,6 @@ Textual can generate an AI commit-message draft through `neurocli_core.git_engin
 
 ## Documentation And Harness
 
-`handoff/plans/current_plan.md` owns current status. The roadmap owns phase order. Completed or superseded detail belongs in `handoff/archive/`.
+`handoff/active_gate/README.md` is the only entrypoint for current work. The roadmap owns product direction. Completed or superseded detail belongs in `handoff/archive/`.
 
 Project-local `.agents`, `.codex`, and `.gemini` directories remain empty placeholders. Do not add skills, hooks, custom agents, or provider-specific automation until a recurring project need justifies the maintenance cost.
