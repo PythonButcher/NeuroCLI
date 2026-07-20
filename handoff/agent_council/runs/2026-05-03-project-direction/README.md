@@ -20,7 +20,7 @@ Use `output.json` as strategic planning input for roadmap and handoff updates. T
 
 The suggested next phases in the JSON are Core Loop Reliability, Shared Capability Parity, and Structured Orchestration Layer. These should be treated as planning guidance, not as completed implementation. Before any runtime change follows from this council output, Codex still needs to define or approve backend contracts, and Gemini should only handle React presentation after the relevant contract or integration handoff exists.
 
-This run should especially influence future edits to `handoff/plans/current_plan.md`, `handoff/plans/phase_5_direction.md`, and `handoff/coordination/shared_decisions.md`. It should also inform which future council subjects are worth running, such as the exact parity rule between Textual and React or whether council artifacts should ever become an app-visible product feature.
+This run should especially influence future edits to `handoff/plans/current_plan.md`, `handoff/plans/roadmap.md`, and `handoff/coordination/shared_decisions.md`. It should also inform which future council subjects are worth running, such as the exact parity rule between Textual and React or whether council artifacts should ever become an app-visible product feature.
 
 ## Boundaries
 

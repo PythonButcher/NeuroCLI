@@ -1,53 +1,25 @@
-.gitattributes – Normalizes line endings for text files.
+.env.example – Safe template for local OpenAI configuration.
+.gitignore – Project-specific policy for secrets, environments, builds, caches, and runtime output.
+AGENTS.md – Compact project routing, architecture, ownership, and checkpoint rules.
+GEMINI.md – Gemini-specific project behavior and frontend guidance.
+README.md – Product overview, setup, run, and verification commands.
 
-.gitignore – Ignores common Python build artifacts, environments, and IDE files.
+handoff/plans/current_plan.md – Single current status and next-work source.
+handoff/plans/roadmap.md – Active phase order and product checkpoints.
+handoff/coordination/shared_decisions.md – Shared backend, API, safety, and artifact contracts.
+handoff/coordination/frontend_parity.md – Intentional Textual and React differences.
+handoff/coordination/codex_handoff.md – Current Codex integration gate.
+handoff/coordination/gemini_handoff.md – Current Gemini presentation gate.
+handoff/archive/README.md – Archive boundary and historical-use warning.
+handoff/agent_council/README.md – Structured council workflow entry point.
 
-AGENTS.md – Project routing and ownership rules for Codex and Gemini.
-
-GEMINI.md – Project rules for Gemini, with emphasis on keeping UI and backend work separate.
-
-README.md – High-level overview and basic setup notes.
-
-handoff/plans/current_plan.md – Short status file that shows what the team should do next.
-
-handoff/plans/roadmap.md – Active phased roadmap based on current project state and Agent Council outputs.
-
-handoff/archive/repair_plan.md – Historical repair roadmap for earlier phases.
-
-handoff/archive/phase_5_direction.md – Historical Phase 5 direction, superseded by the active roadmap.
-
-handoff/coordination/codex_handoff.md – Codex-owned backend and integration notes.
-
-handoff/coordination/gemini_handoff.md – Gemini-owned frontend presentation notes.
-
-handoff/coordination/shared_decisions.md – Shared rules and API contract notes.
-
-handoff/agent_council/README.md – Usage guide for the reusable Agent Council planning workflow.
-
-handoff/agent_council/roles.md – Council role definitions tailored to NeuroCLI.
-
-handoff/agent_council/master_prompt.md – Reusable prompt for running a structured council topic.
-
-handoff/agent_council/council_output_schema.json – Strict JSON Schema for council outputs.
-
-handoff/agent_council/sample_output.json – Example-only council output reflecting the current project state.
-
-handoff/agent_council/validate_council_output.py – Standard-library validator for council JSON artifacts.
-
-handoff/agent_council/runs/2026-05-03-project-direction/README.md – Human-readable summary of the project-direction council output.
-
-handoff/agent_council/runs/2026-05-03-project-direction/output.json – Structured project-direction council output.
-
-handoff/agent_council/runs/2026-05-03-practical-state-of-art-features/README.md – Human-readable summary of the practical feature council output.
-
-handoff/agent_council/runs/2026-05-03-practical-state-of-art-features/output.json – Structured practical feature council output.
-
-handoff/archive/agent_council_setup_request.md – Original Agent Council setup request, now archived.
-
-neurocli_app/main.py – Textual app entry point.
-
-api/main.py – FastAPI backend for the web app.
-
-neurocli_core/workflow_service.py – Shared AI workflow service used by both app paths.
-
-web_client/src/App.jsx – Main React app entry point.
+neurocli_core/workflow_service.py – Shared AI workflow.
+neurocli_core/generated_file_proposal.py – Reviewable proposal and diff artifact.
+neurocli_core/validation_result.py – Validation policy, runner, and result artifact.
+neurocli_core/workflow_timeline.py – Redacted workflow timeline artifact.
+api/main.py – FastAPI bridge for the React frontend.
+neurocli_app/main.py – Textual application entry point and workflow presentation.
+neurocli_app/workflow_adapter.py – Textual adapter over shared workflow and validation contracts.
+web_client/src/App.jsx – Main React state and presentation integration.
+web_client/src/lib/api.js – React API and streaming client.
+tests/fixtures/validation_failure.py – Explicit target-validation failure fixture excluded from normal discovery.

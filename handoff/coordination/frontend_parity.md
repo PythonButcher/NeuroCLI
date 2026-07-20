@@ -31,7 +31,7 @@ The rule is not "both apps must be identical." The rule is: shared safety-critic
 | Git status/diff/commit | Available with Textual git modal and AI commit message helper | Available through manual Git modal over API status/diff/commit | Intentional difference |
 | AI commit message generation | Available in Textual | Not exposed in React | Intentional until Codex defines a shared API contract |
 | Validation result artifact | Available in status strip and validation output | Available in status strip and validation output | Shared backend artifact |
-| Running approved validation from UI | Available through Validate / Ctrl+T using `python_unittest` | Available through Validate using `python_unittest` | Shared safe label, different UI |
+| Running approved validation from UI | Available through Validate / Ctrl+T using workspace or selected-Python-target policy | Available through Validate using the same workspace or target behavior | Shared safe policy, different UI |
 | Workflow timeline | Available as a visible Textual safe-loop lane | Consumed from API and shown as compact status | Shared backend artifact, different presentation depth |
 
 ## Intentional Differences
@@ -44,7 +44,7 @@ Git behavior is intentionally different right now. Textual can generate AI commi
 
 Generated-file review is intentionally not identical internally. Textual keeps its existing review/apply path because it already protects editable review, diff, backup, and explicit apply. React consumes the shared proposal artifact so it does not apply raw model output.
 
-Validation is now aligned at the Phase 2 level. Both apps can run the approved `python_unittest` validation label and display the shared result artifact. Neither app accepts raw command text.
+Validation is aligned at the Phase 2 level. Both apps can run the approved workspace `python_unittest` label or a generated `python_unittest_target` entry for a selected Python file and display the shared result artifact. Non-Python and out-of-workspace targets are rejected without executing a process. Neither app accepts raw command text.
 
 Workflow timeline is aligned at the backend contract level and intentionally different in presentation. Textual is the flagship surface and shows a visible safe-loop lane for the current run. React consumes the same `timeline` and `timeline_event` payloads through the API but currently displays a compact companion status label so Gemini can later improve presentation without inventing frontend-only workflow states.
 

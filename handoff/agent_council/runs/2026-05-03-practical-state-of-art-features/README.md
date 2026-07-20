@@ -20,7 +20,7 @@ Use `output.json` as a feature roadmap input, not as an implementation command. 
 
 The council's practical first implementation slice is shared proposal/diff artifacts plus a validation-result artifact. That slice directly supports the current generated-file review parity gap and gives later state-of-the-art features a durable base.
 
-Future agents should use this output when updating `handoff/plans/current_plan.md`, `handoff/plans/phase_5_direction.md`, `handoff/coordination/shared_decisions.md`, and Codex/Gemini handoff notes. It should also guide future feature councils, especially around validation command policy, model profiles, connector permissions, and whether planning sessions should ever become app-visible product features.
+Future agents should use this output when updating `handoff/plans/current_plan.md`, `handoff/plans/roadmap.md`, `handoff/coordination/shared_decisions.md`, and Codex/Gemini handoff notes. It should also guide future feature councils, especially around validation command policy, model profiles, connector permissions, and whether planning sessions should ever become app-visible product features.
 
 ## What This Does Not Authorize
 

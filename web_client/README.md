@@ -10,7 +10,7 @@ React is a supported companion frontend, not a separate product backend. It shou
 
 React now consumes backend generated-file proposal artifacts for AI file updates. It should not replace that contract with frontend-only diff logic.
 
-Validation is backend/API-defined and React has a safe Validate action over the approved `python_unittest` label. Do not replace it with raw command input or frontend-defined validation behavior.
+Validation is backend/API-defined. React has a safe Validate action over the approved workspace `python_unittest` label and may pass the selected target so the API can build a narrow Python-file policy entry. Do not replace this with raw command input or frontend-defined validation behavior.
 
 ## Compound Checkpoint Rule
 

@@ -2,29 +2,33 @@ import { useState, useEffect } from 'react'
 import { X, Activity, Code, Clock, AlertTriangle } from 'lucide-react'
 import { fetchJson } from '../lib/api'
 
-export default function RadarModal({ isOpen, onClose }) {
+export default function RadarModal({ onClose }) {
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        if (isOpen) {
-            setLoading(true)
-            setError(null)
-            fetchJson('/api/radar')
-                .then(data => {
-                    if (data.error) throw new Error(data.error)
-                    setData(data)
-                    setLoading(false)
-                })
-                .catch(err => {
-                    setError(err.message)
-                    setLoading(false)
-                })
-        }
-    }, [isOpen])
+        // Ignore late network completions after the modal unmounts so closing
+        // Radar never schedules state updates on an abandoned component.
+        let cancelled = false
 
-    if (!isOpen) return null
+        fetchJson('/api/radar')
+            .then(nextData => {
+                if (cancelled) return
+                if (nextData.error) throw new Error(nextData.error)
+                setData(nextData)
+                setLoading(false)
+            })
+            .catch(nextError => {
+                if (cancelled) return
+                setError(nextError.message)
+                setLoading(false)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [])
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 transition-opacity">

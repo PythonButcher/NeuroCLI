@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from neurocli_app.workflow_adapter import (
@@ -123,14 +124,15 @@ class TextualValidationTests(unittest.TestCase):
             "neurocli_app.workflow_adapter.run_validation_command",
             return_value=expected,
         ) as mocked_run:
-            result = run_textual_validation(target_file="tests/test_ctrl_t_validation_failure.py")
+            result = run_textual_validation(target_file="tests/fixtures/validation_failure.py")
 
         command_label, kwargs = mocked_run.call_args.args[0], mocked_run.call_args.kwargs
         policy = kwargs["policy"]
         self.assertEqual(command_label, "python_unittest_target")
         self.assertIsInstance(policy, ValidationCommandPolicy)
         self.assertIn("python_unittest_target", policy.commands)
-        self.assertIn("test_ctrl_t_validation_failure.py", policy.commands["python_unittest_target"].argv[-1])
+        command_target = Path(policy.commands["python_unittest_target"].argv[-1])
+        self.assertEqual(command_target.as_posix(), "tests/fixtures/validation_failure.py")
         self.assertEqual(result.status, "failed")
 
     def test_validation_result_markdown_includes_core_fields(self) -> None:

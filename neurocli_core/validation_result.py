@@ -7,7 +7,7 @@ import subprocess
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Mapping, Sequence
+from typing import Any, Literal, Mapping
 
 
 ValidationStatus = Literal["passed", "failed", "timeout", "skipped", "rejected"]

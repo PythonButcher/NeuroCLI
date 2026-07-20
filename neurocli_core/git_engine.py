@@ -89,7 +89,7 @@ def execute_commit_and_push(commit_message: str, add_all: bool = False) -> None:
         commit_cmd.extend(["-m", commit_message])
 
         # Execute commit
-        commit_result = subprocess.run(
+        subprocess.run(
             commit_cmd,
             capture_output=True,
             encoding="utf-8",
@@ -98,7 +98,7 @@ def execute_commit_and_push(commit_message: str, add_all: bool = False) -> None:
         )
         
         # Execute push
-        push_result = subprocess.run(
+        subprocess.run(
             ["git", "push"],
             capture_output=True,
             encoding="utf-8",

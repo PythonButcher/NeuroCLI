@@ -90,10 +90,6 @@ function App() {
     })
   }
 
-  const handleClearContext = () => {
-    setContextPaths(new Set())
-  }
-
   const handleFileSelect = async (path) => {
     setTargetFile(path)
     setProposedContent('')
@@ -725,7 +721,9 @@ function App() {
         onFileSelect={handleFileSelect}
       />
 
-      <RadarModal isOpen={isRadarModalOpen} onClose={() => setIsRadarModalOpen(false)} />
+      {isRadarModalOpen && (
+        <RadarModal onClose={() => setIsRadarModalOpen(false)} />
+      )}
 
       <GitModal isOpen={isGitModalOpen} onClose={() => setIsGitModalOpen(false)} />
 
@@ -738,26 +736,30 @@ function App() {
 
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
 
-      <ModelModal
-        isOpen={isModelModalOpen}
-        onClose={() => setIsModelModalOpen(false)}
-        model={selectedModel}
-        modelOptionsText={modelOptionsText}
-        onSave={({ model, modelOptionsText }) => {
-          setSelectedModel(model)
-          setModelOptionsText(modelOptionsText)
-        }}
-      />
+      {/* Mount draft-based modals only while open so each session initializes
+          directly from the latest saved parent state without synchronization effects. */}
+      {isModelModalOpen && (
+        <ModelModal
+          onClose={() => setIsModelModalOpen(false)}
+          model={selectedModel}
+          modelOptionsText={modelOptionsText}
+          onSave={({ model, modelOptionsText }) => {
+            setSelectedModel(model)
+            setModelOptionsText(modelOptionsText)
+          }}
+        />
+      )}
 
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        targetFile={targetFile}
-        proposedContent={proposedContent}
-        proposal={generatedProposal}
-        setProposedContent={setProposedContent}
-        onApply={handleApply}
-      />
+      {isReviewModalOpen && (
+        <ReviewModal
+          onClose={() => setIsReviewModalOpen(false)}
+          targetFile={targetFile}
+          proposedContent={proposedContent}
+          proposal={generatedProposal}
+          setProposedContent={setProposedContent}
+          onApply={handleApply}
+        />
+      )}
 
       <CommandModal
         isOpen={isCommandModalOpen}

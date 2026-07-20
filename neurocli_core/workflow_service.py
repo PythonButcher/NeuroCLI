@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterator, Literal, Mapping
 
@@ -177,6 +177,13 @@ def execute_ai_workflow(request: AIWorkflowRequest) -> AIWorkflowResponse:
             options=prepared.request.model_options,
         )
     except RuntimeError as exc:
+        # Keep the emitted start marker immutable while returning an accurate
+        # terminal state in the final workflow timeline.
+        timeline[-1] = replace(
+            model_request_event,
+            status="error",
+            summary="Model request failed; error details remain on the workflow response.",
+        )
         return _build_error_response(
             prepared.request,
             str(exc),
@@ -186,6 +193,11 @@ def execute_ai_workflow(request: AIWorkflowRequest) -> AIWorkflowResponse:
             timeline=timeline,
         )
 
+    timeline[-1] = replace(
+        model_request_event,
+        status="completed",
+        summary="Model request completed; generated text remains on the workflow response.",
+    )
     return _build_success_response(prepared, output_text, timeline=timeline)
 
 
@@ -234,6 +246,13 @@ def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamE
             collected_chunks.append(chunk)
             yield AIWorkflowStreamEvent(event="delta", delta=chunk)
     except RuntimeError as exc:
+        # The start stream event remains a running snapshot; only the final
+        # response timeline receives the terminal error state.
+        timeline[-1] = replace(
+            model_request_event,
+            status="error",
+            summary="Streaming model request failed; error details remain on the workflow response.",
+        )
         yield AIWorkflowStreamEvent(
             event="error",
             response=_build_error_response(
@@ -247,6 +266,11 @@ def stream_ai_workflow(request: AIWorkflowRequest) -> Iterator[AIWorkflowStreamE
         )
         return
 
+    timeline[-1] = replace(
+        model_request_event,
+        status="completed",
+        summary="Streaming model request completed; generated text remains on the workflow response.",
+    )
     stream_complete_event = build_timeline_event(
         "stream_complete",
         "completed",

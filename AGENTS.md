@@ -1,75 +1,46 @@
-# AGENTS.md
+# NeuroCLI Agent Map
 
-## NeuroCLI Agent Routing
+Use this file as a router. Current status belongs in `handoff/plans/current_plan.md`; historical detail belongs in `handoff/archive/`.
 
-This repository supports parallel work between Codex and Gemini. Read this file first before making changes.
+## Start Here
 
-## Source of Truth
+| Need | Read |
+| --- | --- |
+| Start any project task | `handoff/plans/current_plan.md` |
+| Understand the phased direction | `handoff/plans/roadmap.md` |
+| Change a backend or API contract | `handoff/coordination/shared_decisions.md` |
+| Compare Textual and React behavior | `handoff/coordination/frontend_parity.md` |
+| Review owner-specific work | `handoff/coordination/codex_handoff.md` or `handoff/coordination/gemini_handoff.md` |
+| Run a major design discussion | `handoff/agent_council/README.md` |
+| Consult old plans | `handoff/archive/README.md`, only when current docs point there |
 
-- `neurocli_core` is the shared backend and main AI workflow source of truth.
-- NeuroCLI now has one shared backend contract with two supported frontends.
-- `neurocli_app` is the full Python Textual frontend. It calls `neurocli_core` directly.
-- `api` is the FastAPI bridge that exposes `neurocli_core` to the React frontend.
-- `web_client` is the React frontend.
+## Architecture
 
-## Codex Ownership
+NeuroCLI has one shared Python capability engine and two supported frontends.
 
-Codex is the primary owner for:
+- `neurocli_core` owns workflow and business behavior.
+- `neurocli_app` is the flagship Python Textual frontend and calls the core directly.
+- `api` exposes the same core behavior through FastAPI.
+- `web_client` is the React companion frontend and calls `api`.
 
-- All backend work
-- All `neurocli_core` changes
-- All `api` changes
-- All `neurocli_app` changes
-- Python-only app fixes and features
-- React application logic, state, data flow, API wiring, and integration work
-- Shared architecture, testing, and documentation for backend behavior
+Do not duplicate backend behavior in either frontend. Preserve the same safety contract when presentation differs.
 
-## Gemini Ownership
+## Ownership
 
-Gemini is the primary owner for:
+Codex owns Python, `neurocli_core`, `api`, `neurocli_app`, tests, shared architecture, documentation, and React state/API integration.
 
-- React frontend UI and presentation work only
-- Visual layout, styling, component presentation, UX polish, and static frontend content in `web_client`
+Gemini owns React presentation work in `web_client`: layout, styling, presentational components, accessibility, empty/loading states, and UX polish. Backend or contract gaps go into `handoff/coordination/gemini_handoff.md` for Codex review.
 
-Gemini should not be the primary owner for:
+## Working Rules
 
-- Backend logic
-- API contracts
-- Python application changes
-- Core AI workflow behavior
-- React business logic or backend integration decisions unless coordinated through Codex
+- Read the current plan before making changes; do not scan archives by default.
+- Keep business rules in `neurocli_core` where practical.
+- Use `apply_patch` for source and documentation edits.
+- Preserve user changes and avoid destructive Git commands.
+- Make coding changes one bounded step at a time and verify each slice.
+- Update active documentation when status, contracts, parity, or ownership changes.
+- Keep `.agents/`, `.codex/`, and `.gemini/` free of project-local skills until a demonstrated need exists.
 
-## Collaboration Rules
+## Compound Checkpoint
 
-- Codex defines or approves backend contracts before Gemini builds UI against them.
-- Gemini should prefer presentational React changes that preserve existing logic boundaries.
-- If a React task mixes UI and logic, Codex owns the logic layer and Gemini owns the presentational layer.
-- Shared decisions, blockers, plans, and handoffs should be written in the `handoff/` folder.
-
-## Compound Checkpoints
-
-Every phase, implementation slice, and handoff must include a compound checkpoint. A compound checkpoint is the plain-language answer to: "What can a user do after this work that they could not do before?"
-
-The checkpoint must name the surface where the capability is available. Because Textual is the flagship app, a backend-only or React-only capability is not considered a full product checkpoint unless the docs explicitly say why Textual is deferred and what the next Textual checkpoint is.
-
-Each implementation handoff must state three things: the user-visible capability now available, the backend or API contract that supports it, and any surface that still cannot use it.
-
-## Files To Review First
-
-- `AGENTS.md`
-- `GEMINI.md`
-- `handoff/README.md`
-- `handoff/plans/current_plan.md`
-- `handoff/plans/roadmap.md`
-- `handoff/coordination/shared_decisions.md`
-- `handoff/coordination/frontend_parity.md`
-
-## Working Agreement
-
-- Do not duplicate backend logic in the React app.
-- Do not duplicate backend workflow logic in the Textual app.
-- Keep business logic in Python where practical, inside `neurocli_core`.
-- Keep the Python Textual app and React frontend as feature-aligned as practical.
-- If a feature cannot be identical across both frontends, document the reason and preserve the same backend contract.
-- Prefer additive collaboration notes in `handoff/` over rewriting another agent's instructions.
-- Older phase plans live in `handoff/archive/` and should be treated as historical reference, not active roadmap.
+Every phase or implementation slice must state what a user can do now, which surface supports it, the backend/API contract behind it, and any surface that still lacks it. Textual is the flagship, so backend-only or React-only work is not a complete product checkpoint unless the Textual deferral is explicit.

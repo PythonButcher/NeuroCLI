@@ -46,9 +46,9 @@ Compound checkpoint: after this phase is product-complete, a user should be able
 
 Backend/API contract: `neurocli_core` defines `ValidationResult`, `ValidationCommand`, `ValidationCommandPolicy`, and a shell-free command runner selected only by approved `command_label`. `api` exposes validation through `POST /api/validate` and workflow responses may include `validation_result`.
 
-Textual outcome: Textual has a Validate action and Ctrl+T path that runs the approved `python_unittest` label and displays the shared result artifact.
+Textual outcome: Textual has a Validate action and Ctrl+T path that runs the approved workspace `python_unittest` label or a generated `python_unittest_target` entry for a selected Python file, then displays the shared result artifact.
 
-React outcome: React has a Validate action that calls `/api/validate` with the approved `python_unittest` label and displays the shared result artifact. React must never accept raw command text as a validation command.
+React outcome: React has a Validate action that calls `/api/validate` with the approved `python_unittest` label and optional selected target, then displays the shared result artifact. React must never accept raw command text as a validation command.
 
 Current implementation status: Phase 2 is complete at the compound-checkpoint level. Both app surfaces can run approved validation and neither accepts arbitrary shell command text.
 
@@ -112,6 +112,6 @@ React outcome: React receives advanced surfaces only after Codex defines the bac
 
 Exit criteria: eval fixtures run locally without live model credentials by default, traces redact sensitive content, connector design includes permission and audit rules, and planning sessions create reviewed artifacts rather than autonomous code changes.
 
-## Non-Goals For The Next Slice
+## Non-Goals For Phase 4
 
-Do not start model profiles, MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only orchestration controls before the Phase 3 workflow timeline checkpoint is complete.
+Do not start model profiles, MCP-style connectors, background task lanes, autonomous commits, productized council UI, or React-only orchestration controls during the terminal-first experience slice unless the active plan explicitly changes.

@@ -49,6 +49,10 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertIsNone(response.proposal)
         self.assertEqual(response.model, "test-model")
         self.assertIn("model_request_started", [event.event_type for event in response.timeline])
+        model_event = next(
+            event for event in response.timeline if event.event_type == "model_request_started"
+        )
+        self.assertEqual(model_event.status, "completed")
         self.assertEqual(call_args["api_key"], "test-key")
         self.assertIn("USER PROMPT: Write hello world", call_args["prompt"])
         self.assertEqual(call_args["options"], {"temperature": 0.2})
@@ -99,6 +103,21 @@ class ExecuteAIWorkflowTests(unittest.TestCase):
         self.assertEqual(response.status, "error")
         self.assertIn("OPENAI_API_KEY", response.error or "")
 
+    def test_execute_marks_model_timeline_event_as_error_when_request_fails(self) -> None:
+        """A terminal API error must replace the stale running timeline state."""
+
+        with patch("neurocli_core.workflow_service.get_openai_api_key", return_value="test-key"), patch(
+            "neurocli_core.workflow_service.call_openai_api",
+            side_effect=RuntimeError("synthetic failure"),
+        ):
+            response = execute_ai_workflow(build_ai_workflow_request("Explain this code"))
+
+        model_event = next(
+            event for event in response.timeline if event.event_type == "model_request_started"
+        )
+        self.assertFalse(response.ok)
+        self.assertEqual(model_event.status, "error")
+
 
 class StreamAIWorkflowTests(unittest.TestCase):
     """Verify that streaming uses the same prepared request contract."""
@@ -116,8 +135,15 @@ class StreamAIWorkflowTests(unittest.TestCase):
         self.assertEqual(events[-1].response.output_text, "hello world")
         self.assertEqual(events[-1].response.response_kind, "message")
         self.assertEqual(events[0].timeline_event.event_type, "model_request_started")
+        self.assertEqual(events[0].timeline_event.status, "running")
         self.assertEqual(events[-1].timeline_event.event_type, "stream_complete")
         self.assertIn("stream_complete", [event.event_type for event in events[-1].response.timeline])
+        final_model_event = next(
+            event
+            for event in events[-1].response.timeline
+            if event.event_type == "model_request_started"
+        )
+        self.assertEqual(final_model_event.status, "completed")
 
 
 class LegacyCompatibilityTests(unittest.TestCase):

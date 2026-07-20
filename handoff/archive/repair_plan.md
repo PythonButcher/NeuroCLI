@@ -108,7 +108,7 @@ Polish both frontends and iron out feature parity while preserving the one-backe
 
 Phase 5 should focus on making NeuroCLI feel like a state-of-the-art terminal-first developer tool. The Textual app should be treated as a first-class flagship terminal interface, and the React frontend should preserve the same workflow model through the FastAPI bridge.
 
-The working direction for Phase 5 lives in `handoff/plans/phase_5_direction.md`.
+The historical Phase 5 direction now lives in `handoff/archive/phase_5_direction.md`.
 
 ### Phase 6
 Expand tests and do full end-to-end verification for both app versions.
