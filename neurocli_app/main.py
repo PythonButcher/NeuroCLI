@@ -448,7 +448,7 @@ class NeuroApp(App):
             self._refresh_workspace_status()
 
     def _reset_workspace_view(self) -> None:
-        """Reset transient prompt, stream, diff, and apply state without changing files."""
+        """Reset the current workflow view and target without changing files."""
 
         self._proposed_content = ""
         self._proposal_baseline_content = ""
@@ -456,6 +456,10 @@ class NeuroApp(App):
         self._validation_result = None
         self._timeline_events = []
         self._workflow_state = "Reset"
+        # The target belongs to the current workflow run. Leaving it populated
+        # made Ctrl+L look successful while later actions still operated on the
+        # previously selected file.
+        self.query_one("#file_path_input", Input).value = ""
         self.query_one("#prompt_input", Input).value = ""
         self.query_one("#response_display", Markdown).update("AI response will appear here...")
         self.query_one("#loading_indicator").styles.display = "none"
