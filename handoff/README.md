@@ -5,7 +5,7 @@
 | Need | Read |
 | --- | --- |
 | Work on the active goal | `active_gate/README.md` |
-| Understand product direction | `plans/roadmap.md` |
+| Review non-binding future options | `plans/roadmap.md` |
 | Use shared backend/API contracts | `coordination/shared_decisions.md` |
 | Compare Textual and React behavior | `coordination/frontend_parity.md` |
 | Confirm ownership boundaries | `coordination/codex_handoff.md` or `coordination/gemini_handoff.md` |

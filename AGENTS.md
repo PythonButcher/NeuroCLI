@@ -7,7 +7,7 @@ Use this file as a router. Current work belongs only in `handoff/active_gate/`; 
 | Need | Read |
 | --- | --- |
 | Start any project task | `handoff/active_gate/README.md` |
-| Understand the phased direction | `handoff/plans/roadmap.md` |
+| Review non-binding future options | `handoff/plans/roadmap.md` |
 | Change a backend or API contract | `handoff/coordination/shared_decisions.md` |
 | Compare Textual and React behavior | `handoff/coordination/frontend_parity.md` |
 | Review owner-specific work | `handoff/coordination/codex_handoff.md` or `handoff/coordination/gemini_handoff.md` |
