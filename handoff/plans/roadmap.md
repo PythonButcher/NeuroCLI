@@ -1,5 +1,7 @@
 # NeuroCLI Roadmap
 
+> FUTURE OPTIONS ONLY: This roadmap is not active work, a schedule, or authorization to begin implementation. Current work is defined exclusively in `handoff/active_gate/README.md`.
+
 ## Product Direction
 
 NeuroCLI is a terminal-first AI development environment. The Textual app is the flagship surface. React is a supported companion surface over the same backend capability engine. The backend contract matters, but a phase is not product-complete until the docs say what a user can actually do in the application.
